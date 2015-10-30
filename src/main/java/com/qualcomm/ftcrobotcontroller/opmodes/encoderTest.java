@@ -19,18 +19,18 @@ import com.qualcomm.robotcore.util.Range;
 public class encoderTest extends PushBotTelemetry
 
 {
-    DcMotor motorRight;
-    DcMotor motorLeft;
+//    DcMotor motorRight;
+//    DcMotor motorLeft;
     //--------------------------------------------------------------------------
     //
 
     public encoderTest ()
 
     {
-        motorRight = hardwareMap.dcMotor.get("motor_2");
-        motorLeft = hardwareMap.dcMotor.get("motor_1");
-        motorLeft.setDirection(DcMotor.Direction.REVERSE);
-        motorRight.setDirection(DcMotor.Direction.REVERSE);
+//        motorRight = hardwareMap.dcMotor.get("motor_2");
+//        motorLeft = hardwareMap.dcMotor.get("motor_1");
+//        motorLeft.setDirection(DcMotor.Direction.REVERSE);
+//        motorRight.setDirection(DcMotor.Direction.REVERSE);
 
         //
         // Initialize base classes.
@@ -119,9 +119,9 @@ public class encoderTest extends PushBotTelemetry
                 //
                 // Start the drive wheel motors at full power.
                 //
-               // set_drive_power (1.0f, 1.0f);
-                motorRight.setPower(.5);
-                motorLeft.setPower(.5);
+                set_drive_power (1.0f, 1.0f);
+//                motorRight.setPower(.5);
+//                motorLeft.setPower(.5);
                 //
                 // Have the motor shafts turned the required amount?
                 //
@@ -162,7 +162,7 @@ public class encoderTest extends PushBotTelemetry
             case 3:
                 run_using_encoders ();
                 set_drive_power (-1.0f, 1.0f);
-                if (have_drive_encoders_reached (2880, 2880))
+                if (have_drive_encoders_reached (1700, 1700))
                 {
                     reset_drive_encoders ();
                     set_drive_power (0.0f, 0.0f);
@@ -183,7 +183,7 @@ public class encoderTest extends PushBotTelemetry
             //
             case 5:
                 run_using_encoders ();
-                set_drive_power (1.0f, -1.0f);
+                set_drive_power (1.0f, 1.0f);
                 if (have_drive_encoders_reached (2880, 2880))
                 {
                     reset_drive_encoders ();

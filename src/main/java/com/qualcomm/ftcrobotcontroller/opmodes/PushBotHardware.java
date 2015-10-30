@@ -82,6 +82,7 @@ public class PushBotHardware extends OpMode
         try
         {
             v_motor_left_drive = hardwareMap.dcMotor.get ("left_drive");
+            v_motor_left_drive.setDirection (DcMotor.Direction.REVERSE);
         }
         catch (Exception p_exeception)
         {
