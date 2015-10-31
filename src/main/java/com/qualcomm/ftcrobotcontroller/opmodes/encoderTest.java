@@ -27,10 +27,6 @@ public class encoderTest extends PushBotTelemetry
     public encoderTest ()
 
     {
-//        motorRight = hardwareMap.dcMotor.get("motor_2");
-//        motorLeft = hardwareMap.dcMotor.get("motor_1");
-//        motorLeft.setDirection(DcMotor.Direction.REVERSE);
-//        motorRight.setDirection(DcMotor.Direction.REVERSE);
 
         //
         // Initialize base classes.
@@ -114,31 +110,32 @@ public class encoderTest extends PushBotTelemetry
                 // be in this state and NOT the previous or the encoders will not
                 // work.  It doesn't need to be in subsequent states.
                 //
-                run_using_encoders ();
+                run_using_encoders();
 
                 //
                 // Start the drive wheel motors at full power.
                 //
-                set_drive_power (1.0f, 1.0f);
-//                motorRight.setPower(.5);
-//                motorLeft.setPower(.5);
+                set_drive_power (0.8f, 0.8f);
                 //
                 // Have the motor shafts turned the required amount?
                 //
                 // If they haven't, then the op-mode remains in this state (i.e this
                 // block will be executed the next time this method is called).
                 //
-                if (have_drive_encoders_reached (2880, 2880))
+                if (have_drive_encoders_reached (2199, 2199))
                 {
-                    //
-                    // Reset the encoders to ensure they are at a known good value.
-                    //
-                    reset_drive_encoders ();
+
 
                     //
                     // Stop the motors.
                     //
                     set_drive_power (0.0f, 0.0f);
+                    //update_telemetry();
+
+                    //
+                    // Reset the encoders to ensure they are at a known good value.
+                    //
+                    //reset_drive_encoders ();
 
                     //
                     // Transition to the next state when this method is called
@@ -159,47 +156,47 @@ public class encoderTest extends PushBotTelemetry
             //
             // Turn left until the encoders exceed the specified values.
             //
-            case 3:
-                run_using_encoders ();
-                set_drive_power (-1.0f, 1.0f);
-                if (have_drive_encoders_reached (1700, 1700))
-                {
-                    reset_drive_encoders ();
-                    set_drive_power (0.0f, 0.0f);
-                    v_state++;
-                }
-                break;
+//            case 3:
+//                run_using_encoders ();
+//                set_drive_power (-1.0f, 1.0f);
+//                if (have_drive_encoders_reached (1700, 1700))
+//                {
+//                    reset_drive_encoders ();
+//                    set_drive_power (0.0f, 0.0f);
+//                    v_state++;
+//                }
+//                break;
             //
             // Wait...
             //
-            case 4:
-                if (have_drive_encoders_reset ())
-                {
-                    v_state++;
-                }
-                break;
+//            case 4:
+//                if (have_drive_encoders_reset ())
+//                {
+//                    v_state++;
+//                }
+//                break;
             //
             // Turn right until the encoders exceed the specified values.
             //
-            case 5:
-                run_using_encoders ();
-                set_drive_power (1.0f, 1.0f);
-                if (have_drive_encoders_reached (2880, 2880))
-                {
-                    reset_drive_encoders ();
-                    set_drive_power (0.0f, 0.0f);
-                    v_state++;
-                }
-                break;
-            //
-            // Wait...
-            //
-            case 6:
-                if (have_drive_encoders_reset ())
-                {
-                    v_state++;
-                }
-                break;
+//            case 5:
+//                run_using_encoders ();
+//                set_drive_power (1.0f, 1.0f);
+//                if (have_drive_encoders_reached (2880, 2880))
+//                {
+//                    reset_drive_encoders ();
+//                    set_drive_power (0.0f, 0.0f);
+//                    v_state++;
+//                }
+//                break;
+//            //
+//            // Wait...
+//            //
+//            case 6:
+//                if (have_drive_encoders_reset ())
+//                {
+//                    v_state++;
+//                }
+//                break;
             //
             // Perform no action - stay in this case until the OpMode is stopped.
             // This method will still be called regardless of the state machine.

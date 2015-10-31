@@ -82,9 +82,9 @@ public class PushBotManual extends PushBotTelemetry
         //
         // Manage the arm motor.
         //
-        float l_left_arm_power = scale_motor_power (-gamepad2.left_stick_y);
-        m_left_arm_power (l_left_arm_power);
+        //m_left_arm_power (l_left_arm_power);
 
+        //float l_left_arm_power = scale_motor_power (-gamepad2.left_stick_y);
         //----------------------------------------------------------------------
         //
         // Servo Motors
@@ -106,6 +106,26 @@ public class PushBotManual extends PushBotTelemetry
         else if (gamepad2.b)
         {
             m_hand_position (a_hand_position () - 0.05);
+        }
+        else if (gamepad2.y)
+        {
+            double l_tempposition;
+            double l_temptarget;
+            double l_tempset;
+            l_tempposition= a_rpabase_position();
+            l_temptarget = l_tempposition + 0.0005;
+            l_tempset = m_rpabase_position(l_temptarget);
+            set_second_message("rpa base: y," + l_tempposition + "," + l_temptarget + "," + l_tempset);
+        }
+        else if (gamepad2.a)
+        {
+            double l_tempposition;
+            double l_temptarget;
+            double l_tempset;
+            l_tempposition= a_rpabase_position();
+            l_temptarget = l_tempposition - 0.0005;
+            l_tempset = m_rpabase_position(l_temptarget);
+            set_second_message("rpa base: a," + l_tempposition + "," + l_temptarget + "," + l_tempset);
         }
 
         //

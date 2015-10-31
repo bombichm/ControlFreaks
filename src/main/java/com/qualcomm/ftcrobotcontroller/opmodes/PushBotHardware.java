@@ -126,7 +126,7 @@ public class PushBotHardware extends OpMode
         // Indicate the initial position of both the left and right servos.  The
         // hand should be halfway opened/closed.
         //
-        double l_hand_position = 0.5;
+        double l_hand_position = 0.6;
 
         try
         {
@@ -152,6 +152,21 @@ public class PushBotHardware extends OpMode
             DbgLog.msg (p_exeception.getLocalizedMessage ());
 
             v_servo_right_hand = null;
+        }
+
+        double l_rpa_base_position = 0.45D;  //init RPA Base Position
+        try
+        {
+            v_servo_rpa_base = hardwareMap.servo.get ("rpa_base");
+            v_servo_rpa_base.scaleRange(0.3D,0.66D); //set the max range to allow the servo to move
+            v_servo_rpa_base.setPosition (l_rpa_base_position);
+        }
+        catch (Exception p_exeception)
+        {
+            m_warning_message ("rpa_base");
+            DbgLog.msg (p_exeception.getLocalizedMessage ());
+
+            v_servo_rpa_base = null;
         }
 
     } // init
@@ -392,8 +407,8 @@ public class PushBotHardware extends OpMode
         if (v_motor_left_drive != null)
         {
             v_motor_left_drive.setChannelMode
-                ( DcMotorController.RunMode.RUN_USING_ENCODERS
-                );
+                    (DcMotorController.RunMode.RUN_USING_ENCODERS
+                    );
         }
 
     } // run_using_left_drive_encoder
@@ -820,7 +835,7 @@ public class PushBotHardware extends OpMode
         //
         // Has the right encoder reached zero?
         //
-        if (a_right_encoder_count () == 0)
+        if (a_right_encoder_count() == 0)
         {
             //
             // Set the status to a positive indication.
@@ -852,7 +867,7 @@ public class PushBotHardware extends OpMode
         //
         // Have the encoders reached zero?
         //
-        if (has_left_drive_encoder_reset () && has_right_drive_encoder_reset ())
+        if (has_left_drive_encoder_reset() && has_right_drive_encoder_reset ())
         {
             //
             // Set the status to a positive indication.
@@ -956,6 +971,62 @@ public class PushBotHardware extends OpMode
 
     } // m_hand_position
 
+
+    //--------------------------------------------------------------------------
+    //
+    // a_rpabase_position
+    //
+    /**
+     * Access the rpabase position.
+     */
+    double a_rpabase_position ()
+    {
+        double l_return = 0.0;
+
+        if (v_servo_rpa_base != null)
+        {
+            l_return = v_servo_rpa_base.getPosition ();
+        }
+
+        return l_return;
+
+    } // a_rpabase_position
+
+
+    //--------------------------------------------------------------------------
+    //
+    // m_rpabase_position
+    //
+    /**
+     * Mutate the rpa_base position.
+     */
+    double m_rpabase_position (double p_position)
+    {
+        //
+        // Ensure the specific value is legal.
+        //
+//        double l_position = Range.clip
+//                ( p_position
+//                        , Servo.MIN_POSITION
+//                        , Servo.MAX_POSITION
+//                );
+        try {
+            if (v_servo_rpa_base != null) {
+                v_servo_rpa_base.setPosition(p_position);
+                return p_position;
+            } else {
+                return -9999.99999;
+            }
+        }catch (Exception p_exeception)
+        {
+            m_warning_message("rpa_base");
+            DbgLog.msg (p_exeception.getLocalizedMessage ());
+            return -9999.99999;
+        }
+
+
+    } // m_rpabase_position
+
     //--------------------------------------------------------------------------
     //
     // open_hand
@@ -1043,5 +1114,12 @@ public class PushBotHardware extends OpMode
      * Manage the aspects of the right hand servo.
      */
     private Servo v_servo_right_hand;
+
+    // v_v_servo_rpa_base
+    //
+    /**
+     * Manage the aspects of the rpa base servo.
+     */
+    private Servo v_servo_rpa_base;
 
 } // PushBotHardware

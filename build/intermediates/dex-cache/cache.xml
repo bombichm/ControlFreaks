@@ -2,6 +2,27 @@
 <items version="2" >
 
     <item
+        jar="C:\Users\Robot\AndroidStudioProjects\ftc_app-master\FtcRobotController\build\intermediates\exploded-aar\FtcCommon-release\jars\classes.jar"
+        jumboMode="false"
+        revision="21.1.2"
+        sha1="9112d15701e2c29945597c234eb28110f3e77ddc">
+        <dex dex="C:\Users\Robot\AndroidStudioProjects\ftc_app-master\FtcRobotController\build\intermediates\pre-dexed\debug\classes-c980c59d115450860d5859798fc480d0bf066098.jar" />
+    </item>
+    <item
+        jar="C:\Users\Robot\AndroidStudioProjects\ftc_app-master\FtcRobotController\build\intermediates\exploded-aar\Hardware-release\jars\classes.jar"
+        jumboMode="false"
+        revision="21.1.2"
+        sha1="312452430a607b39b92221fbed687e458ed9c8c7">
+        <dex dex="C:\Users\Robot\AndroidStudioProjects\ftc_app-master\FtcRobotController\build\intermediates\pre-dexed\debug\classes-8da01a560317a17ea9338ccfc4bfae07189fb30b.jar" />
+    </item>
+    <item
+        jar="C:\Users\Robot\AndroidStudioProjects\ftc_app-master\FtcRobotController\build\intermediates\exploded-aar\Analytics-release\jars\classes.jar"
+        jumboMode="false"
+        revision="21.1.2"
+        sha1="be03c1ee2c4c731033845ec1846923138dc9e0fa">
+        <dex dex="C:\Users\Robot\AndroidStudioProjects\ftc_app-master\FtcRobotController\build\intermediates\pre-dexed\debug\classes-b74a107ed0ee01500128f670281453d55990e788.jar" />
+    </item>
+    <item
         jar="C:\Users\Robot\AndroidStudioProjects\ftc_app-master\FtcRobotController\build\intermediates\exploded-aar\WirelessP2p-release\jars\classes.jar"
         jumboMode="false"
         revision="21.1.2"
@@ -16,32 +37,11 @@
         <dex dex="C:\Users\Robot\AndroidStudioProjects\ftc_app-master\FtcRobotController\build\intermediates\pre-dexed\debug\classes-fef3c0131bff7c0395b3219ce040e3482938f627.jar" />
     </item>
     <item
-        jar="C:\Users\Robot\AndroidStudioProjects\ftc_app-master\FtcRobotController\build\intermediates\exploded-aar\Analytics-release\jars\classes.jar"
-        jumboMode="false"
-        revision="21.1.2"
-        sha1="be03c1ee2c4c731033845ec1846923138dc9e0fa">
-        <dex dex="C:\Users\Robot\AndroidStudioProjects\ftc_app-master\FtcRobotController\build\intermediates\pre-dexed\debug\classes-b74a107ed0ee01500128f670281453d55990e788.jar" />
-    </item>
-    <item
-        jar="C:\Users\Robot\AndroidStudioProjects\ftc_app-master\FtcRobotController\build\intermediates\exploded-aar\Hardware-release\jars\classes.jar"
-        jumboMode="false"
-        revision="21.1.2"
-        sha1="312452430a607b39b92221fbed687e458ed9c8c7">
-        <dex dex="C:\Users\Robot\AndroidStudioProjects\ftc_app-master\FtcRobotController\build\intermediates\pre-dexed\debug\classes-8da01a560317a17ea9338ccfc4bfae07189fb30b.jar" />
-    </item>
-    <item
         jar="C:\Users\Robot\AndroidStudioProjects\ftc_app-master\FtcRobotController\build\intermediates\exploded-aar\RobotCore-release\jars\classes.jar"
         jumboMode="false"
         revision="21.1.2"
         sha1="51740db7999259bcef8a679f349034c760ceb172">
         <dex dex="C:\Users\Robot\AndroidStudioProjects\ftc_app-master\FtcRobotController\build\intermediates\pre-dexed\debug\classes-4416ac62660ba452ed68e5fe38728c1d214c28c4.jar" />
-    </item>
-    <item
-        jar="C:\Users\Robot\AndroidStudioProjects\ftc_app-master\FtcRobotController\build\intermediates\exploded-aar\FtcCommon-release\jars\classes.jar"
-        jumboMode="false"
-        revision="21.1.2"
-        sha1="9112d15701e2c29945597c234eb28110f3e77ddc">
-        <dex dex="C:\Users\Robot\AndroidStudioProjects\ftc_app-master\FtcRobotController\build\intermediates\pre-dexed\debug\classes-c980c59d115450860d5859798fc480d0bf066098.jar" />
     </item>
 
 </items>
