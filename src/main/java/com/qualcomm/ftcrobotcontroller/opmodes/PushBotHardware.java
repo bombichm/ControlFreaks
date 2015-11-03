@@ -25,6 +25,16 @@ import com.qualcomm.robotcore.util.Range;
 public class PushBotHardware extends OpMode
 
 {
+
+    //Global Vars to the class
+
+    //RPA Base Varables
+    private static final double RPABaseServo_Delta = 0.0005;
+    private static final double RPABaseServo_Delta_Fast = 0.01;
+    private static final double RPABaseServo_MinPosition = 0.33;
+    private static final double RPABaseServo_MaxPosition = 0.70;
+    double l_rpa_base_position = 0.45D;  //init RPA Base Position and to control RPA Base position as servo.getPosition seems to be flaky
+
     //--------------------------------------------------------------------------
     //
     // PushBotHardware
@@ -154,11 +164,11 @@ public class PushBotHardware extends OpMode
             v_servo_right_hand = null;
         }
 
-        double l_rpa_base_position = 0.45D;  //init RPA Base Position
+
         try
         {
             v_servo_rpa_base = hardwareMap.servo.get ("rpa_base");
-            v_servo_rpa_base.scaleRange(0.3D,0.66D); //set the max range to allow the servo to move
+            v_servo_rpa_base.scaleRange(RPABaseServo_MinPosition,RPABaseServo_MaxPosition); //set the max range to allow the servo to move
             v_servo_rpa_base.setPosition (l_rpa_base_position);
         }
         catch (Exception p_exeception)
@@ -974,6 +984,44 @@ public class PushBotHardware extends OpMode
 
     //--------------------------------------------------------------------------
     //
+    // rpabase_moveUp
+    //
+    /**
+     * move the rpabase servo in the up Direction.
+     */
+    double rpabase_moveUp (boolean fast)
+    {
+        double l_temptarget;
+        if (fast) {
+            l_temptarget = a_rpabase_position() + RPABaseServo_Delta_Fast;
+        }else{
+            l_temptarget = a_rpabase_position() + RPABaseServo_Delta;
+        }
+        return m_rpabase_position(l_temptarget);
+    } // rpabase_moveUp
+
+
+    //--------------------------------------------------------------------------
+    //
+    // rpabase_moveDown
+    //
+    /**
+     * move the rpabase servo in the down Direction.
+     */
+    double rpabase_moveDown (boolean fast)
+    {
+        double l_temptarget;
+        if (fast) {
+            l_temptarget = a_rpabase_position() - RPABaseServo_Delta_Fast;
+        }else{
+            l_temptarget = a_rpabase_position() - RPABaseServo_Delta;
+        }
+        return m_rpabase_position(l_temptarget);
+    } // rpabase_moveDown
+
+
+    //--------------------------------------------------------------------------
+    //
     // a_rpabase_position
     //
     /**
@@ -981,15 +1029,16 @@ public class PushBotHardware extends OpMode
      */
     double a_rpabase_position ()
     {
-        double l_return = 0.0;
+        //there is a bug where the getPosition() does return correctly so use an internal
+       /* double l_return = 0.0;
 
         if (v_servo_rpa_base != null)
         {
             l_return = v_servo_rpa_base.getPosition ();
         }
 
-        return l_return;
-
+        return l_return;*/
+        return l_rpa_base_position;
     } // a_rpabase_position
 
 
@@ -1005,15 +1054,15 @@ public class PushBotHardware extends OpMode
         //
         // Ensure the specific value is legal.
         //
-//        double l_position = Range.clip
-//                ( p_position
-//                        , Servo.MIN_POSITION
-//                        , Servo.MAX_POSITION
-//                );
+        l_rpa_base_position = Range.clip
+               ( p_position
+                      , RPABaseServo_MinPosition
+                       , RPABaseServo_MaxPosition
+               );
         try {
             if (v_servo_rpa_base != null) {
-                v_servo_rpa_base.setPosition(p_position);
-                return p_position;
+                v_servo_rpa_base.setPosition(l_rpa_base_position);
+                return l_rpa_base_position;
             } else {
                 return -9999.99999;
             }

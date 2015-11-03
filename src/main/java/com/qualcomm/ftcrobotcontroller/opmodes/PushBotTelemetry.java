@@ -36,7 +36,7 @@ package com.qualcomm.ftcrobotcontroller.opmodes;
 public class PushBotTelemetry extends PushBotHardware
 
 {
-    String firstMessage = "N/A";
+    String secondMessage = "N/A";
     //--------------------------------------------------------------------------
     //
     // PushBotTelemetry
@@ -78,7 +78,7 @@ public class PushBotTelemetry extends PushBotHardware
         //
         // Send telemetry data to the driver station.
         //
-        telemetry.addData ( "01", firstMessage);
+        telemetry.addData ( "01", secondMessage);
         telemetry.addData
             ( "02"
             , "Left Drive: "
@@ -156,7 +156,7 @@ public class PushBotTelemetry extends PushBotHardware
     public void set_second_message (String p_message)
 
     {
-        firstMessage = p_message;
+        secondMessage = p_message;
 
 
     } // set_first_message

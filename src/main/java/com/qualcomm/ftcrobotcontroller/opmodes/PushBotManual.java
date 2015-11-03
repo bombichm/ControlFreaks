@@ -24,6 +24,7 @@ public class PushBotManual extends PushBotTelemetry
      *
      * The system calls this member when the class is instantiated.
      */
+
     public PushBotManual ()
 
     {
@@ -99,6 +100,7 @@ public class PushBotManual extends PushBotTelemetry
         // The setPosition methods write the motor power values to the Servo
         // class, but the positions aren't applied until this method ends.
         //
+
         if (gamepad2.x)
         {
             m_hand_position (a_hand_position () + 0.05);
@@ -109,23 +111,13 @@ public class PushBotManual extends PushBotTelemetry
         }
         else if (gamepad2.y)
         {
-            double l_tempposition;
-            double l_temptarget;
-            double l_tempset;
-            l_tempposition= a_rpabase_position();
-            l_temptarget = l_tempposition + 0.0005;
-            l_tempset = m_rpabase_position(l_temptarget);
-            set_second_message("rpa base: y," + l_tempposition + "," + l_temptarget + "," + l_tempset);
+            //move RPABase Servo in the up direction in left bumper down move fast
+            rpabase_moveUp(gamepad2.left_bumper);
         }
         else if (gamepad2.a)
         {
-            double l_tempposition;
-            double l_temptarget;
-            double l_tempset;
-            l_tempposition= a_rpabase_position();
-            l_temptarget = l_tempposition - 0.0005;
-            l_tempset = m_rpabase_position(l_temptarget);
-            set_second_message("rpa base: a," + l_tempposition + "," + l_temptarget + "," + l_tempset);
+            //move RPABase Servo in the up direction in left bumper down move fast
+            rpabase_moveDown(gamepad2.left_bumper);
         }
 
         //
