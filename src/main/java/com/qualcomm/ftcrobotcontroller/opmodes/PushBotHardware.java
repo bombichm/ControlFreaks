@@ -29,7 +29,7 @@ public class PushBotHardware extends OpMode
     //Global Vars to the class
 
     //RPA Base Varables
-    private static final double RPABaseServo_Delta = 0.0005;
+    private static final double RPABaseServo_Delta = 0.0005; 
     private static final double RPABaseServo_Delta_Fast = 0.01;
     private static final double RPABaseServo_MinPosition = 0.33;
     private static final double RPABaseServo_MaxPosition = 0.70;
