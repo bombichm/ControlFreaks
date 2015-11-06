@@ -92,7 +92,7 @@ public class PushBotManual1 extends PushBotTelemetry
         float l_left_arm_power
             = (float)scale_motor_power (gamepad1.right_trigger)
             - (float)scale_motor_power (gamepad1.left_trigger);
-        m_left_arm_power (l_left_arm_power);
+        m_rpa_arm_power (l_left_arm_power);
 
         //----------------------------------------------------------------------
         //
@@ -110,11 +110,11 @@ public class PushBotManual1 extends PushBotTelemetry
         //
         if (gamepad1.x)
         {
-            m_hand_position (a_hand_position () + 0.05);
+            //m_hand_position (a_hand_position () + 0.05);
         }
         else if (gamepad1.b)
         {
-            m_hand_position (a_hand_position () - 0.05);
+            //m_hand_position (a_hand_position () - 0.05);
         }
 
         //
