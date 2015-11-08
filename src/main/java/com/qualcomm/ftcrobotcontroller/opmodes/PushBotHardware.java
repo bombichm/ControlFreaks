@@ -5,7 +5,6 @@ import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorController;
 import com.qualcomm.robotcore.hardware.Servo;
-import com.qualcomm.robotcore.hardware.TouchSensor;
 import com.qualcomm.robotcore.util.Range;
 
 //------------------------------------------------------------------------------
@@ -26,97 +25,6 @@ import com.qualcomm.robotcore.util.Range;
 public class PushBotHardware extends OpMode
 
 {
-
-    //Global Vars to the class
-    private static final double ServoErrorResultPosition = -0.0000000001;
-    //RPA Base Varables
-    private Servo v_servo_rpa_base;
-    private static final double RPABaseServo_Delta = 0.0005;
-    private static final double RPABaseServo_Delta_Fast = 0.01;
-    private static final double RPABaseServo_MinPosition = 0.155;
-    private static final double RPABaseServo_MaxPosition = 0.67;
-    private double l_rpa_base_position = 0.163D;  //init RPA Base Position and to control RPA Base position as servo.getPosition seems to be flaky
-
-    //RPA Arm Varables
-    // v_motor_rpa_arm
-    private DcMotor v_motor_rpa_arm;
-    private TouchSensor v_sensor_touch_rpa_arm_retract;
-    private TouchSensor v_sensor_touch_rpa_arm_extend;
-    private static final double RPAArmMotor_Speed = 0.05;
-    private static final double RPAArmMotor_Speed_Fast = 0.1;
-    private static final String RPAArmMotor_Retract_TouchSensorName = "rpa_arm_retract_touch";
-    private static final String RPAArmMotor_Extend_TouchSensorName = "rpa_arm_extend_touch";
-
-
-    // v_servo_arm_shoulder
-    private Servo v_servo_arm_shoulder;
-    private static final double ArmShoulderServo_Delta = 0.0008;
-    private static final double ArmShoulderServo_Delta_Fast = 0.002;
-    private static final double ArmShoulderServo_MinPosition = 0.19;
-    private static final double ArmShoulderServo_MaxPosition = 0.80;
-    private double l_arm_shoulder_position = 0.2D;  //init arm shoulder Position
-
-
-    // v_servo_arm_elbow
-    private Servo v_servo_arm_elbow;
-    private static final double ArmElbowServo_Delta = 0.0008;
-    private static final double ArmElbowServo_Delta_Fast = 0.002;
-    private static final double ArmElbowServo_MinPosition = 0.20;
-    private static final double ArmElbowServo_MaxPosition = 0.99;
-    private double l_arm_elbow_position = 0.20D;  //init arm elbow Position
-
-    // v_servo_arm_wrist
-    private Servo v_servo_arm_wrist;
-    private static final double ArmWristServo_Delta = 0.005;
-    private static final double ArmWristServo_Delta_Fast = 0.05;
-    private static final double ArmWristServo_MinPosition = 0.05;
-    private static final double ArmWristServo_MaxPosition = 0.99;
-    private double l_arm_wrist_position = 0.45D;  //init arm elbow Position
-
-    public static final double ArmWristTrigger_Threshold = 0.2;
-    public static final double ArmWristTrigger_Threshold_Fast = 0.5;
-
-
-
-
-    //--------------------------------------------------------------------------
-    //
-    // v_motor_left_drive
-    //
-    /**
-     * Manage the aspects of the left drive motor.
-     */
-    private DcMotor v_motor_left_drive;
-
-    //--------------------------------------------------------------------------
-    //
-    // v_motor_right_drive
-    //
-    /**
-     * Manage the aspects of the right drive motor.
-     */
-    private DcMotor v_motor_right_drive;
-
-
-
-    //--------------------------------------------------------------------------
-    //
-    // v_warning_generated
-    //
-    /**
-     * Indicate whether a message is a available to the class user.
-     */
-    private boolean v_warning_generated = false;
-
-    //--------------------------------------------------------------------------
-    //
-    // v_warning_message
-    //
-    /**
-     * Store a message to the user if one has been generated.
-     */
-    private String v_warning_message;
-
     //--------------------------------------------------------------------------
     //
     // PushBotHardware
@@ -174,7 +82,6 @@ public class PushBotHardware extends OpMode
         try
         {
             v_motor_left_drive = hardwareMap.dcMotor.get ("left_drive");
-            v_motor_left_drive.setDirection (DcMotor.Direction.REVERSE);
         }
         catch (Exception p_exeception)
         {
@@ -187,7 +94,7 @@ public class PushBotHardware extends OpMode
         try
         {
             v_motor_right_drive = hardwareMap.dcMotor.get ("right_drive");
-            //v_motor_right_drive.setDirection (DcMotor.Direction.REVERSE);
+            v_motor_right_drive.setDirection (DcMotor.Direction.REVERSE);
         }
         catch (Exception p_exeception)
         {
@@ -197,92 +104,53 @@ public class PushBotHardware extends OpMode
             v_motor_right_drive = null;
         }
 
-        try
-        {
-            //// Get a reference to the touch sensor
-            v_sensor_touch_rpa_arm_retract = hardwareMap.touchSensor.get(RPAArmMotor_Retract_TouchSensorName);
-            v_sensor_touch_rpa_arm_extend = hardwareMap.touchSensor.get(RPAArmMotor_Extend_TouchSensorName);
-            v_motor_rpa_arm = hardwareMap.dcMotor.get ("rpa_arm");
-            //v_motor_right_drive.setDirection (DcMotor.Direction.REVERSE);
-        }
-        catch (Exception p_exeception)
-        {
-            m_warning_message ("rpa_arm");
-            DbgLog.msg (p_exeception.getLocalizedMessage ());
-
-            v_motor_rpa_arm = null;
-        }
-
-
-
         //
-        // Connect the arm sholder servo.
+        // Connect the arm motor.
         //
         try
         {
-
-            v_servo_arm_shoulder = hardwareMap.servo.get("arm_shoulder");
-            v_servo_arm_shoulder.setPosition (l_arm_shoulder_position);
+            v_motor_left_arm = hardwareMap.dcMotor.get ("left_arm");
         }
         catch (Exception p_exeception)
         {
-            m_warning_message ("arm_shoulder");
+            m_warning_message ("left_arm");
             DbgLog.msg (p_exeception.getLocalizedMessage ());
 
-            v_servo_arm_shoulder = null;
+            v_motor_left_arm = null;
         }
 
         //
-        // Connect the arm elbow servo.
+        // Connect the servo motors.
         //
-        try
-        {
-
-            v_servo_arm_elbow = hardwareMap.servo.get("arm_elbow");
-            v_servo_arm_elbow.setPosition (l_arm_elbow_position);
-
-        }
-        catch (Exception p_exeception)
-        {
-            m_warning_message ("arm_elbow");
-            DbgLog.msg (p_exeception.getLocalizedMessage ());
-
-            v_servo_arm_elbow = null;
-        }
-
+        // Indicate the initial position of both the left and right servos.  The
+        // hand should be halfway opened/closed.
         //
-        // Connect the arm wrist servo.
-        //
-        try
-        {
-            v_servo_arm_wrist = hardwareMap.servo.get("arm_wrist");
-            v_servo_arm_wrist.setPosition (l_arm_wrist_position);
-        }
-        catch (Exception p_exeception)
-        {
-            m_warning_message ("arm_wrist");
-            DbgLog.msg (p_exeception.getLocalizedMessage ());
-
-            v_servo_arm_wrist = null;
-        }
-
-
-        //
-        // Connect the RPA Base servo.
-        //
+        double l_hand_position = 0.5;
 
         try
         {
-            v_servo_rpa_base = hardwareMap.servo.get ("rpa_base");
-            v_servo_rpa_base.scaleRange(RPABaseServo_MinPosition,RPABaseServo_MaxPosition); //set the max range to allow the servo to move
-            v_servo_rpa_base.setPosition (l_rpa_base_position);
+            v_servo_left_hand = hardwareMap.servo.get ("left_hand");
+            v_servo_left_hand.setPosition (l_hand_position);
         }
         catch (Exception p_exeception)
         {
-            m_warning_message ("rpa_base");
+            m_warning_message ("left_hand");
             DbgLog.msg (p_exeception.getLocalizedMessage ());
 
-            v_servo_rpa_base = null;
+            v_servo_left_hand = null;
+        }
+
+        try
+        {
+            v_servo_right_hand = hardwareMap.servo.get ("right_hand");
+            v_servo_right_hand.setPosition (l_hand_position);
+        }
+        catch (Exception p_exeception)
+        {
+            m_warning_message ("right_hand");
+            DbgLog.msg (p_exeception.getLocalizedMessage ());
+
+            v_servo_right_hand = null;
         }
 
     } // init
@@ -505,7 +373,7 @@ public class PushBotHardware extends OpMode
         }
         if (v_motor_right_drive != null)
         {
-            v_motor_right_drive.setPower(p_right_power);
+            v_motor_right_drive.setPower (p_right_power);
         }
 
     } // set_drive_power
@@ -522,9 +390,9 @@ public class PushBotHardware extends OpMode
     {
         if (v_motor_left_drive != null)
         {
-            v_motor_left_drive.setChannelMode
-                    (DcMotorController.RunMode.RUN_USING_ENCODERS
-                    );
+            v_motor_left_drive.setMode
+                ( DcMotorController.RunMode.RUN_USING_ENCODERS
+                );
         }
 
     } // run_using_left_drive_encoder
@@ -541,9 +409,9 @@ public class PushBotHardware extends OpMode
     {
         if (v_motor_right_drive != null)
         {
-            v_motor_right_drive.setChannelMode
-                    (DcMotorController.RunMode.RUN_USING_ENCODERS
-                    );
+            v_motor_right_drive.setMode
+                ( DcMotorController.RunMode.RUN_USING_ENCODERS
+                );
         }
 
     } // run_using_right_drive_encoder
@@ -578,10 +446,10 @@ public class PushBotHardware extends OpMode
     {
         if (v_motor_left_drive != null)
         {
-            if (v_motor_left_drive.getChannelMode () ==
+            if (v_motor_left_drive.getMode () ==
                 DcMotorController.RunMode.RESET_ENCODERS)
             {
-                v_motor_left_drive.setChannelMode
+                v_motor_left_drive.setMode
                     ( DcMotorController.RunMode.RUN_WITHOUT_ENCODERS
                     );
             }
@@ -601,10 +469,10 @@ public class PushBotHardware extends OpMode
     {
         if (v_motor_right_drive != null)
         {
-            if (v_motor_right_drive.getChannelMode () ==
+            if (v_motor_right_drive.getMode () ==
                 DcMotorController.RunMode.RESET_ENCODERS)
             {
-                v_motor_right_drive.setChannelMode
+                v_motor_right_drive.setMode
                     ( DcMotorController.RunMode.RUN_WITHOUT_ENCODERS
                     );
             }
@@ -642,7 +510,7 @@ public class PushBotHardware extends OpMode
     {
         if (v_motor_left_drive != null)
         {
-            v_motor_left_drive.setChannelMode
+            v_motor_left_drive.setMode
                 ( DcMotorController.RunMode.RESET_ENCODERS
                 );
         }
@@ -661,7 +529,7 @@ public class PushBotHardware extends OpMode
     {
         if (v_motor_right_drive != null)
         {
-            v_motor_right_drive.setChannelMode
+            v_motor_right_drive.setMode
                 ( DcMotorController.RunMode.RESET_ENCODERS
                 );
         }
@@ -919,7 +787,7 @@ public class PushBotHardware extends OpMode
         //
         // Has the left encoder reached zero?
         //
-        if (a_left_encoder_count() == 0)
+        if (a_left_encoder_count () == 0)
         {
             //
             // Set the status to a positive indication.
@@ -951,7 +819,7 @@ public class PushBotHardware extends OpMode
         //
         // Has the right encoder reached zero?
         //
-        if (a_right_encoder_count() == 0)
+        if (a_right_encoder_count () == 0)
         {
             //
             // Set the status to a positive indication.
@@ -983,7 +851,7 @@ public class PushBotHardware extends OpMode
         //
         // Have the encoders reached zero?
         //
-        if (has_left_drive_encoder_reset() && has_right_drive_encoder_reset ())
+        if (has_left_drive_encoder_reset () && has_right_drive_encoder_reset ())
         {
             //
             // Set the status to a positive indication.
@@ -998,471 +866,94 @@ public class PushBotHardware extends OpMode
 
     } // have_drive_encoders_reset
 
-    boolean rpa_arm_extended(){
-        return v_sensor_touch_rpa_arm_extend.isPressed();
-    }
-
-    boolean rpa_arm_retracted(){
-        return v_sensor_touch_rpa_arm_retract.isPressed();
-    }
-
     //--------------------------------------------------------------------------
     //
     // a_left_arm_power
     //
     /**
-     * Access the rpa arm motor's power level.
+     * Access the left arm motor's power level.
      */
-    double a_rpa_arm_power ()
+    double a_left_arm_power ()
     {
         double l_return = 0.0;
 
-        if (v_motor_rpa_arm != null)
+        if (v_motor_left_arm != null)
         {
-            if(rpa_arm_extended()==true){
-                v_motor_rpa_arm.setPower (0);
-            }
-            if(rpa_arm_retracted()==true){
-                v_motor_rpa_arm.setPower(0);
-            }
-            l_return = v_motor_rpa_arm.getPower ();
+            l_return = v_motor_left_arm.getPower ();
         }
 
         return l_return;
 
-    } // a_rpa_arm_power
+    } // a_left_arm_power
 
     //--------------------------------------------------------------------------
     //
-    // m_rpa_arm_power
+    // m_left_arm_power
     //
     /**
-     * Access the rpa arm motor's power level.
+     * Access the left arm motor's power level.
      */
-    void m_rpa_arm_power (double p_level)
+    void m_left_arm_power (double p_level)
     {
-        if (v_motor_rpa_arm != null)
+        if (v_motor_left_arm != null)
         {
-            if(rpa_arm_extended()==true){
-                v_motor_rpa_arm.setPower (0);
-             }
-            if(rpa_arm_retracted()==true){
-                v_motor_rpa_arm.setPower(0);
-            }
-            if (rpa_arm_extended()==false && rpa_arm_retracted()==false ) {
-
-                v_motor_rpa_arm.setPower(p_level);
-            }else{
-                v_motor_rpa_arm.setPower(0);
-            }
+            v_motor_left_arm.setPower (p_level);
         }
 
     } // m_left_arm_power
 
-
-
-
-
-
     //--------------------------------------------------------------------------
     //
-    // rpaarm_moveUp
+    // a_hand_position
     //
     /**
-     * move the rpabase servo in the up Direction.
+     * Access the hand position.
      */
-    boolean rpaarm_moveUp (boolean fast)
+    double a_hand_position ()
     {
-        if(rpa_arm_extended() == false) {
+        double l_return = 0.0;
 
-           return false;
-        }else{
-            if(fast){
-               m_rpa_arm_power(RPAArmMotor_Speed_Fast);
-            }else{
-                m_rpa_arm_power(RPAArmMotor_Speed);
-            }
-            return true;
-        }
-
-    } // rpaarm_moveUp
-
-
-    //--------------------------------------------------------------------------
-    //
-    // rpaarm_moveDown
-    //
-    /**
-     * move the rpaarm motor in the down Direction.
-     */
-    boolean rpaarm_moveDown (boolean fast)
-    {
-        if(rpa_arm_retracted() == false) {
-            return false;
-        }else{
-            if(fast){
-                m_rpa_arm_power(0-RPAArmMotor_Speed_Fast);
-            }else{
-                m_rpa_arm_power(0-RPAArmMotor_Speed);
-            }
-            return true;
-        }
-    } // rpabase_moveDown
-
-
-    //--------------------------------------------------------------------------
-    //
-    // rpabase_moveUp
-    //
-    /**
-     * move the rpabase servo in the up Direction.
-     */
-    double rpabase_moveUp (boolean fast)
-    {
-        double l_temptarget;
-        if (fast) {
-            l_temptarget = a_rpabase_position() + RPABaseServo_Delta_Fast;
-        }else{
-            l_temptarget = a_rpabase_position() + RPABaseServo_Delta;
-        }
-        return m_rpabase_position(l_temptarget);
-    } // rpabase_moveUp
-
-
-    //--------------------------------------------------------------------------
-    //
-    // rpabase_moveDown
-    //
-    /**
-     * move the rpabase servo in the down Direction.
-     */
-    double rpabase_moveDown (boolean fast)
-    {
-        double l_temptarget;
-        if (fast) {
-            l_temptarget = a_rpabase_position() - RPABaseServo_Delta_Fast;
-        }else{
-            l_temptarget = a_rpabase_position() - RPABaseServo_Delta;
-        }
-        return m_rpabase_position(l_temptarget);
-    } // rpabase_moveDown
-
-
-    //--------------------------------------------------------------------------
-    //
-    // a_rpabase_position
-    //
-    /**
-     * Access the rpabase position.
-     */
-    double a_rpabase_position ()
-    {
-        //there is a bug where the getPosition() does return correctly so use an internal
-       /* double l_return = 0.0;
-
-        if (v_servo_rpa_base != null)
+        if (v_servo_left_hand != null)
         {
-            l_return = v_servo_rpa_base.getPosition ();
+            l_return = v_servo_left_hand.getPosition ();
         }
 
-        return l_return;*/
-        return l_rpa_base_position;
-    } // a_rpabase_position
+        return l_return;
 
+    } // a_hand_position
 
     //--------------------------------------------------------------------------
     //
-    // m_rpabase_position
+    // m_hand_position
     //
     /**
-     * Mutate the rpa_base position.
+     * Mutate the hand position.
      */
-    double m_rpabase_position (double p_position)
+    void m_hand_position (double p_position)
     {
         //
         // Ensure the specific value is legal.
         //
-        l_rpa_base_position = Range.clip
-               ( p_position
-                      , RPABaseServo_MinPosition
-                       , RPABaseServo_MaxPosition
-               );
-        try {
-            if (v_servo_rpa_base != null) {
-                v_servo_rpa_base.setPosition(l_rpa_base_position);
-                return l_rpa_base_position;
-            } else {
-                return ServoErrorResultPosition;
-            }
-        }catch (Exception p_exeception)
+        double l_position = Range.clip
+            ( p_position
+            , Servo.MIN_POSITION
+            , Servo.MAX_POSITION
+            );
+
+        //
+        // Set the value.  The right hand value must be opposite of the left
+        // value.
+        //
+        if (v_servo_left_hand != null)
         {
-            m_warning_message("rpa_base");
-            DbgLog.msg (p_exeception.getLocalizedMessage ());
-            return ServoErrorResultPosition;
+            v_servo_left_hand.setPosition (l_position);
         }
-
-
-    } // m_rpabase_position
-
-
-    //--------------------------------------------------------------------------
-    //
-    // arm_shoulder_moveUp
-    //
-    /**
-     * move the arm shoulder servo in the up Direction.
-     */
-    double arm_shoulder_moveUp (boolean fast)
-    {
-        double l_temptarget;
-        if (fast) {
-            l_temptarget = a_arm_shoulder_position() + ArmShoulderServo_Delta_Fast;
-        }else{
-            l_temptarget = a_arm_shoulder_position() + ArmShoulderServo_Delta;
-        }
-        return m_arm_shoulder_position(l_temptarget);
-    } // arm_shoulder_moveUp
-
-
-    //--------------------------------------------------------------------------
-    //
-    // arm_shoulder_moveDown
-    //
-    /**
-     * move the arm_shoulder servo in the down Direction.
-     */
-    double arm_shoulder_moveDown (boolean fast)
-    {
-        double l_temptarget;
-        if (fast) {
-            l_temptarget = a_arm_shoulder_position() - ArmShoulderServo_Delta_Fast;
-        }else{
-            l_temptarget = a_arm_shoulder_position() - ArmShoulderServo_Delta;
-        }
-        return m_arm_shoulder_position(l_temptarget);
-    } // arm_shoulder_moveDown
-
-
-    //--------------------------------------------------------------------------
-    //
-    // a_arm_shoulder_position
-    //
-    /**
-     * Access the arm_shoulder position.
-     */
-    double a_arm_shoulder_position ()
-    {
-
-        return l_arm_shoulder_position;
-    } // a_arm_shoulder_position
-
-
-    //--------------------------------------------------------------------------
-    //
-    // m_arm_shoulder_position
-    //
-    /**
-     * Mutate the arm shoulder position.
-     */
-    double m_arm_shoulder_position (double p_position)
-    {
-        //
-        // Ensure the specific value is legal.
-        //
-        l_arm_shoulder_position = Range.clip
-                ( p_position
-                        , ArmShoulderServo_MinPosition
-                        , ArmShoulderServo_MaxPosition
-                );
-        try {
-            if (v_servo_arm_shoulder != null) {
-                v_servo_arm_shoulder.setPosition(l_arm_shoulder_position);
-                return l_arm_shoulder_position;
-            } else {
-                return ServoErrorResultPosition;
-            }
-        }catch (Exception p_exeception)
+        if (v_servo_right_hand != null)
         {
-            m_warning_message("arm_sholder");
-            DbgLog.msg (p_exeception.getLocalizedMessage ());
-            return ServoErrorResultPosition;
+            v_servo_right_hand.setPosition (1.0 - l_position);
         }
 
-
-    } // m_arm_shoulder_position
-
-    //--------------------------------------------------------------------------
-    //
-    // arm_elbow_moveUp
-    //
-    /**
-     * move the arm elbow servo in the up Direction.
-     */
-    double arm_elbow_moveUp (boolean fast)
-    {
-        double l_temptarget;
-        if (fast) {
-            l_temptarget = a_arm_elbow_position() + ArmElbowServo_Delta_Fast;
-        }else{
-            l_temptarget = a_arm_elbow_position() + ArmElbowServo_Delta;
-        }
-        return m_arm_elbow_position(l_temptarget);
-    } // arm_elbow_moveUp
-
-
-    //--------------------------------------------------------------------------
-    //
-    // arm_elbow_moveDown
-    //
-    /**
-     * move the arm_shoulder servo in the down Direction.
-     */
-    double arm_elbow_moveDown (boolean fast)
-    {
-        double l_temptarget;
-        if (fast) {
-            l_temptarget = a_arm_elbow_position() - ArmElbowServo_Delta_Fast;
-        }else{
-            l_temptarget = a_arm_elbow_position() - ArmElbowServo_Delta;
-        }
-        return m_arm_elbow_position(l_temptarget);
-    } // arm_elbow_moveDown
-
-
-    //--------------------------------------------------------------------------
-    //
-    // a_arm_elbow_position
-    //
-    /**
-     * Access the arm_elbow position.
-     */
-    double a_arm_elbow_position ()
-    {
-
-        return l_arm_elbow_position;
-    } // a_arm_elbow_position
-
-
-    //--------------------------------------------------------------------------
-    //
-    // m_arm_elbow_position
-    //
-    /**
-     * Mutate the arm elbow position.
-     */
-    double m_arm_elbow_position (double p_position)
-    {
-        //
-        // Ensure the specific value is legal.
-        //
-        l_arm_elbow_position = Range.clip
-                ( p_position
-                        , ArmElbowServo_MinPosition
-                        , ArmElbowServo_MaxPosition
-                );
-        try {
-            if (v_servo_arm_elbow != null) {
-                v_servo_arm_elbow.setPosition(l_arm_elbow_position);
-                return l_arm_elbow_position;
-            } else {
-                return ServoErrorResultPosition;
-            }
-        }catch (Exception p_exeception)
-        {
-            m_warning_message("arm_elbow");
-            DbgLog.msg (p_exeception.getLocalizedMessage ());
-            return ServoErrorResultPosition;
-        }
-
-
-    } // m_arm_elbow_position
-
-
-    //--------------------------------------------------------------------------
-    //
-    // arm_wrist_moveLeft
-    //
-    /**
-     * move the arm wrist servo to the Left.
-     */
-    double arm_wrist_moveLeft (boolean fast)
-    {
-        double l_temptarget;
-        if (fast) {
-            l_temptarget = a_arm_wrist_position() + ArmWristServo_Delta_Fast;
-        } else{
-            l_temptarget = a_arm_wrist_position() + ArmWristServo_Delta;
-        }
-        return m_arm_wrist_position(l_temptarget);
-    } // arm_wrist_moveLeft
-
-
-    //--------------------------------------------------------------------------
-    //
-    // arm_wrist_moveRight
-    //
-    /**
-     * move the arm_wrist servo to the Right.
-     */
-    double arm_wrist_moveRight (boolean fast)
-    {
-        double l_temptarget;
-        if (fast) {
-            l_temptarget = a_arm_wrist_position() - ArmWristServo_Delta_Fast;
-        }else{
-            l_temptarget = a_arm_wrist_position() - ArmWristServo_Delta;
-        }
-        return m_arm_wrist_position(l_temptarget);
-    } // arm_wrist_moveRight
-
-
-    //--------------------------------------------------------------------------
-    //
-    // a_arm_elbow_position
-    //
-    /**
-     * Access the arm_wrist position.
-     */
-    double a_arm_wrist_position ()
-    {
-
-        return l_arm_wrist_position;
-    } // a_arm_wrist_position
-
-
-    //--------------------------------------------------------------------------
-    //
-    // m_arm_wrist_position
-    //
-    /**
-     * Mutate the arm wrist position.
-     */
-    double m_arm_wrist_position (double p_position)
-    {
-        //
-        // Ensure the specific value is legal.
-        //
-        l_arm_wrist_position = Range.clip
-                ( p_position
-                        , ArmWristServo_MinPosition
-                        , ArmWristServo_MaxPosition
-                );
-        try {
-            if (v_servo_arm_wrist != null) {
-                v_servo_arm_wrist.setPosition(l_arm_wrist_position);
-                return l_arm_wrist_position;
-            } else {
-                return ServoErrorResultPosition;
-            }
-        }catch (Exception p_exeception)
-        {
-            m_warning_message("arm_wrist");
-            DbgLog.msg (p_exeception.getLocalizedMessage ());
-            return ServoErrorResultPosition;
-        }
-
-
-    } // m_arm_elbow_position
+    } // m_hand_position
 
     //--------------------------------------------------------------------------
     //
@@ -1471,24 +962,85 @@ public class PushBotHardware extends OpMode
     /**
      * Open the hand to its fullest.
      */
-//    void open_hand ()
-//
-//    {
-//        //
-//        // Set the value.  The right hand value must be opposite of the left
-//        // value.
-//        //
-//        if (v_servo_left_hand != null)
-//        {
-//            v_servo_left_hand.setPosition (Servo.MAX_POSITION);
-//        }
-//        if (v_servo_right_hand != null)
-//        {
-//            v_servo_right_hand.setPosition (Servo.MIN_POSITION);
-//        }
-//
-//    } // open_hand
+    void open_hand ()
 
+    {
+        //
+        // Set the value.  The right hand value must be opposite of the left
+        // value.
+        //
+        if (v_servo_left_hand != null)
+        {
+            v_servo_left_hand.setPosition (Servo.MAX_POSITION);
+        }
+        if (v_servo_right_hand != null)
+        {
+            v_servo_right_hand.setPosition (Servo.MIN_POSITION);
+        }
 
+    } // open_hand
+
+    //--------------------------------------------------------------------------
+    //
+    // v_warning_generated
+    //
+    /**
+     * Indicate whether a message is a available to the class user.
+     */
+    private boolean v_warning_generated = false;
+
+    //--------------------------------------------------------------------------
+    //
+    // v_warning_message
+    //
+    /**
+     * Store a message to the user if one has been generated.
+     */
+    private String v_warning_message;
+
+    //--------------------------------------------------------------------------
+    //
+    // v_motor_left_drive
+    //
+    /**
+     * Manage the aspects of the left drive motor.
+     */
+    private DcMotor v_motor_left_drive;
+
+    //--------------------------------------------------------------------------
+    //
+    // v_motor_right_drive
+    //
+    /**
+     * Manage the aspects of the right drive motor.
+     */
+    private DcMotor v_motor_right_drive;
+
+    //--------------------------------------------------------------------------
+    //
+    // v_motor_left_arm
+    //
+    /**
+     * Manage the aspects of the left arm motor.
+     */
+    private DcMotor v_motor_left_arm;
+
+    //--------------------------------------------------------------------------
+    //
+    // v_servo_left_hand
+    //
+    /**
+     * Manage the aspects of the left hand servo.
+     */
+    private Servo v_servo_left_hand;
+
+    //--------------------------------------------------------------------------
+    //
+    // v_servo_right_hand
+    //
+    /**
+     * Manage the aspects of the right hand servo.
+     */
+    private Servo v_servo_right_hand;
 
 } // PushBotHardware

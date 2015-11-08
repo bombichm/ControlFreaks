@@ -247,7 +247,7 @@ public class PushBotAutoSensors extends PushBotTelemetrySensors
                 //
                 // Begin the next state.  Open the claw.
                 //
-                //open_hand ();
+                open_hand ();
 
                 //
                 // Transition.

@@ -12,8 +12,7 @@
     <item>ULTRASONIC_SENSOR</item>
     <item>MOTOR_CONTROLLER</item>
     <item>SERVO_CONTROLLER</item>
-    <!-- add this line back in to enable the MATRIX Controller -->
-    <!-- <item>MATRIX_CONTROLLER</item> -->
+    <item>MATRIX_CONTROLLER</item>
     <item>TOUCH_SENSOR_MULTIPLEXER</item>
     <item>COLOR_SENSOR</item>
     <item>NOTHING</item>
@@ -38,6 +37,7 @@
     <item>IR_SEEKER_V3</item>
     <item>ADAFRUIT_COLOR_SENSOR</item>
     <item>COLOR_SENSOR</item>
+    <item>GYRO</item>
     <item>I2C_DEVICE</item>
   </string-array>
     <string-array name="device_interface_module_options_array">

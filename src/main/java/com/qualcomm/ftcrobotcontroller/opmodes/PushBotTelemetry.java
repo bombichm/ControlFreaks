@@ -36,7 +36,6 @@ package com.qualcomm.ftcrobotcontroller.opmodes;
 public class PushBotTelemetry extends PushBotHardware
 
 {
-    String secondMessage = "N/A";
     //--------------------------------------------------------------------------
     //
     // PushBotTelemetry
@@ -78,36 +77,27 @@ public class PushBotTelemetry extends PushBotHardware
         //
         // Send telemetry data to the driver station.
         //
-        telemetry.addData ( "01", secondMessage);
         telemetry.addData
-            ( "02"
+            ( "01"
             , "Left Drive: "
                 + a_left_drive_power ()
                 + ", "
                 + a_left_encoder_count ()
             );
         telemetry.addData
-            ( "03"
+            ( "02"
             , "Right Drive: "
-                + a_right_drive_power()
+                + a_right_drive_power ()
                 + ", "
-                + a_right_encoder_count()
+                + a_right_encoder_count ()
+            );
+        telemetry.addData
+            ( "03"
+            , "Left Arm: " + a_left_arm_power ()
             );
         telemetry.addData
             ( "04"
-            , "Arm Shoulder: " + a_arm_shoulder_position()
-            );
-        telemetry.addData
-            ( "05"
-            , "Arm Elbow: " + a_arm_elbow_position()
-            );
-        telemetry.addData
-            ( "06"
-                    , "Arm Wrist: " + a_arm_wrist_position()
-            );
-        telemetry.addData
-            ( "07"
-                    , "RPA Base Position: " + a_rpabase_position()
+            , "Hand Position: " + a_hand_position ()
             );
 
     } // update_telemetry
@@ -125,14 +115,13 @@ public class PushBotTelemetry extends PushBotHardware
         //
         // Send telemetry data concerning gamepads to the driver station.
         //
-        telemetry.addData ("08", "GP1 Left: " + -gamepad1.left_stick_y);
-        telemetry.addData ("09", "GP1 Right: " + -gamepad1.right_stick_y);
-        telemetry.addData ("10", "GP2 Left: " + -gamepad2.left_stick_y);
-        telemetry.addData ("11", "GP2 X: " + gamepad2.x);
-        telemetry.addData ("12", "GP2 Y: " + gamepad2.y);
-        telemetry.addData ("13", "GP2 A: " + gamepad2.a);
-        telemetry.addData ("14", "GP1 LT: " + gamepad1.left_trigger);
-        telemetry.addData ("15", "GP1 RT: " + gamepad1.right_trigger);
+        telemetry.addData ("05", "GP1 Left: " + -gamepad1.left_stick_y);
+        telemetry.addData ("06", "GP1 Right: " + -gamepad1.right_stick_y);
+        telemetry.addData ("07", "GP2 Left: " + -gamepad2.left_stick_y);
+        telemetry.addData ("08", "GP2 X: " + gamepad2.x);
+        telemetry.addData ("09", "GP2 Y: " + gamepad2.y);
+        telemetry.addData ("10", "GP1 LT: " + gamepad1.left_trigger);
+        telemetry.addData ("11", "GP1 RT: " + gamepad1.right_trigger);
 
     } // update_gamepad_telemetry
 
@@ -150,20 +139,6 @@ public class PushBotTelemetry extends PushBotHardware
 
     } // set_first_message
 
-    //--------------------------------------------------------------------------
-    //
-    // set_first_message
-    //
-    /**
-     * Update the telemetry's first message with the specified message.
-     */
-    public void set_second_message (String p_message)
-
-    {
-        secondMessage = p_message;
-
-
-    } // set_first_message
     //--------------------------------------------------------------------------
     //
     // set_error_message

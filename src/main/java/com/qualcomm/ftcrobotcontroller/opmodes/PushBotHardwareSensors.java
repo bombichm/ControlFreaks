@@ -167,14 +167,14 @@ public class PushBotHardwareSensors extends PushBotTelemetry
         //
         if (is_touch_sensor_pressed ())
         {
-            m_rpa_arm_power(0.0f);
+            m_left_arm_power (0.0f);
         }
         //
         // Move the arm upward at full power.
         //
         else
         {
-            m_rpa_arm_power (1.0f);
+            m_left_arm_power (1.0f);
         }
 
         //
