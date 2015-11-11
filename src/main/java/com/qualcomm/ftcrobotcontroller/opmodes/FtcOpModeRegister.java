@@ -63,9 +63,10 @@ public class FtcOpModeRegister implements OpModeRegister {
     manager.register("HTRGBExample", HTRGBExample.class);
     manager.register ("Control Freaks Auto", CFPushBotAuto.class);
     manager.register ("Control Freaks Manual", CFPushBotManual.class);
+    manager.register ("CF Auto Blue 4", CFPushBotAuto_Blue4.class);
 
-        //manager.register("DetectColor", DetectColor.class);
-       // manager.register("LinearDetectColor", LinearDetectColor.class);
+    manager.register("DetectColor", DetectColor.class);
+    manager.register("LinearDetectColor", LinearDetectColor.class);
 
 
     /*

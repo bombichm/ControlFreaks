@@ -23,9 +23,11 @@ package com.qualcomm.ftcrobotcontroller.opmodes;
 
 public class CFPushBotHardware extends OpMode {
 
-    public static final double driveInches_ticksPerInch = 182.35;
-    public static final double driveInches_ticksSlowDownHalf = 300;
-    public static final double driveInches_ticksSlowDownQuarter = 150;
+    private static final double driveInches_ticksPerInch = 182.35;
+    private static final double driveInches_ticksSlowDown1 = 300;
+    private static final double driveInches_ticksSlowDown2 = 150;
+    private static final float v_drive_power_slowdown1 = .5f;
+    private static final float v_drive_power_slowdown2 = .25f;
     //Global Vars to the class
     private static final double ServoErrorResultPosition = -0.0000000001;
     //RPA Base Varables
@@ -1078,15 +1080,100 @@ public class CFPushBotHardware extends OpMode {
 
     } // have_drive_encoders_reset
 
-    boolean rpa_arm_extended(){
+    private long v_drive_inches_ticks;
+    private float v_drive_inches_power;
+    public void drive_inches(float power,float inches){
+        //
+        // Tell the system that motor encoders will be used.  This call MUST
+        // be in this state and NOT the previous or the encoders will not
+        // work.  It doesn't need to be in subsequent states.
+        //
+        run_using_encoders ();
+        v_drive_inches_power = power;
+        v_drive_inches_ticks = Math.round(inches * driveInches_ticksPerInch);
+        //
+        // Start the drive wheel motors at full power.
+        //
+        set_drive_power (v_drive_inches_power, v_drive_inches_power);
+    }
+
+    public boolean drive_inches_complete(){
+
+
+        //
+        // Have the motor shafts turned the required amount?
+        //
+        // If they haven't, then the op-mode remains in this state (i.e this
+        // block will be executed the next time this method is called).
+        //
+        if (have_drive_encoders_reached (v_drive_inches_ticks - driveInches_ticksSlowDown1, v_drive_inches_ticks - driveInches_ticksSlowDown1))
+        {
+
+            //
+            // slow the motors to slowdown 1
+            //
+            if(v_drive_inches_power > v_drive_power_slowdown1) {
+                set_drive_power(v_drive_power_slowdown1, v_drive_power_slowdown1);
+            }
+        }else if (have_drive_encoders_reached (v_drive_inches_ticks - driveInches_ticksSlowDown2, v_drive_inches_ticks - driveInches_ticksSlowDown2))
+        {
+            //
+            // slow the motors to slowdown 2
+            //
+            if(v_drive_inches_power > v_drive_power_slowdown2) {
+                set_drive_power(v_drive_power_slowdown2, v_drive_power_slowdown2);
+            }
+
+        }else if (have_drive_encoders_reached (v_drive_inches_ticks , v_drive_inches_ticks ))
+        {
+            //
+            // Stop the motors.
+            //
+            set_drive_power (0.0f, 0.0f);
+            //
+            // Reset the encoders to ensure they are at a known good value.
+            //
+            reset_drive_encoders();
+            //
+            // Transition to the next state when this method is called
+            // again.
+            //
+            return true;
+        }
+        return false;
+    }
+
+    public boolean rpa_arm_extended(){
         if (v_sensor_touch_rpa_arm_extend != null) {
             return v_sensor_touch_rpa_arm_extend.isPressed();
         }else {
             return true;
         }
     }
+    private float v_turn_ticks_per_degree = 18.8f;
+    private long v_turn_degrees_ticks;
+    public void turn_degrees(int degrees){
+        run_using_encoders();
+        if (degrees > 0) {
+            v_turn_degrees_ticks = Math.round(degrees * v_turn_ticks_per_degree);
+            set_drive_power(-1.0f, 1.0f);
+        }else{
+            v_turn_degrees_ticks = Math.round((0 - degrees) * v_turn_ticks_per_degree);
+            set_drive_power(1.0f, -1.0f);
+        }
+    }
 
-    boolean rpa_arm_retracted(){
+    public boolean turn_complete(){
+        if (have_drive_encoders_reached (v_turn_degrees_ticks, v_turn_degrees_ticks))
+        {
+            set_drive_power (0.0f, 0.0f);
+            reset_drive_encoders ();
+            return true;
+        }
+        return false;
+    }
+
+   public boolean rpa_arm_retracted(){
         if (v_sensor_touch_rpa_arm_extend != null) {
             return v_sensor_touch_rpa_arm_retract.isPressed();
         }else {

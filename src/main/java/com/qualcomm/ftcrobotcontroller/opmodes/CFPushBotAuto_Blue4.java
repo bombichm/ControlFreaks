@@ -3,7 +3,7 @@ package com.qualcomm.ftcrobotcontroller.opmodes;
 /**
  * Created by adevries on 11/6/2015.
  */
-public class CFPushBotAuto extends CFPushBotTelemetry {
+public class CFPushBotAuto_Blue4 extends CFPushBotTelemetry {
 
     //--------------------------------------------------------------------------
     //
@@ -14,7 +14,7 @@ public class CFPushBotAuto extends CFPushBotTelemetry {
      *
      * The system calls this member when the class is instantiated.
      */
-    public CFPushBotAuto ()
+    public CFPushBotAuto_Blue4()
 
     {
         //
@@ -95,61 +95,51 @@ public class CFPushBotAuto extends CFPushBotTelemetry {
                 //Drive forward 74.5 inches Positive Power is forward
                 drive_inches(1.0f,74.5f);
                 v_state++;
-
                 break;
             //
             // Wait...
             //
             case 2:
+                //keep checking if we have reached the distance we need to reach
                 if (drive_inches_complete ())
                 {
-                    if (have_drive_encoders_reset ())
-                    {
-                        v_state++;
-                    }
+                    v_state++;
                 }
                 break;
             //
-            // Turn left until the encoders exceed the specified values.
+            // Turn right 90 degres.
             //
             case 3:
                 // positive is right turn
-                turn_degrees(90);
+               turn_degrees(90);
                 v_state++;
                 break;
             //
             // Wait...
             //
             case 4:
-                if (turn_complete ()){
-                    if (have_drive_encoders_reset ())
-                    {
-                        v_state++;
-                    }
+                if (turn_complete ());
+                {
+                    v_state++;
                 }
                 break;
 //            //
 //            // Turn right until the encoders exceed the specified values.
 //            //
-//            case 5:
-//                run_using_encoders ();
-//                set_drive_power (1.0f, -1.0f);
-//                if (have_drive_encoders_reached (2880, 2880))
-//                {
-//                    reset_drive_encoders ();
-//                    set_drive_power (0.0f, 0.0f);
-//                    v_state++;
-//                }
-//                break;
-//            //
-//            // Wait...
-//            //
-//            case 6:
-//                if (have_drive_encoders_reset ())
-//                {
-//                    v_state++;
-//                }
-//                break;
+            case 5:
+                drive_inches(1.0f,52.5f);
+                {
+
+                    v_state++;
+                }
+                break;
+
+            case 6:
+                if (drive_inches_complete())
+                {
+                    v_state++;
+                }
+               break;
 //            //
 //            // Perform no action - stay in this case until the OpMode is stopped.
 //            // This method will still be called regardless of the state machine.

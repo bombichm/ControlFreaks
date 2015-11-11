@@ -50,6 +50,7 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.widget.ImageButton;
 import android.widget.LinearLayout;
+import android.widget.FrameLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 import android.hardware.Camera;
@@ -67,7 +68,9 @@ import com.qualcomm.robotcore.util.Dimmer;
 import com.qualcomm.robotcore.util.ImmersiveMode;
 import com.qualcomm.robotcore.util.RobotLog;
 import com.qualcomm.robotcore.wifi.WifiDirectAssistant;
-
+//import com.qualcomm.ftcrobotcontroller.CameraPreview;
+import com.qualcomm.ftcrobotcontroller.opmodes.OpModeCamera;
+import com.qualcomm.ftcrobotcontroller.opmodes.LinearOpModeCamera;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.Serializable;
@@ -103,57 +106,55 @@ public class FtcRobotControllerActivity extends Activity {
 
   protected FtcEventLoop eventLoop;
 
-    /////////////////////////////////////////////////////////
+  /////////////////////////////////////////////////////////
   // ADDED FOR CAMERA!!!
 
-//  public void initPreview(final Camera camera, final OpModeCamera context, final Camera.PreviewCallback previewCallback) {
-//    runOnUiThread(new Runnable() {
-//      @Override
-//      public void run() {
-//        context.preview = new CameraPreview(FtcRobotControllerActivity.this, camera, previewCallback);
-//        FrameLayout previewLayout = (FrameLayout) findViewById(R.id.previewLayout);
-//        previewLayout.addView(context.preview);
-//      }
-//    });
-//  }
-//
-//  // poor coding style here.  Shouldn't have to duplicate these routines for regular and linear OpModes.
-//  public void initPreviewLinear(final Camera camera, final LinearOpModeCamera context, final Camera.PreviewCallback previewCallback) {
-//    runOnUiThread(new Runnable() {
-//      @Override
-//      public void run() {
-//        context.preview = new CameraPreview(FtcRobotControllerActivity.this, camera, previewCallback);
-//        FrameLayout previewLayout = (FrameLayout) findViewById(R.id.previewLayout);
-//        previewLayout.addView(context.preview);
-//      }
-//    });
-//  }
-//
-//
-//  public void removePreview(final OpModeCamera context) {
-//    runOnUiThread(new Runnable() {
-//      @Override
-//      public void run() {
-//        FrameLayout previewLayout = (FrameLayout) findViewById(R.id.previewLayout);
-//        previewLayout.removeAllViews();
-//      }
-//    });
-//  }
-//
-//  public void removePreviewLinear(final LinearOpModeCamera context) {
-//    runOnUiThread(new Runnable() {
-//      @Override
-//      public void run() {
-//        FrameLayout previewLayout = (FrameLayout) findViewById(R.id.previewLayout);
-//        previewLayout.removeAllViews();
-//      }
-//    });
-//  }
+  public void initPreview(final Camera camera, final OpModeCamera context, final Camera.PreviewCallback previewCallback) {
+    runOnUiThread(new Runnable() {
+      @Override
+      public void run() {
+        context.preview = new CameraPreview(FtcRobotControllerActivity.this, camera, previewCallback);
+        FrameLayout previewLayout = (FrameLayout) findViewById(R.id.previewLayout);
+        previewLayout.addView(context.preview);
+      }
+    });
+  }
+
+  // poor coding style here.  Shouldn't have to duplicate these routines for regular and linear OpModes.
+  public void initPreviewLinear(final Camera camera, final LinearOpModeCamera context, final Camera.PreviewCallback previewCallback) {
+    runOnUiThread(new Runnable() {
+      @Override
+      public void run() {
+        context.preview = new CameraPreview(FtcRobotControllerActivity.this, camera, previewCallback);
+        FrameLayout previewLayout = (FrameLayout) findViewById(R.id.previewLayout);
+        previewLayout.addView(context.preview);
+      }
+    });
+  }
+
+
+  public void removePreview(final OpModeCamera context) {
+    runOnUiThread(new Runnable() {
+      @Override
+      public void run() {
+        FrameLayout previewLayout = (FrameLayout) findViewById(R.id.previewLayout);
+        previewLayout.removeAllViews();
+      }
+    });
+  }
+
+  public void removePreviewLinear(final LinearOpModeCamera context) {
+    runOnUiThread(new Runnable() {
+      @Override
+      public void run() {
+        FrameLayout previewLayout = (FrameLayout) findViewById(R.id.previewLayout);
+        previewLayout.removeAllViews();
+      }
+    });
+  }
 
   // END CAMERA ADD!!!
   //////////////////////////////////////////////
-
-
 
   protected class RobotRestarter implements Restarter {
 
