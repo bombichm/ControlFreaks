@@ -6,7 +6,7 @@ import com.qualcomm.robotcore.hardware.DcMotor;
 
 /**
  * TeleOp Mode
- * <p/>
+ *
  * Enables control of the robot via the gamepad
  */
 public class LinearDetectColor extends LinearOpModeCamera {

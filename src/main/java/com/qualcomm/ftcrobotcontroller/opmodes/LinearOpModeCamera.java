@@ -17,7 +17,7 @@ import java.io.ByteArrayOutputStream;
 
 /**
  * TeleOp Mode
- * <p/>
+ *
  * Enables control of the robot via the gamepad
  */
 public class LinearOpModeCamera extends LinearOpMode {

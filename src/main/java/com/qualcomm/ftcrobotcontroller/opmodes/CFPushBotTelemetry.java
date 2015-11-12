@@ -82,10 +82,10 @@ public class CFPushBotTelemetry extends CFPushBotHardware {
                         , "RPA Arm Position: " + a_rpa_arm_power() + ":" + rpa_arm_extended() + ":" + rpa_arm_retracted()
                 );
         telemetry.addData(
-                "09", "Color RGBA: " + sensor_color_getLast_rgb()[0]
-                        + "," + sensor_color_getLast_rgb()[1]
-                        + "," + sensor_color_getLast_rgb()[2]
-                        + "," + sensor_color_getLast_rgb()[3]
+                "09", "Color RGBA: " + sensor_colorLegecy_getLast_rgb()[0]
+                        + "," + sensor_colorLegecy_getLast_rgb()[1]
+                        + "," + sensor_colorLegecy_getLast_rgb()[2]
+                        + "," + sensor_colorLegecy_getLast_rgb()[3]
         );
         telemetry.addData(
                 "10", "Gyro: " + sensor_gyro_getLast_heading()

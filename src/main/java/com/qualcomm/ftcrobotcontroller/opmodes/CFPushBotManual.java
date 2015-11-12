@@ -45,8 +45,7 @@ public class CFPushBotManual extends CFPushBotTelemetry{
     @Override public void loop ()
 
     {
-        //Toggle our heartbeat led
-        heartbeat_tick();
+
         //----------------------------------------------------------------------
         //
         // DC Motors
@@ -149,19 +148,6 @@ public class CFPushBotManual extends CFPushBotTelemetry{
             arm_wrist_moveRight(false);
         }
 
-        if(gamepad1.left_stick_button){
-            sensor_color_read_rgb();
-            set_second_message("read_rgb");
-        }
-        if(gamepad1.right_stick_button){
-            //sensor_gyro_getLast_heading();
-            //set_second_message("read_gyro");
-            //Toggle the led Color Sensor
-           sensor_color_led_enable(!sensor_color_led_on());
-            set_second_message("toggle color led");
-            blueled_toggle();
-            redled_toggle();
-        }
         //
         // Send telemetry data to the driver station.
         //

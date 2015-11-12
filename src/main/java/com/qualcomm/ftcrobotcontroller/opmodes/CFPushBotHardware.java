@@ -11,6 +11,7 @@ package com.qualcomm.ftcrobotcontroller.opmodes;
         import com.qualcomm.robotcore.hardware.DcMotorController;
         import com.qualcomm.robotcore.hardware.I2cDevice;
         import com.qualcomm.robotcore.hardware.LED;
+        import com.qualcomm.robotcore.hardware.OpticalDistanceSensor;
         import com.qualcomm.robotcore.hardware.Servo;
         import com.qualcomm.robotcore.hardware.TouchSensor;
         import com.qualcomm.robotcore.util.Range;
@@ -22,6 +23,8 @@ package com.qualcomm.ftcrobotcontroller.opmodes;
         import com.qualcomm.robotcore.hardware.ColorSensor;
 
 public class CFPushBotHardware extends OpMode {
+
+    private long v_loop_ticks = 0;
 
     private static final double driveInches_ticksPerInch = 182.35;
     private static final double driveInches_ticksSlowDown1 = 300;
@@ -75,20 +78,31 @@ public class CFPushBotHardware extends OpMode {
     private static final double ArmWristServo_MaxPosition = 0.99;
     private double l_arm_wrist_position = 0.45D;  //init arm elbow Position
 
+    /**
+     * Used in Manual mode to set min trigger pull for slow wrist action
+     *
+     */
     public static final double ArmWristTrigger_Threshold = 0.2;
+    /**
+     * Used in Manual mode to set min trigger pull for fast wrist action
+     *
+     */
     public static final double ArmWristTrigger_Threshold_Fast = 0.9;
 
     //Legecy Color Sensor
-    private ColorSensor v_sensor_color;
-    private boolean v_sensor_color_led_enabled = false;
+    private ColorSensor v_sensor_colorLegecy;
+    private boolean v_sensor_colorLegecy_led_enabled = false;
     // v_sensor_color_hsvValues is an array that will hold the hue, saturation, and value information.
-    float v_sensor_color_hsvValues[] = {0F,0F,0F};
+    private float v_sensor_colorLegecy_hsvValues[] = {0F,0F,0F};
     // values is a reference to the v_sensor_color_hsvValues array.
-    final float v_sensor_color_values[] = v_sensor_color_hsvValues;
+    private final float v_sensor_colorLegecy_values[] = v_sensor_colorLegecy_hsvValues;
+    private int v_sensor_colorLegecy_rgbValues[] = {0,0,0,0};
 
-    int v_sensor_color_rgbValues[] = {0,0,0,0};
+    //Legecy OSD Sensor
+    private OpticalDistanceSensor v_sensor_odsLegecy;
+    private boolean v_sensor_odsLegecy_enabled = false;
 
-    int v_sensor_gyro_heading = -1;
+    private int v_sensor_gyro_heading = -1;
     private CFSensorGY521 v_sensor_gy521;
 
     private LED v_led_heartbeat;
@@ -350,11 +364,11 @@ public class CFPushBotHardware extends OpMode {
         try
         {
             // get a reference to our ColorSensor object.
-            v_sensor_color = hardwareMap.colorSensor.get("color1");
+            v_sensor_colorLegecy = hardwareMap.colorSensor.get("color1");
             // bEnabled represents the state of the LED.
-            boolean v_sensor_color_led_enabled = true;
+            boolean v_sensor_colorLegecy_led_enabled = true;
             // turn the LED on in the beginning, just so user will know that the sensor is active.
-            v_sensor_color.enableLed(false);
+            v_sensor_colorLegecy.enableLed(false);
 
         }
         catch (Exception p_exeception)
@@ -362,10 +376,35 @@ public class CFPushBotHardware extends OpMode {
             m_warning_message ("color1");
             DbgLog.msg (p_exeception.getLocalizedMessage ());
 
-            v_sensor_color = null;
+            v_sensor_colorLegecy = null;
         }
 
+        try
+        {
+            v_sensor_odsLegecy = hardwareMap.opticalDistanceSensor.get ("ods1");
+        }
+        catch (Exception p_exeception)
+        {
+            try
+            {
+                v_sensor_odsLegecy = hardwareMap.opticalDistanceSensor.get
+                        ( "ods1"
+                        );
+            }
+            catch (Exception p_exeception_eopd)
+            {
 
+                m_warning_message ("sensor_odsLegecy");
+                DbgLog.msg
+                        ( "Can't map sensor_odsLegecy "
+                                        + p_exeception_eopd.getLocalizedMessage ()
+                                        + ").\n"
+                        );
+
+                v_sensor_odsLegecy = null;
+
+            }
+        }
 
     } // init
 
@@ -453,13 +492,14 @@ public class CFPushBotHardware extends OpMode {
     @Override public void loop ()
 
     {
+
         //
         // Only actions that are common to all OpModes (i.e. both auto and\
         // manual) should be implemented here.
         //
         // This method is designed to be overridden.
         //
-
+        loop_tick();
     } // loop
 
     //--------------------------------------------------------------------------
@@ -478,6 +518,15 @@ public class CFPushBotHardware extends OpMode {
         //
 
     } // stop
+
+
+    /** called each time through the loop needed to sync hardware and look for status changes
+     *
+     */
+    public void loop_tick(){
+        v_loop_ticks++;
+        heartbeat_tick();
+    }
 
     //--------------------------------------------------------------------------
     //
@@ -660,11 +709,11 @@ public class CFPushBotHardware extends OpMode {
     {
         if (v_motor_left_drive != null)
         {
-            if (v_motor_left_drive.getChannelMode () ==
+            if (v_motor_left_drive.getMode() ==
                     DcMotorController.RunMode.RESET_ENCODERS)
             {
-                v_motor_left_drive.setChannelMode
-                        ( DcMotorController.RunMode.RUN_WITHOUT_ENCODERS
+                v_motor_left_drive.setMode
+                        (DcMotorController.RunMode.RUN_WITHOUT_ENCODERS
                         );
             }
         }
@@ -683,11 +732,11 @@ public class CFPushBotHardware extends OpMode {
     {
         if (v_motor_right_drive != null)
         {
-            if (v_motor_right_drive.getChannelMode () ==
+            if (v_motor_right_drive.getMode() ==
                     DcMotorController.RunMode.RESET_ENCODERS)
             {
-                v_motor_right_drive.setChannelMode
-                        ( DcMotorController.RunMode.RUN_WITHOUT_ENCODERS
+                v_motor_right_drive.setMode
+                        (DcMotorController.RunMode.RUN_WITHOUT_ENCODERS
                         );
             }
         }
@@ -724,8 +773,8 @@ public class CFPushBotHardware extends OpMode {
     {
         if (v_motor_left_drive != null)
         {
-            v_motor_left_drive.setChannelMode
-                    ( DcMotorController.RunMode.RESET_ENCODERS
+            v_motor_left_drive.setMode
+                    (DcMotorController.RunMode.RESET_ENCODERS
                     );
         }
 
@@ -743,8 +792,8 @@ public class CFPushBotHardware extends OpMode {
     {
         if (v_motor_right_drive != null)
         {
-            v_motor_right_drive.setChannelMode
-                    ( DcMotorController.RunMode.RESET_ENCODERS
+            v_motor_right_drive.setMode
+                    (DcMotorController.RunMode.RESET_ENCODERS
                     );
         }
 
@@ -1669,6 +1718,11 @@ public class CFPushBotHardware extends OpMode {
 
     } // m_arm_elbow_position
 
+    /**
+     * ticks the heartbeat which should happen every time though our loop
+     * the heartbeat is wired to the Device Interface Module and is used to make sure our loop is still running
+     */
+
     public void heartbeat_tick(){
         v_led_heartbeat_ticks++;
         if (v_led_heartbeat_ticks > v_led_heartbeat_tickPerToggle){
@@ -1677,7 +1731,7 @@ public class CFPushBotHardware extends OpMode {
         }
     }
 
-    public boolean heartbeat_toggle () {
+    private boolean heartbeat_toggle () {
         if (v_led_heartbeat != null) {
             if (v_led_heartbeat_enabled) {
                 v_led_heartbeat_enabled = false;
@@ -1691,6 +1745,50 @@ public class CFPushBotHardware extends OpMode {
         }
 
     }
+
+    /**
+     * Turn on the red led located in the Device Interface Module
+     * @return returns true is successfull in turning on the led returns false on error
+     */
+    public boolean redled_on () {
+        try {
+            if (v_dim != null) {
+                v_dim.setLED(1, true);
+                return true;
+            }
+            return false;
+        }catch (Exception p_exeception)
+        {
+            m_warning_message("dim redled");
+            DbgLog.msg (p_exeception.getLocalizedMessage ());
+            return false;
+        }
+    }
+
+    /**
+     * Turn off the red led located in the Device Interface Module
+     * @return returns true is successfull in turning on the led returns false on error
+     */
+    public boolean redled_off () {
+        try {
+            if (v_dim != null) {
+                v_dim.setLED(1, false);
+                return true;
+            }
+            return false;
+        }catch (Exception p_exeception)
+        {
+            m_warning_message("dim redled");
+            DbgLog.msg (p_exeception.getLocalizedMessage ());
+            return false;
+        }
+    }
+
+    /**
+     * Toggles the current state of the red led located in the Device Interface Module
+     * <p>calling the function repeataly will give a blink effect.
+     * @return returns true is successfull in turning on the led returns false on error
+     */
 
     public boolean redled_toggle () {
         try {
@@ -1713,6 +1811,51 @@ public class CFPushBotHardware extends OpMode {
             return false;
         }
     }
+
+    /**
+     * Turn on the blue led located in the Device Interface Module
+     * @return returns true is successfull in turning on the led returns false on error
+     */
+    public boolean blueled_on () {
+        try {
+            if (v_dim != null) {
+                v_dim.setLED(2, true);
+                return true;
+            }
+            return false;
+        }catch (Exception p_exeception)
+        {
+            m_warning_message("dim blueled");
+            DbgLog.msg (p_exeception.getLocalizedMessage ());
+            return false;
+        }
+    }
+
+    /**
+     * Turn off the blue led located in the Device Interface Module
+     * @return returns true is successfull in turning on the led returns false on error
+     */
+    public boolean blueled_off () {
+        try {
+            if (v_dim != null) {
+                v_dim.setLED(2, false);
+                return true;
+            }
+            return false;
+        }catch (Exception p_exeception)
+        {
+            m_warning_message("dim blueled");
+            DbgLog.msg (p_exeception.getLocalizedMessage ());
+            return false;
+        }
+    }
+
+
+
+    /**
+     * Toggle the blue led located in the Device Interface Module
+     * @return returns true is successfull in turning on the led returns false on error
+     */
     public boolean blueled_toggle () {
         try {
             if (v_dim != null) {
@@ -1735,21 +1878,17 @@ public class CFPushBotHardware extends OpMode {
         }
     }
 
-    boolean sensor_color_led_on () {
-        return v_sensor_color_led_enabled;
-    }
-
-    //--------------------------------------------------------------------------
+     //--------------------------------------------------------------------------
     //
-    // sensor_color_led_enable
+    // sensor_legecyColor_led
     //
 
-    boolean sensor_color_led_enable (boolean enable)
+    private boolean sensor_colorLegecy_led (boolean enable)
     {
         try {
-            if (v_sensor_color != null) {
-                v_sensor_color_led_enabled = enable;
-                v_sensor_color.enableLed(enable);
+            if (v_sensor_colorLegecy != null) {
+                v_sensor_colorLegecy_led_enabled = enable;
+                v_sensor_colorLegecy.enableLed(enable);
                 return enable;
             } else {
                 return false;
@@ -1762,7 +1901,7 @@ public class CFPushBotHardware extends OpMode {
         }
 
 
-    } // color_led_enabled
+    } // sensor_legecyColor_led
 
     //GetgyroHeading
     int sensor_gyro_get_heading(){
@@ -1789,59 +1928,161 @@ public class CFPushBotHardware extends OpMode {
         }
     }
 
-    int[] sensor_color_read_rgb(){
+    /**
+     * Enable the Legecy Color Sensor
+     * @return returns true is successfull returns false on error
+     */
+    public boolean sensor_colorLegecy_start(){
         try{
             // convert the RGB values to HSV values.
-            if(v_sensor_color_rgbValues !=null) {
+            if(v_sensor_colorLegecy_rgbValues !=null) {
+                //turn on the led this is the only way legecy color will detect anything
+                sensor_colorLegecy_led(true);
+                return true;
+            }
+            return false;
+        }catch (Exception p_exeception)
+        {
+            m_warning_message("sensor_colorLegecy");
+            DbgLog.msg (p_exeception.getLocalizedMessage ());
+            return false;
+        }
+    }
+    /**
+     * Disables the Legecy Color Sensor
+     * @return returns true is successfull returns false on error
+     */
+    public boolean sensor_colorLegecy_stop(){
+        try{
+            // convert the RGB values to HSV values.
+            if(v_sensor_colorLegecy_rgbValues !=null) {
+                //turn on the led this is the only way legecy color will detect anything
+                sensor_colorLegecy_led(false);
+                return true;
+            }
+            return false;
+        }catch (Exception p_exeception)
+        {
+            m_warning_message("sensor_colorLegecy");
+            DbgLog.msg (p_exeception.getLocalizedMessage ());
+            return false;
+        }
+    }
+
+    private int[] sensor_colorLegecy_read_rgb(){
+        try{
+            // convert the RGB values to HSV values.
+            if(v_sensor_colorLegecy_rgbValues !=null) {
                 //v_sensor_color.enableLed(true);
                 // wait one cycle.
                 //waitOneFullHardwareCycle();
-                v_sensor_color_rgbValues[0] = v_sensor_color.red();
-                v_sensor_color_rgbValues[1] = v_sensor_color.green();
-                v_sensor_color_rgbValues[2] = v_sensor_color.blue();
-                v_sensor_color_rgbValues[3] = v_sensor_color.alpha();
+                v_sensor_colorLegecy_rgbValues[0] = v_sensor_colorLegecy.red();
+                v_sensor_colorLegecy_rgbValues[1] = v_sensor_colorLegecy.green();
+                v_sensor_colorLegecy_rgbValues[2] = v_sensor_colorLegecy.blue();
+                v_sensor_colorLegecy_rgbValues[3] = v_sensor_colorLegecy.alpha();
                 // wait one cycle.
                 //waitOneFullHardwareCycle();
                // v_sensor_color.enableLed(false);
             }
             //Color.RGBToHSV(v_sensor_color.red(), v_sensor_color.green(), v_sensor_color.blue(), v_sensor_color_hsvValues);
-            return v_sensor_color_rgbValues;
+            return v_sensor_colorLegecy_rgbValues;
 
         }catch (Exception p_exeception)
         {
-            m_warning_message("sensor_color");
+            m_warning_message("sensor_colorLegecy");
             DbgLog.msg (p_exeception.getLocalizedMessage ());
-            return v_sensor_color_rgbValues;
+            return v_sensor_colorLegecy_rgbValues;
         }
     }
 
 
-    int[] sensor_color_getLast_rgb(){
+    public int[] sensor_colorLegecy_getLast_rgb(){
         try{
-            return v_sensor_color_rgbValues;
+            return v_sensor_colorLegecy_rgbValues;
 
         }catch (Exception p_exeception)
         {
-            m_warning_message("sensor_color");
+            m_warning_message("sensor_colorLegecy");
             DbgLog.msg (p_exeception.getLocalizedMessage ());
-            return v_sensor_color_rgbValues;
+            return v_sensor_colorLegecy_rgbValues;
         }
     }
 
 
-    public void waitOneFullHardwareCycle() throws InterruptedException {
-        this.waitForNextHardwareCycle();
-        Thread.sleep(1L);
-        this.waitForNextHardwareCycle();
-    }
+    //osd Legecy Sensor Methods
 
-    public void waitForNextHardwareCycle() throws InterruptedException {
-        synchronized(this) {
-            this.wait();
+    //--------------------------------------------------------------------------
+    //
+    // a_ods_light_detected
+    //
+    /**
+     * Access the amount of light detected by the Optical Distance Sensor.
+     */
+    private double a_ods_light_detected ()
+
+    {
+        double l_return = 0.0;
+
+        if (v_sensor_odsLegecy != null)
+        {
+            v_sensor_odsLegecy.getLightDetected ();
         }
+
+        return l_return;
+
+    } // a_ods_light_detected
+
+    public boolean sensor_odsLegecy_white_tape_detected(){
+        return a_ods_white_tape_detected();
     }
 
-    public void sleep(long milliseconds) throws InterruptedException {
-        Thread.sleep(milliseconds);
-    }
+    //--------------------------------------------------------------------------
+    //
+    // a_ods_white_tape_detected
+    //
+    /**
+     * Access whether the EOP is detecting white tape.
+     */
+    private boolean a_ods_white_tape_detected ()
+    {
+        //
+        // Assume not.
+        //
+        boolean l_return = false;
+
+        if (v_sensor_odsLegecy != null)
+        {
+            //
+            // Is the amount of light detected above the threshold for white
+            // tape?
+            //
+            if (v_sensor_odsLegecy.getLightDetected () > 0.8)
+            {
+                l_return = true;
+            }
+        }
+
+        //
+        // Return
+        //
+        return l_return;
+
+    } // a_ods_white_tape_detected
+
+//Don't use these inless we are in linerOpMode
+//    public void waitOneFullHardwareCycle() throws InterruptedException {
+//        this.waitForNextHardwareCycle();
+//        Thread.sleep(1L);
+//        this.waitForNextHardwareCycle();
+//    }
+//
+//    public void waitForNextHardwareCycle() throws InterruptedException {
+//        synchronized(this) {
+//            this.wait();
+//        }
+//    }
+//
+//    public void sleep(long milliseconds) throws InterruptedException {
+//        Thread.sleep(milliseconds);
+//    }
 }

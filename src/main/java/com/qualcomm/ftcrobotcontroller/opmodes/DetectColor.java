@@ -4,7 +4,7 @@ import android.graphics.Bitmap;
 
 /**
  * TeleOp Mode
- * <p/>
+ *
  * Enables control of the robot via the gamepad
  */
 public class DetectColor extends OpModeCamera {
