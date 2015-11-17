@@ -9,25 +9,11 @@
         <dex dex="D:\workspaces\DE\FTCRobotics\ControlFreaks\build\intermediates\pre-dexed\debug\classes-b5680e33e44c557befd6bdf2cf0895f648c92203.jar" />
     </item>
     <item
-        jar="D:\workspaces\DE\FTCRobotics\ControlFreaks\build\intermediates\exploded-aar\ModernRobotics-release\jars\classes.jar"
-        jumboMode="false"
-        revision="21.1.2"
-        sha1="ad4adcdf8eb6ff2b3b4fe9f1d676f099db621d60">
-        <dex dex="D:\workspaces\DE\FTCRobotics\ControlFreaks\build\intermediates\pre-dexed\debug\classes-ff77bbf18c26fb9a2a6651e2ceec170b682aef0c.jar" />
-    </item>
-    <item
         jar="D:\workspaces\DE\FTCRobotics\ControlFreaks\build\intermediates\exploded-aar\RobotCore-release\jars\classes.jar"
         jumboMode="false"
         revision="21.1.2"
         sha1="2ec6f06847bccfe30fb8f8f75ce888721e4fd275">
         <dex dex="D:\workspaces\DE\FTCRobotics\ControlFreaks\build\intermediates\pre-dexed\debug\classes-203415960b2ebcec5e33b67014f9d7f3f1d5c549.jar" />
-    </item>
-    <item
-        jar="D:\workspaces\DE\FTCRobotics\ControlFreaks\build\intermediates\exploded-aar\FtcCommon-release\jars\classes.jar"
-        jumboMode="false"
-        revision="21.1.2"
-        sha1="6da7d9bc8c9a82321450b6b4273d1746b6cade21">
-        <dex dex="D:\workspaces\DE\FTCRobotics\ControlFreaks\build\intermediates\pre-dexed\debug\classes-df60aea54d76eddd007dcf32866f099840977622.jar" />
     </item>
     <item
         jar="D:\workspaces\DE\FTCRobotics\ControlFreaks\build\intermediates\exploded-aar\Analytics-release\jars\classes.jar"
@@ -37,11 +23,25 @@
         <dex dex="D:\workspaces\DE\FTCRobotics\ControlFreaks\build\intermediates\pre-dexed\debug\classes-2869c06f513a730dbfe0184d7ebe7db5bedfcef3.jar" />
     </item>
     <item
+        jar="D:\workspaces\DE\FTCRobotics\ControlFreaks\build\intermediates\exploded-aar\FtcCommon-release\jars\classes.jar"
+        jumboMode="false"
+        revision="21.1.2"
+        sha1="6da7d9bc8c9a82321450b6b4273d1746b6cade21">
+        <dex dex="D:\workspaces\DE\FTCRobotics\ControlFreaks\build\intermediates\pre-dexed\debug\classes-df60aea54d76eddd007dcf32866f099840977622.jar" />
+    </item>
+    <item
         jar="D:\workspaces\DE\FTCRobotics\ControlFreaks\build\intermediates\exploded-aar\Hardware-release\jars\classes.jar"
         jumboMode="false"
         revision="21.1.2"
         sha1="55ecd0b0517650a2cffd06137a40de8af3bbbde3">
         <dex dex="D:\workspaces\DE\FTCRobotics\ControlFreaks\build\intermediates\pre-dexed\debug\classes-a3b38cb9ff38aae2456fcd52d1dd291d322b0330.jar" />
+    </item>
+    <item
+        jar="D:\workspaces\DE\FTCRobotics\ControlFreaks\build\intermediates\exploded-aar\ModernRobotics-release\jars\classes.jar"
+        jumboMode="false"
+        revision="21.1.2"
+        sha1="ad4adcdf8eb6ff2b3b4fe9f1d676f099db621d60">
+        <dex dex="D:\workspaces\DE\FTCRobotics\ControlFreaks\build\intermediates\pre-dexed\debug\classes-ff77bbf18c26fb9a2a6651e2ceec170b682aef0c.jar" />
     </item>
 
 </items>

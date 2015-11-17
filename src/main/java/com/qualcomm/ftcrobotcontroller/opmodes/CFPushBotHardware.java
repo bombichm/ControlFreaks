@@ -9,6 +9,8 @@ package com.qualcomm.ftcrobotcontroller.opmodes;
         import com.qualcomm.robotcore.eventloop.opmode.OpMode;
         import com.qualcomm.robotcore.hardware.DcMotor;
         import com.qualcomm.robotcore.hardware.DcMotorController;
+        import com.qualcomm.robotcore.hardware.DigitalChannelController;
+        import com.qualcomm.robotcore.hardware.GyroSensor;
         import com.qualcomm.robotcore.hardware.I2cDevice;
         import com.qualcomm.robotcore.hardware.LED;
         import com.qualcomm.robotcore.hardware.OpticalDistanceSensor;
@@ -21,6 +23,10 @@ package com.qualcomm.ftcrobotcontroller.opmodes;
         import com.qualcomm.robotcore.util.TypeConversion;
 //import com.qualcomm.ftcrobotcontroller.opmodes.ColorSensorDriver;
         import com.qualcomm.robotcore.hardware.ColorSensor;
+
+        import org.usfirst.ControlFreaks.AdafruitLEDBackpack7Seg;
+
+        import java.util.concurrent.locks.Lock;
 
 public class CFPushBotHardware extends OpMode {
 
@@ -98,20 +104,31 @@ public class CFPushBotHardware extends OpMode {
     private final float v_sensor_colorLegecy_values[] = v_sensor_colorLegecy_hsvValues;
     private int v_sensor_colorLegecy_rgbValues[] = {0,0,0,0};
 
+    //Adafruit RGB Sensor
+    private ColorSensor v_sensor_color_i2c;
+    private static final int v_sensor_color_i2c_led_pin = 1;
+    // bEnabled represents the state of the LED.
+    private boolean v_sensor_color_i2c_led_enabled = false;
+    //red, green, blue, alpha
+    private int v_sensor_color_i2c_rgbaValues[]= {0,0,0,0};
+
     //Legecy OSD Sensor
     private OpticalDistanceSensor v_sensor_odsLegecy;
     private boolean v_sensor_odsLegecy_enabled = false;
 
-    private int v_sensor_gyro_heading = -1;
-    private CFSensorGY521 v_sensor_gy521;
+   //Modern Robotics gyro1
+    GyroSensor v_sensor_gyro;
+    private int v_sensor_gyro_x, v_sensor_gyro_y, v_sensor_gyro_z = 0;
+    private int v_sensor_gyro_heading = 0;
 
     private LED v_led_heartbeat;
     private boolean v_led_heartbeat_enabled = false;
-    private final int v_led_heartbeat_tickPerToggle = 20;
+    private  static final int v_led_heartbeat_tickPerToggle = 20;
     private int v_led_heartbeat_ticks = 0;
 
     private DeviceInterfaceModule v_dim;
 
+    private AdafruitLEDBackpack7Seg v_ledseg;
     //--------------------------------------------------------------------------
     //
     // v_motor_left_drive
@@ -201,30 +218,33 @@ public class CFPushBotHardware extends OpMode {
         //
         //Connect the Core Interface Device or Dim
         try {
-            if(v_dim !=null) {
+
                 // set up the hardware devices we are going to use
-                v_dim = hardwareMap.deviceInterfaceModule.get("dim");
-            }
+            v_dim = hardwareMap.deviceInterfaceModule.get("dim");
+
 
         }catch (Exception p_exeception)
         {
-            m_warning_message ("dim");
-            DbgLog.msg (p_exeception.getLocalizedMessage ());
+            debugLogException("dim","missing",p_exeception);
 
             v_dim = null;
         }
 
-        //if we have a dim then connect to the gyro
-        try {
-            //I2cDevice ic2GY521 = hardwareMap.i2cDevice.get("gy521");
-            v_sensor_gy521 = new CFSensorGY521(v_dim,5);
 
+        try {
+            // get a reference to our GyroSensor object.
+            v_sensor_gyro = hardwareMap.gyroSensor.get("gyro1");
+            // calibrate the gyro.
+            v_sensor_gyro.calibrate();
+            // make sure the gyro is calibrated.
+            while (v_sensor_gyro.isCalibrating())  {
+                Thread.sleep(50);
+            }
         }catch(Exception p_exeception){
 
-            m_warning_message ("dim gy-521");
-            DbgLog.msg (p_exeception.getLocalizedMessage ());
-
-            v_dim = null;
+            m_warning_message ("gyro1");
+            DbgLog.msg(p_exeception.getLocalizedMessage());
+            v_sensor_gyro = null;
         }
 
         //
@@ -240,9 +260,7 @@ public class CFPushBotHardware extends OpMode {
         }
         catch (Exception p_exeception)
         {
-            m_warning_message ("left_drive");
-            DbgLog.msg (p_exeception.getLocalizedMessage ());
-
+            debugLogException("left_drive","missing",p_exeception);
             v_motor_left_drive = null;
         }
 
@@ -253,9 +271,7 @@ public class CFPushBotHardware extends OpMode {
         }
         catch (Exception p_exeception)
         {
-            m_warning_message ("right_drive");
-            DbgLog.msg (p_exeception.getLocalizedMessage ());
-
+            debugLogException("right_drive", "missing", p_exeception);
             v_motor_right_drive = null;
         }
 
@@ -269,13 +285,27 @@ public class CFPushBotHardware extends OpMode {
         }
         catch (Exception p_exeception)
         {
-            m_warning_message ("rpa_arm");
-            DbgLog.msg (p_exeception.getLocalizedMessage ());
+            debugLogException("rpa_arm", "missing", p_exeception);
 
             v_motor_rpa_arm = null;
         }
 
-
+        try{
+            if(v_dim != null) {
+                // set the digital channel to output mode.
+                // remember, the Adafruit sensor is actually two devices.
+                // It's an I2C sensor and it's also an LED that can be turned on or off.
+                v_dim.setDigitalChannelMode(v_sensor_color_i2c_led_pin, DigitalChannelController.Mode.OUTPUT);
+                // get a reference to our ColorSensor object.
+                v_sensor_color_i2c = hardwareMap.colorSensor.get("color2");
+                // turn the LED on in the beginning, just so user will know that the sensor is active.
+                v_dim.setDigitalChannelState(v_sensor_color_i2c_led_pin, v_sensor_color_i2c_led_enabled);
+            }
+        } catch (Exception p_exeception)
+        {
+            debugLogException("sensor_color_i2c", "missing", p_exeception);
+            v_sensor_color_i2c = null;
+        }
 
         //
         // Connect the arm sholder servo.
@@ -288,9 +318,7 @@ public class CFPushBotHardware extends OpMode {
         }
         catch (Exception p_exeception)
         {
-            m_warning_message ("arm_shoulder");
-            DbgLog.msg (p_exeception.getLocalizedMessage ());
-
+            debugLogException("arm_shoulder", "missing", p_exeception);
             v_servo_arm_shoulder = null;
         }
 
@@ -306,9 +334,7 @@ public class CFPushBotHardware extends OpMode {
         }
         catch (Exception p_exeception)
         {
-            m_warning_message ("arm_elbow");
-            DbgLog.msg (p_exeception.getLocalizedMessage ());
-
+            debugLogException("arm_elbow", "missing", p_exeception);
             v_servo_arm_elbow = null;
         }
 
@@ -322,9 +348,7 @@ public class CFPushBotHardware extends OpMode {
         }
         catch (Exception p_exeception)
         {
-            m_warning_message ("arm_wrist");
-            DbgLog.msg (p_exeception.getLocalizedMessage ());
-
+            debugLogException("arm_wrist", "missing", p_exeception);
             v_servo_arm_wrist = null;
         }
 
@@ -338,8 +362,7 @@ public class CFPushBotHardware extends OpMode {
         }
         catch (Exception p_exeception)
         {
-            m_warning_message ("heartbeat");
-            DbgLog.msg (p_exeception.getLocalizedMessage ());
+            debugLogException("heartbeat", "missing", p_exeception);
             v_led_heartbeat = null;
         }
 
@@ -355,9 +378,7 @@ public class CFPushBotHardware extends OpMode {
         }
         catch (Exception p_exeception)
         {
-            m_warning_message ("rpa_base");
-            DbgLog.msg (p_exeception.getLocalizedMessage ());
-
+            debugLogException("rpa_base", "missing", p_exeception);
             v_servo_rpa_base = null;
         }
 
@@ -373,9 +394,7 @@ public class CFPushBotHardware extends OpMode {
         }
         catch (Exception p_exeception)
         {
-            m_warning_message ("color1");
-            DbgLog.msg (p_exeception.getLocalizedMessage ());
-
+            debugLogException("color1", "missing", p_exeception);
             v_sensor_colorLegecy = null;
         }
 
@@ -385,25 +404,19 @@ public class CFPushBotHardware extends OpMode {
         }
         catch (Exception p_exeception)
         {
-            try
-            {
-                v_sensor_odsLegecy = hardwareMap.opticalDistanceSensor.get
-                        ( "ods1"
-                        );
-            }
-            catch (Exception p_exeception_eopd)
-            {
+            debugLogException("sensor_odsLegecy", "missing", p_exeception);
+            v_sensor_odsLegecy = null;
 
-                m_warning_message ("sensor_odsLegecy");
-                DbgLog.msg
-                        ( "Can't map sensor_odsLegecy "
-                                        + p_exeception_eopd.getLocalizedMessage ()
-                                        + ").\n"
-                        );
+        }
+        try{
 
-                v_sensor_odsLegecy = null;
+            v_ledseg = new AdafruitLEDBackpack7Seg(hardwareMap, "ledseg");
 
-            }
+        }catch (Exception p_exeception)
+        {
+            debugLogException("ledseg", "missing", p_exeception);
+            v_ledseg = null;
+
         }
 
     } // init
@@ -421,6 +434,23 @@ public class CFPushBotHardware extends OpMode {
         return v_warning_generated;
 
     } // a_warning_generated
+
+    void debugLogException(String type, String msg, Exception ex){
+        m_warning_message(type);
+        String debugMessage = type + ":" + msg;
+        if (ex != null) {
+            String errMsg = ex.getLocalizedMessage();
+            if (errMsg != null) {
+                debugMessage = debugMessage + errMsg;
+            }else{
+                debugMessage = debugMessage + " error. is null";
+            }
+        }else{
+            debugMessage = debugMessage + " error is null";
+            }
+
+        DbgLog.msg(debugMessage );
+    }
 
     //--------------------------------------------------------------------------
     //
@@ -526,6 +556,9 @@ public class CFPushBotHardware extends OpMode {
     public void loop_tick(){
         v_loop_ticks++;
         heartbeat_tick();
+        if(v_ledseg != null){
+            v_ledseg.loop();
+        }
     }
 
     //--------------------------------------------------------------------------
@@ -975,14 +1008,26 @@ public class CFPushBotHardware extends OpMode {
     //
     // drive_using_encoders
     //
+
     /**
+     * *
      * Indicate whether the drive motors' encoders have reached a value.
+     * @param p_left_power  Power 0.0-1.0 for left motor
+     * @param p_right_power Power 0.0-1.0 for left motor
+     * @param p_left_count  Encoder ticks to travel before stopping
+     * @param p_right_count Encoder ticks to travel before stopping
+     * @param useGyro   If true then the gyro will try to maintain a heading by slightly decreasing a tracks power
+     * @param desiredHeading the desired track call sensor_gyro_heading to get current heading
+     * @return true if we have reached the desired distance
      */
-    boolean drive_using_encoders
+
+    public boolean drive_using_encoders
     ( double p_left_power
             , double p_right_power
             , double p_left_count
             , double p_right_count
+            , boolean useGyro
+            , int desiredHeading
     )
 
     {
@@ -1199,25 +1244,79 @@ public class CFPushBotHardware extends OpMode {
             return true;
         }
     }
-    private float v_turn_ticks_per_degree = 18.8f;
+    private static final float v_turn_ticks_per_degree = 18.8f;
+    private static final float v_turn_ticks_per_degree_motorspeed = 1.0f;
+    private static final float v_turn_ticks_per_degree_motorspeed_slow = .5f;
     private long v_turn_degrees_ticks;
-    public void turn_degrees(int degrees){
-        run_using_encoders();
+    private int v_turn_degrees_heading_target;
+    private boolean v_turn_degrees_usingGyro;
+    private boolean v_turn_degrees_iscwturn;
+    /**
+     *
+     * @param degrees the amount in degrees you want to turn postive number is to the right negitive to the left
+     * @param useGyro use the Gyro to turn if false then ticks of the encoder will be used
+     *
+     */
+
+    public void turn_degrees(int degrees, boolean turnslow, boolean useGyro){
+        v_turn_degrees_usingGyro = useGyro;
+        if (v_turn_degrees_usingGyro) {
+            v_turn_degrees_heading_target = v_sensor_gyro.getHeading() + degrees;
+
+        }else {
+            run_using_encoders();
+            if (degrees > 0) {
+                v_turn_degrees_ticks = Math.round(degrees * v_turn_ticks_per_degree);
+            } else {
+                v_turn_degrees_ticks = Math.round((0 - degrees) * v_turn_ticks_per_degree);
+            }
+        }
         if (degrees > 0) {
-            v_turn_degrees_ticks = Math.round(degrees * v_turn_ticks_per_degree);
-            set_drive_power(-1.0f, 1.0f);
-        }else{
-            v_turn_degrees_ticks = Math.round((0 - degrees) * v_turn_ticks_per_degree);
-            set_drive_power(1.0f, -1.0f);
+            //greater then 0 turn cw or to the right
+            v_turn_degrees_iscwturn = true;
+            if (turnslow) {
+                set_drive_power(0 - v_turn_ticks_per_degree_motorspeed_slow, v_turn_ticks_per_degree_motorspeed_slow);
+            }else {
+                set_drive_power(0 - v_turn_ticks_per_degree_motorspeed_slow, v_turn_ticks_per_degree_motorspeed_slow);
+            }
+        } else {
+            v_turn_degrees_iscwturn = false;
+            //less then 0 turn ccw or to the left
+            if (turnslow) {
+                set_drive_power(v_turn_ticks_per_degree_motorspeed_slow, 0 - v_turn_ticks_per_degree_motorspeed_slow);
+            }else {
+                set_drive_power(v_turn_ticks_per_degree_motorspeed, 0-v_turn_ticks_per_degree_motorspeed);
+            }
         }
     }
 
+    /**
+     * Used to tell if the turn is complete turn_degrees must be called first
+     *
+     * @return true if the turn is complete false if not
+     */
     public boolean turn_complete(){
-        if (have_drive_encoders_reached (v_turn_degrees_ticks, v_turn_degrees_ticks))
-        {
-            set_drive_power (0.0f, 0.0f);
-            reset_drive_encoders ();
-            return true;
+        if (v_turn_degrees_usingGyro) {
+            if(v_turn_degrees_iscwturn){
+                //if we are turning clockwise then we stop >= then our target
+                if(sensor_gyro_get_heading() >= v_turn_degrees_heading_target){
+                    set_drive_power(0.0f, 0.0f);
+                    return true;
+                }
+            }else{
+                //we are turning counterclockwise so we stop <= our target heading
+                if(sensor_gyro_get_heading() <= v_turn_degrees_heading_target){
+                    set_drive_power(0.0f, 0.0f);
+                    return true;
+                }
+            }
+
+        }else {
+            if (have_drive_encoders_reached(v_turn_degrees_ticks, v_turn_degrees_ticks)) {
+                set_drive_power(0.0f, 0.0f);
+                reset_drive_encoders();
+                return true;
+            }
         }
         return false;
     }
@@ -1450,8 +1549,7 @@ public class CFPushBotHardware extends OpMode {
             }
         }catch (Exception p_exeception)
         {
-            m_warning_message("rpa_base");
-            DbgLog.msg (p_exeception.getLocalizedMessage ());
+            debugLogException("rpa_base", "m_rpabase_position", p_exeception);
             return ServoErrorResultPosition;
         }
 
@@ -1537,8 +1635,7 @@ public class CFPushBotHardware extends OpMode {
             }
         }catch (Exception p_exeception)
         {
-            m_warning_message("arm_sholder");
-            DbgLog.msg (p_exeception.getLocalizedMessage ());
+            debugLogException("arm_sholder", "m_arm_shoulder_position", p_exeception);
             return ServoErrorResultPosition;
         }
 
@@ -1606,15 +1703,16 @@ public class CFPushBotHardware extends OpMode {
      */
     double m_arm_elbow_position (double p_position)
     {
-        //
-        // Ensure the specific value is legal.
-        //
-        l_arm_elbow_position = Range.clip
-                ( p_position
-                        , ArmElbowServo_MinPosition
-                        , ArmElbowServo_MaxPosition
-                );
+
         try {
+            //
+            // Ensure the specific value is legal.
+            //
+            l_arm_elbow_position = Range.clip
+                    ( p_position
+                            , ArmElbowServo_MinPosition
+                            , ArmElbowServo_MaxPosition
+                    );
             if (v_servo_arm_elbow != null) {
                 v_servo_arm_elbow.setPosition(l_arm_elbow_position);
                 return l_arm_elbow_position;
@@ -1623,8 +1721,7 @@ public class CFPushBotHardware extends OpMode {
             }
         }catch (Exception p_exeception)
         {
-            m_warning_message("arm_elbow");
-            DbgLog.msg (p_exeception.getLocalizedMessage ());
+            debugLogException("arm_elbow", "m_arm_elbow_position", p_exeception);
             return ServoErrorResultPosition;
         }
 
@@ -1710,13 +1807,15 @@ public class CFPushBotHardware extends OpMode {
             }
         }catch (Exception p_exeception)
         {
-            m_warning_message("arm_wrist");
-            DbgLog.msg (p_exeception.getLocalizedMessage ());
+            debugLogException("arm_wrist", "missing", p_exeception);
             return ServoErrorResultPosition;
         }
 
 
     } // m_arm_elbow_position
+
+
+
 
     /**
      * ticks the heartbeat which should happen every time though our loop
@@ -1724,23 +1823,34 @@ public class CFPushBotHardware extends OpMode {
      */
 
     public void heartbeat_tick(){
-        v_led_heartbeat_ticks++;
-        if (v_led_heartbeat_ticks > v_led_heartbeat_tickPerToggle){
-            heartbeat_toggle();
-            v_led_heartbeat_ticks = 0;
+        try {
+            v_led_heartbeat_ticks++;
+            if (v_led_heartbeat_ticks > v_led_heartbeat_tickPerToggle) {
+                heartbeat_toggle();
+                v_led_heartbeat_ticks = 0;
+            }
+        }catch (Exception p_exeception)
+        {
+            debugLogException("led_heartbeat", "heartbeat_tick", p_exeception);
         }
     }
 
     private boolean heartbeat_toggle () {
-        if (v_led_heartbeat != null) {
-            if (v_led_heartbeat_enabled) {
-                v_led_heartbeat_enabled = false;
-            } else {
-                v_led_heartbeat_enabled = true;
+        try{
+            if (v_led_heartbeat != null) {
+                if (v_led_heartbeat_enabled) {
+                    v_led_heartbeat_enabled = false;
+                } else {
+                    v_led_heartbeat_enabled = true;
+                }
+                v_led_heartbeat.enable(v_led_heartbeat_enabled);
+                return v_led_heartbeat_enabled;
+            }else {
+                return false;
             }
-            v_led_heartbeat.enable(v_led_heartbeat_enabled);
-            return v_led_heartbeat_enabled;
-        }else {
+        }catch (Exception p_exeception)
+        {
+            debugLogException("led_heartbeat", "heartbeat_toggle", p_exeception);
             return false;
         }
 
@@ -1759,8 +1869,7 @@ public class CFPushBotHardware extends OpMode {
             return false;
         }catch (Exception p_exeception)
         {
-            m_warning_message("dim redled");
-            DbgLog.msg (p_exeception.getLocalizedMessage ());
+            debugLogException("dim redled", "redled_on", p_exeception);
             return false;
         }
     }
@@ -1778,8 +1887,7 @@ public class CFPushBotHardware extends OpMode {
             return false;
         }catch (Exception p_exeception)
         {
-            m_warning_message("dim redled");
-            DbgLog.msg (p_exeception.getLocalizedMessage ());
+            debugLogException("dim redled", "redled_off", p_exeception);
             return false;
         }
     }
@@ -1806,8 +1914,7 @@ public class CFPushBotHardware extends OpMode {
         }
         }catch (Exception p_exeception)
         {
-            m_warning_message("dim redled");
-            DbgLog.msg (p_exeception.getLocalizedMessage ());
+            debugLogException("dim redled", "redled_toggle", p_exeception);
             return false;
         }
     }
@@ -1819,14 +1926,13 @@ public class CFPushBotHardware extends OpMode {
     public boolean blueled_on () {
         try {
             if (v_dim != null) {
-                v_dim.setLED(2, true);
+                v_dim.setLED(0, true);
                 return true;
             }
             return false;
         }catch (Exception p_exeception)
         {
-            m_warning_message("dim blueled");
-            DbgLog.msg (p_exeception.getLocalizedMessage ());
+            debugLogException("dim blueled", "blueled_on", p_exeception);
             return false;
         }
     }
@@ -1838,14 +1944,13 @@ public class CFPushBotHardware extends OpMode {
     public boolean blueled_off () {
         try {
             if (v_dim != null) {
-                v_dim.setLED(2, false);
+                v_dim.setLED(0, false);
                 return true;
             }
             return false;
         }catch (Exception p_exeception)
         {
-            m_warning_message("dim blueled");
-            DbgLog.msg (p_exeception.getLocalizedMessage ());
+            debugLogException("dim blueled", "blueled_off", p_exeception);
             return false;
         }
     }
@@ -1865,15 +1970,14 @@ public class CFPushBotHardware extends OpMode {
                 } else {
                     isEnabled = true;
                 }
-                v_dim.setLED(2, isEnabled);
+                v_dim.setLED(0, isEnabled);
                 return isEnabled;
             } else {
                 return false;
             }
         }catch (Exception p_exeception)
         {
-            m_warning_message("dim blueled");
-            DbgLog.msg (p_exeception.getLocalizedMessage ());
+            debugLogException("dim blueled", "blueled_toggle", p_exeception);
             return false;
         }
     }
@@ -1895,38 +1999,162 @@ public class CFPushBotHardware extends OpMode {
             }
         }catch (Exception p_exeception)
         {
-            m_warning_message("sensor_color");
-            DbgLog.msg (p_exeception.getLocalizedMessage ());
+            debugLogException("sensor_color", "sensor_colorLegecy_led", p_exeception);
             return false;
         }
 
 
     } // sensor_legecyColor_led
 
-    //GetgyroHeading
-    int sensor_gyro_get_heading(){
+
+    /**
+     * reset the gyro heading to zero
+     */
+    private boolean sensor_gyro_resetHeading(){
         try{
-            v_sensor_gy521.portIsReady(5);
-            return 0;
+            if(v_sensor_gyro != null){
+                // get the x, y, and z values (rate of change of angle).
+
+                v_sensor_gyro.resetZAxisIntegrator();
+                return true;
+            }
+            return false;
+        }catch(Exception p_exeception)
+        {
+            debugLogException("sensor_gyro", "sensor_gyro_resetHeading", p_exeception);
+            return false;
+        }
+    }
+
+
+    /**
+     * Enable the Legecy Color Sensor
+     * @return returns true is successfull returns false on error
+     */
+    public boolean sensor_color_led(boolean enable){
+        try{
+            // convert the RGB values to HSV values.
+            if(v_sensor_color_i2c !=null) {
+                //turn on the led this is the only way legecy color will detect anything
+                v_sensor_color_i2c.enableLed(enable);
+                return true;
+            }
+            return false;
         }catch (Exception p_exeception)
         {
-            m_warning_message("sensor_gyro");
-            DbgLog.msg (p_exeception.getLocalizedMessage ());
+            debugLogException("sensor_color", "sensor_color_led", p_exeception);
+            return false;
+        }
+    }
+
+    public int[] sensor_color_get_rgba(){
+        try{
+            // convert the RGB values to HSV values.
+            if(v_sensor_color_i2c_rgbaValues !=null) {
+                //v_sensor_color.enableLed(true);
+                // wait one cycle.
+                //waitOneFullHardwareCycle();
+                v_sensor_color_i2c_rgbaValues[0] = v_sensor_color_i2c.red();
+                v_sensor_color_i2c_rgbaValues[1] = v_sensor_color_i2c.green();
+                v_sensor_color_i2c_rgbaValues[2] = v_sensor_color_i2c.blue();
+                v_sensor_color_i2c_rgbaValues[3] = v_sensor_color_i2c.alpha();
+                // wait one cycle.
+                //waitOneFullHardwareCycle();
+                // v_sensor_color.enableLed(false);
+            }
+            //Color.RGBToHSV(v_sensor_color.red(), v_sensor_color.green(), v_sensor_color.blue(), v_sensor_color_hsvValues);
+            return v_sensor_color_i2c_rgbaValues;
+
+        }catch (Exception p_exeception)
+        {
+            debugLogException("sensor_color", "sensor_color_read_rgb", p_exeception);
+            return v_sensor_color_i2c_rgbaValues;
+        }
+    }
+
+
+    /**
+     *
+     * @return gyro heading in degrees since reset
+     */
+    public int sensor_gyro_get_heading(){
+        try{
+            // get the heading info.
+            // the Modern Robotics' gyro sensor keeps
+            // track of the current heading for the Z axis only.
+            if(v_sensor_gyro != null) {
+                v_sensor_gyro_heading = v_sensor_gyro.getHeading();
+            }
+            return v_sensor_gyro_heading;
+        }catch (Exception p_exeception)
+        {
+            debugLogException("sensor_gyro", "sensor_gyro_get_heading", p_exeception);
             return v_sensor_gyro_heading;
         }
     }
 
-    //GetgyroHeading
-    int sensor_gyro_getLast_heading(){
+    /**
+     * return the rawX rate
+     * @return gyro heading in degrees since reset
+     */
+    public int sensor_gyro_get_rawX(){
         try{
-            return v_sensor_gyro_heading;
+            // get the heading info.
+            // the Modern Robotics' gyro sensor keeps
+            // track of the current heading for the Z axis only.
+            if(v_sensor_gyro != null) {
+                v_sensor_gyro_x = v_sensor_gyro.rawX();
+            }
+            return v_sensor_gyro_x;
         }catch (Exception p_exeception)
         {
-            m_warning_message("sensor_gyro");
-            DbgLog.msg (p_exeception.getLocalizedMessage ());
-            return v_sensor_gyro_heading;
+            debugLogException("sensor_gyro", "sensor_gyro_get_rawX", p_exeception);
+            return v_sensor_gyro_x;
         }
     }
+
+    /**
+     * return the rawX rate
+     * @return gyro heading in degrees since reset
+     */
+    public int sensor_gyro_get_rawY(){
+        try{
+            // get the heading info.
+            // the Modern Robotics' gyro sensor keeps
+            // track of the current heading for the Z axis only.
+            if(v_sensor_gyro != null) {
+                v_sensor_gyro_y = v_sensor_gyro.rawY();
+            }
+            return v_sensor_gyro_y;
+        }catch (Exception p_exeception)
+        {
+            debugLogException("sensor_gyro", "sensor_gyro_get_rawY", p_exeception);
+            return v_sensor_gyro_y;
+        }
+    }
+
+    /**
+     * return the rawX rate
+     * @return gyro heading in degrees since reset
+     */
+    public int sensor_gyro_get_rawZ(){
+        try{
+            // get the heading info.
+            // the Modern Robotics' gyro sensor keeps
+            // track of the current heading for the Z axis only.
+            if(v_sensor_gyro != null) {
+                v_sensor_gyro_z = v_sensor_gyro.rawZ();
+            }
+            return v_sensor_gyro_z;
+        }catch (Exception p_exeception)
+        {
+            debugLogException("sensor_gyro", "sensor_gyro_get_rawZ", p_exeception);
+            return v_sensor_gyro_z;
+        }
+    }
+
+
+
 
     /**
      * Enable the Legecy Color Sensor
@@ -1943,8 +2171,7 @@ public class CFPushBotHardware extends OpMode {
             return false;
         }catch (Exception p_exeception)
         {
-            m_warning_message("sensor_colorLegecy");
-            DbgLog.msg (p_exeception.getLocalizedMessage ());
+            debugLogException("sensor_colorLegecy", "sensor_colorLegecy_start", p_exeception);
             return false;
         }
     }
@@ -1963,13 +2190,13 @@ public class CFPushBotHardware extends OpMode {
             return false;
         }catch (Exception p_exeception)
         {
-            m_warning_message("sensor_colorLegecy");
-            DbgLog.msg (p_exeception.getLocalizedMessage ());
+            debugLogException("sensor_colorLegecy", "sensor_colorLegecy_stop", p_exeception);
+
             return false;
         }
     }
 
-    private int[] sensor_colorLegecy_read_rgb(){
+    private int[] sensor_colorLegecy_read_rgba(){
         try{
             // convert the RGB values to HSV values.
             if(v_sensor_colorLegecy_rgbValues !=null) {
@@ -1989,21 +2216,19 @@ public class CFPushBotHardware extends OpMode {
 
         }catch (Exception p_exeception)
         {
-            m_warning_message("sensor_colorLegecy");
-            DbgLog.msg (p_exeception.getLocalizedMessage ());
+            debugLogException("sensor_colorLegecy", "sensor_colorLegecy_read_rgb", p_exeception);
             return v_sensor_colorLegecy_rgbValues;
         }
     }
 
 
-    public int[] sensor_colorLegecy_getLast_rgb(){
+    public int[] sensor_colorLegecy_getLast_rgba(){
         try{
             return v_sensor_colorLegecy_rgbValues;
 
         }catch (Exception p_exeception)
         {
-            m_warning_message("sensor_colorLegecy");
-            DbgLog.msg (p_exeception.getLocalizedMessage ());
+            debugLogException("sensor_colorLegecy", "sensor_colorLegecy_getLast_rgb", p_exeception);
             return v_sensor_colorLegecy_rgbValues;
         }
     }
@@ -2045,6 +2270,7 @@ public class CFPushBotHardware extends OpMode {
      */
     private boolean a_ods_white_tape_detected ()
     {
+
         //
         // Assume not.
         //

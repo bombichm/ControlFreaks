@@ -3,7 +3,7 @@ package com.qualcomm.ftcrobotcontroller.opmodes;
 /**
  * Created by adevries on 11/6/2015.
  */
-public class CFPushBotManual extends CFPushBotTelemetry{
+public class CFPushBotManual extends CFPushBotHardware{
 
     //--------------------------------------------------------------------------
     //
@@ -151,8 +151,8 @@ public class CFPushBotManual extends CFPushBotTelemetry{
         //
         // Send telemetry data to the driver station.
         //
-        update_telemetry (); // Update common telemetry
-        update_gamepad_telemetry ();
+        //update_telemetry (); // Update common telemetry
+        //update_gamepad_telemetry ();
 
     } // loop
 }

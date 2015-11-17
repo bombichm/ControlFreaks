@@ -41,6 +41,10 @@ import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.ColorSensor;
 import com.qualcomm.robotcore.hardware.DeviceInterfaceModule;
 import com.qualcomm.robotcore.hardware.DigitalChannelController;
+import com.qualcomm.robotcore.hardware.I2cDevice;
+import com.qualcomm.robotcore.hardware.LED;
+
+import java.util.concurrent.locks.Lock;
 
 /*
  *
@@ -70,7 +74,16 @@ import com.qualcomm.robotcore.hardware.DigitalChannelController;
 public class AdafruitRGBExample extends LinearOpMode {
 
   ColorSensor sensorRGB;
-  DeviceInterfaceModule cdim;
+  //DeviceInterfaceModule cdim;
+  private DeviceInterfaceModule v_dim;
+  private LED v_heartbeat;
+  private I2cDevice v_i2c_led7seg;
+  private static final int v_i2c_led7seg_port = 1;
+  private static final int v_i2c_led7seg_address = 0xe0;
+  private byte[] v_i2c_led7seg_readCache;
+  private Lock v_i2c_led7seg_readLock;
+  private byte[] v_i2c_led7seg_writeCache;
+  private Lock v_i2c_led7seg_writeLock;
 
   // we assume that the LED pin of the RGB sensor is connected to
   // digital port 5 (zero indexed).
@@ -84,21 +97,21 @@ public class AdafruitRGBExample extends LinearOpMode {
     hardwareMap.logDevices();
 
     // get a reference to our DeviceInterfaceModule object.
-    cdim = hardwareMap.deviceInterfaceModule.get("dim");
+    v_dim = hardwareMap.deviceInterfaceModule.get("dim");
 
     // set the digital channel to output mode.
     // remember, the Adafruit sensor is actually two devices.
     // It's an I2C sensor and it's also an LED that can be turned on or off.
-    cdim.setDigitalChannelMode(LED_CHANNEL, DigitalChannelController.Mode.OUTPUT);
+    v_dim.setDigitalChannelMode(LED_CHANNEL, DigitalChannelController.Mode.OUTPUT);
 
     // get a reference to our ColorSensor object.
-    sensorRGB = hardwareMap.colorSensor.get("color");
+    sensorRGB = hardwareMap.colorSensor.get("color2");
 
     // bEnabled represents the state of the LED.
     boolean bEnabled = true;
 
     // turn the LED on in the beginning, just so user will know that the sensor is active.
-    cdim.setDigitalChannelState(LED_CHANNEL, bEnabled);
+    v_dim.setDigitalChannelState(LED_CHANNEL, bEnabled);
 
     // wait one cycle.
     waitOneFullHardwareCycle();
@@ -119,7 +132,67 @@ public class AdafruitRGBExample extends LinearOpMode {
     // bPrevState and bCurrState represent the previous and current state of the button.
     boolean bPrevState = false;
     boolean bCurrState = false;
+    try {
+      v_i2c_led7seg =  hardwareMap.i2cDevice.get("ledseg"); // = new I2cDevice(v_dim,v_i2c_led7seg_port);
+      v_i2c_led7seg_readCache = v_i2c_led7seg.getI2cReadCache();
+      v_i2c_led7seg_readLock = v_i2c_led7seg.getI2cReadCacheLock();
+      v_i2c_led7seg_writeCache = v_i2c_led7seg.getI2cWriteCache();
+      v_i2c_led7seg_writeLock = v_i2c_led7seg.getI2cWriteCacheLock();
+      //enable Oclator
+      try {
+        v_i2c_led7seg_writeLock.lock();
+        v_i2c_led7seg_writeCache[0] = 0;
+        v_i2c_led7seg_writeCache[1] = (byte) v_i2c_led7seg_address;
+        v_i2c_led7seg_writeCache[2] = (byte) (0x21);  // | 0x80
+        v_i2c_led7seg_writeCache[3] = 0;
+        v_i2c_led7seg_writeCache[31] = -1;
+      }catch (Exception p_exeception)
+      {
+        debugLogException("03", "led7seg", "Enable Oscolator", p_exeception);
+      }finally {
+        v_i2c_led7seg_writeLock.unlock();
+      }
+      v_i2c_led7seg.writeI2cCacheToController();
 
+      //Enable Display 0x80 | 0x01  to enableDisplay
+      try {
+        v_i2c_led7seg_writeLock.lock();
+        v_i2c_led7seg_writeCache[0] = 0;
+        v_i2c_led7seg_writeCache[1] = (byte) v_i2c_led7seg_address;
+        v_i2c_led7seg_writeCache[2] = (byte) (0x81);  // Enable Display
+        v_i2c_led7seg_writeCache[3] = 0;
+        v_i2c_led7seg_writeCache[31] = -1;
+      }catch (Exception p_exeception)
+      {
+        debugLogException("04", "i2c_led7seg", "Enable Display", p_exeception);
+      }finally {
+        v_i2c_led7seg_writeLock.unlock();
+      }
+      v_i2c_led7seg.writeI2cCacheToController();
+              /*
+              //Write 0000 to the display
+              try {
+                  v_i2c_led7seg_writeLock.lock();
+                  v_i2c_led7seg_writeCache[0] = 0;
+                  v_i2c_led7seg_writeCache[1] = (byte) v_i2c_led7seg_address;
+                  v_i2c_led7seg_writeCache[2] = (byte) (0x00);  // Enable Display
+                  v_i2c_led7seg_writeCache[3] = (byte)2;
+                  v_i2c_led7seg_writeCache[4] = (byte)0x3F;
+                  v_i2c_led7seg_writeCache[5] = (byte)0x00;
+                  v_i2c_led7seg_writeCache[31] = -1;
+              }catch (Exception p_exeception)
+              {
+                  debugLogException("05", "i2c_led7seg", "missing", p_exeception);
+              }finally {
+                  v_i2c_led7seg_writeLock.unlock();
+              }
+              v_i2c_led7seg.writeI2cCacheToController();
+              */
+  }catch (Exception p_exeception)
+  {
+    debugLogException("06", "i2c_led7seg", "missing", p_exeception);
+    v_i2c_led7seg = null;
+  }
     // while the op mode is active, loop and read the RGB data.
     // Note we use opModeIsActive() as our loop condition because it is an interruptible method.
     while (opModeIsActive()) {
@@ -140,7 +213,7 @@ public class AdafruitRGBExample extends LinearOpMode {
         bEnabled = true;
 
         // turn on the LED.
-        cdim.setDigitalChannelState(LED_CHANNEL, bEnabled);
+        v_dim.setDigitalChannelState(LED_CHANNEL, bEnabled);
 
       } else if (bCurrState == false && bCurrState != bPrevState)  {
         // button is transitioning to a released state.
@@ -155,7 +228,7 @@ public class AdafruitRGBExample extends LinearOpMode {
         bEnabled = false;
 
         // turn off the LED.
-        cdim.setDigitalChannelState(LED_CHANNEL, bEnabled);
+        v_dim.setDigitalChannelState(LED_CHANNEL, bEnabled);
       }
 
       // convert the RGB values to HSV values.
@@ -180,5 +253,22 @@ public class AdafruitRGBExample extends LinearOpMode {
       // wait a hardware cycle before iterating.
       waitOneFullHardwareCycle();
     }
+  }
+  void debugLogException(String line, String type, String msg, Exception ex){
+
+    String debugMessage = type + ":" + msg;
+    if (ex != null) {
+      String errMsg = ex.getLocalizedMessage();
+      if (errMsg != null) {
+        debugMessage = debugMessage + errMsg;
+      }else{
+        debugMessage = debugMessage + " error. is null";
+      }
+    }else{
+      debugMessage = debugMessage + " error is null";
+    }
+
+    DbgLog.msg(debugMessage);
+    telemetry.addData(line, debugMessage);
   }
 }
