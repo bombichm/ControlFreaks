@@ -59,12 +59,12 @@ public class FtcOpModeRegister implements OpModeRegister {
 
     //manager.register("MatrixK9TeleOp", MatrixK9TeleOp.class);
     //manager.register("K9TeleOp", K9TeleOp.class);
-    //manager.register("K9Line", K9Line.class);
+    manager.register("K9TankDrive", K9TankDrive.class);
     manager.register("HTRGBExample", HTRGBExample.class);
     manager.register ("Control Freaks Auto", CFPushBotAuto.class);
     manager.register ("Control Freaks Manual", CFPushBotManual.class);
     manager.register ("CF Auto Blue 4", CFPushBotAuto_Blue4.class);
-
+    manager.register("LCD Backpack Test", I2CLED7Seg.class);
     manager.register("DetectColor", DetectColor.class);
     manager.register("LinearDetectColor", LinearDetectColor.class);
 
@@ -72,9 +72,9 @@ public class FtcOpModeRegister implements OpModeRegister {
     /*
      * Uncomment any of the following lines if you want to register an op mode.
      */
-    //manager.register("MR Gyro Test", MRGyroTest.class);
+    manager.register("MR Gyro Test", MRGyroTest.class);
 
-    //manager.register("AdafruitRGBExample", AdafruitRGBExample.class);
+    manager.register("AdafruitRGBExample", AdafruitRGBExample.class);
     //manager.register("ColorSensorDriver", ColorSensorDriver.class);
 
     //manager.register("IrSeekerOp", IrSeekerOp.class);

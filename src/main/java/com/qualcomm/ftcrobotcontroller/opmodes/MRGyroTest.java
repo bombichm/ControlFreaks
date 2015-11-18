@@ -67,7 +67,7 @@ public class MRGyroTest extends LinearOpMode {
     hardwareMap.logDevices();
 
     // get a reference to our GyroSensor object.
-    sensorGyro = hardwareMap.gyroSensor.get("gyro");
+    sensorGyro = hardwareMap.gyroSensor.get("gyro1");
 
     // calibrate the gyro.
     sensorGyro.calibrate();

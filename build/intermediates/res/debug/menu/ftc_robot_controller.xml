@@ -51,6 +51,12 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
     android:title="@string/view_logs_menu_item"/>
 
   <item
+      android:id="@+id/action_debug"
+      android:orderInCategory="998"
+      android:icon="@android:drawable/ic_menu_info_details"
+      android:title="@string/debug_menu_item"/>
+
+  <item
     android:id="@+id/action_about"
     android:orderInCategory="999"
     android:icon="@android:drawable/ic_menu_info_details"
@@ -63,4 +69,4 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
     android:title="@string/action_exit_app"/>
 
 </menu>
-<!-- From: file:/D:/Users/adevries/sources/GitHub/ControlFreaks/src/main/res/menu/ftc_robot_controller.xml -->
+<!-- From: file:/D:/workspaces/DE/FTCRobotics/ControlFreaks/src/main/res/menu/ftc_robot_controller.xml -->

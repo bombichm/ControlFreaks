@@ -114,7 +114,7 @@ public class CFPushBotAuto extends CFPushBotTelemetry {
             //
             case 3:
                 // positive is right turn
-                turn_degrees(90);
+                turn_degrees(90,false,true);
                 v_state++;
                 break;
             //

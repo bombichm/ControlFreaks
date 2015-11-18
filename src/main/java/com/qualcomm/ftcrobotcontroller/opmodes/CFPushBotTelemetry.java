@@ -1,5 +1,7 @@
 package com.qualcomm.ftcrobotcontroller.opmodes;
 
+import com.qualcomm.ftccommon.DbgLog;
+
 /**
  * Created by adevries on 11/6/2015.
  */
@@ -39,58 +41,62 @@ public class CFPushBotTelemetry extends CFPushBotHardware {
     public void update_telemetry ()
 
     {
-        if (a_warning_generated ())
+        try {
+            if (a_warning_generated()) {
+                set_first_message(a_warning_message());
+            }
+            //
+            // Send telemetry data to the driver station.
+            //
+            telemetry.addData("01", secondMessage);
+            telemetry.addData
+                    ("02"
+                            , "Left Drive: "
+                                    + a_left_drive_power()
+                                    + ", "
+                                    + a_left_encoder_count()
+                    );
+            telemetry.addData
+                    ("03"
+                            , "Right Drive: "
+                                    + a_right_drive_power()
+                                    + ", "
+                                    + a_right_encoder_count()
+                    );
+            telemetry.addData
+                    ("04"
+                            , "Arm Shoulder: " + a_arm_shoulder_position()
+                    );
+            telemetry.addData
+                    ("05"
+                            , "Arm Elbow: " + a_arm_elbow_position()
+                    );
+            telemetry.addData
+                    ("06"
+                            , "Arm Wrist: " + a_arm_wrist_position()
+                    );
+            telemetry.addData
+                    ("07"
+                            , "RPA Base Position: " + a_rpabase_position()
+                    );
+            telemetry.addData
+                    ("08"
+                            , "RPA Arm Position: " + a_rpa_arm_power() + ":" + rpa_arm_extended() + ":" + rpa_arm_retracted()
+                    );
+            int[] v_color_rgba = sensor_color_get_rgba();
+            telemetry.addData(
+                    "09", "Color RGBA: " + v_color_rgba[0]
+                            + "," + v_color_rgba[1]
+                            + "," + v_color_rgba[2]
+                            + "," + v_color_rgba[3]
+            );
+            telemetry.addData(
+                    "10", "Gyro: " + sensor_gyro_get_heading()
+            );
+        }catch (Exception p_exeception)
         {
-            set_first_message (a_warning_message ());
+            set_first_message("updateTelmetry: " + p_exeception.getLocalizedMessage());
         }
-        //
-        // Send telemetry data to the driver station.
-        //
-        telemetry.addData ( "01", secondMessage);
-        telemetry.addData
-                ( "02"
-                        , "Left Drive: "
-                                + a_left_drive_power ()
-                                + ", "
-                                + a_left_encoder_count ()
-                );
-        telemetry.addData
-                ( "03"
-                        , "Right Drive: "
-                                + a_right_drive_power()
-                                + ", "
-                                + a_right_encoder_count()
-                );
-        telemetry.addData
-                ( "04"
-                        , "Arm Shoulder: " + a_arm_shoulder_position()
-                );
-        telemetry.addData
-                ( "05"
-                        , "Arm Elbow: " + a_arm_elbow_position()
-                );
-        telemetry.addData
-                ( "06"
-                        , "Arm Wrist: " + a_arm_wrist_position()
-                );
-        telemetry.addData
-                ( "07"
-                        , "RPA Base Position: " + a_rpabase_position()
-                );
-        telemetry.addData
-                ( "08"
-                        , "RPA Arm Position: " + a_rpa_arm_power() + ":" + rpa_arm_extended() + ":" + rpa_arm_retracted()
-                );
-        telemetry.addData(
-                "09", "Color RGBA: " + sensor_colorLegecy_getLast_rgb()[0]
-                        + "," + sensor_colorLegecy_getLast_rgb()[1]
-                        + "," + sensor_colorLegecy_getLast_rgb()[2]
-                        + "," + sensor_colorLegecy_getLast_rgb()[3]
-        );
-        telemetry.addData(
-                "10", "Gyro: " + sensor_gyro_getLast_heading()
-        );
-
     } // update_telemetry
 
     //--------------------------------------------------------------------------
