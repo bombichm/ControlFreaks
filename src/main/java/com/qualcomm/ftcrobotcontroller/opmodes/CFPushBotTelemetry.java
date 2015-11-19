@@ -93,6 +93,15 @@ public class CFPushBotTelemetry extends CFPushBotHardware {
             telemetry.addData(
                     "10", "Gyro: " + sensor_gyro_get_heading()
             );
+            telemetry.addData(
+                    "1l", "Flip: Right:" + a_flip_right_position() + ", Left:" + a_flip_left_position()
+            );
+            telemetry.addData(
+                    "12", "Ultra: " + sensor_ultraLegecy_distance()
+            );
+            telemetry.addData(
+                    "13", "Light: tape:" + sensor_lightLegecy_white_tape_detected() + "," + sensor_lightLegecy_amountDetected()
+            );
         }catch (Exception p_exeception)
         {
             set_first_message("updateTelmetry: " + p_exeception.getLocalizedMessage());
@@ -112,14 +121,14 @@ public class CFPushBotTelemetry extends CFPushBotHardware {
         //
         // Send telemetry data concerning gamepads to the driver station.
         //
-        telemetry.addData ("10", "GP1 Left: " + -gamepad1.left_stick_y);
-        telemetry.addData ("11", "GP1 Right: " + -gamepad1.right_stick_y);
-        telemetry.addData ("12", "GP2 Left: " + -gamepad2.left_stick_y);
-        telemetry.addData ("13", "GP2 X: " + gamepad2.x);
-        telemetry.addData ("14", "GP2 Y: " + gamepad2.y);
-        telemetry.addData ("15", "GP2 A: " + gamepad2.a);
-        telemetry.addData ("16", "GP1 LT: " + gamepad1.left_trigger);
-        telemetry.addData ("17", "GP1 RT: " + gamepad1.right_trigger);
+        telemetry.addData ("14", "GP1 Left: " + -gamepad1.left_stick_y);
+        telemetry.addData ("15", "GP1 Right: " + -gamepad1.right_stick_y);
+        telemetry.addData ("16", "GP2 Left: " + -gamepad2.left_stick_y);
+        telemetry.addData ("17", "GP2 X: " + gamepad2.x);
+        telemetry.addData ("18", "GP2 Y: " + gamepad2.y);
+        telemetry.addData ("19", "GP2 A: " + gamepad2.a);
+        telemetry.addData ("20", "GP1 LT: " + gamepad1.left_trigger);
+        telemetry.addData ("21", "GP1 RT: " + gamepad1.right_trigger);
 
     } // update_gamepad_telemetry
 

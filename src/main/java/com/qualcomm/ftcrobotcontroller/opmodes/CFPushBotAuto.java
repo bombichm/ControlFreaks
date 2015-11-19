@@ -67,6 +67,7 @@ public class CFPushBotAuto extends CFPushBotTelemetry {
     @Override public void loop ()
 
     {
+        hardware_loop();
         //----------------------------------------------------------------------
         //
         // State: Initialize (i.e. state_0).

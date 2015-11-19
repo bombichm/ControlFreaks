@@ -76,12 +76,12 @@ public class AdafruitLEDBackpack7Seg {
             if (v_ledseg != null) {
                 v_ledseg.write(0x21, 0);
                 v_ledseg.write(0x81, 0);
-                v_ledseg.beginWrite(0x00);
+                /*v_ledseg.beginWrite(0x00);
                 v_ledseg.write(numbertable[0]);
                 v_ledseg.write(numbertable[0]);
                 v_ledseg.write(numbertable[0]);
                 v_ledseg.write(numbertable[0]);
-                v_ledseg.endWrite();
+                v_ledseg.endWrite();*/
             }
         }catch (Exception p_exeception)
         {
@@ -111,10 +111,11 @@ public class AdafruitLEDBackpack7Seg {
 
     public boolean writeDigits(int number){
         v_ledseg.beginWrite(0x00);
-        v_ledseg.write(numbertable[0]);
-        v_ledseg.write(numbertable[1]);
-        v_ledseg.write(numbertable[2]);
+        v_ledseg.write(numbertable[4]);
+        v_ledseg.write(0x00);
         v_ledseg.write(numbertable[3]);
+        v_ledseg.write(numbertable[2]);
+        v_ledseg.write(numbertable[1]);
         v_ledseg.endWrite();
         return true;
     }

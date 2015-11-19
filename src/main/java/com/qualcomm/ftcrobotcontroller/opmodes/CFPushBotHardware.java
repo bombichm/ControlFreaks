@@ -13,9 +13,11 @@ package com.qualcomm.ftcrobotcontroller.opmodes;
         import com.qualcomm.robotcore.hardware.GyroSensor;
         import com.qualcomm.robotcore.hardware.I2cDevice;
         import com.qualcomm.robotcore.hardware.LED;
+        import com.qualcomm.robotcore.hardware.LightSensor;
         import com.qualcomm.robotcore.hardware.OpticalDistanceSensor;
         import com.qualcomm.robotcore.hardware.Servo;
         import com.qualcomm.robotcore.hardware.TouchSensor;
+        import com.qualcomm.robotcore.hardware.UltrasonicSensor;
         import com.qualcomm.robotcore.util.Range;
         import com.qualcomm.robotcore.hardware.DeviceInterfaceModule;
         import com.qualcomm.robotcore.hardware.IrSeekerSensor;
@@ -44,8 +46,9 @@ public class CFPushBotHardware extends OpMode {
     private static final double RPABaseServo_Delta = 0.0005;
     private static final double RPABaseServo_Delta_Fast = 0.01;
     private double RPABaseServo_MinPosition = 0.01;  //Need to unhook gear int so it goes to zero then rehook servo gear
-    private double RPABaseServo_MaxPosition = 0.61;
-    private double RPABaseServo_MaxPosition_Delta = 0.60;
+    private double RPABaseServo_ClimbPosition = 0.65;
+    private double RPABaseServo_MaxPosition = 0.70;
+    //private double RPABaseServo_MaxPosition_Delta = 0.60;
     private double l_rpa_base_position = 0.163D;  //init RPA Base Position and to control RPA Base position as servo.getPosition seems to be flaky
 
     //RPA Arm Varables
@@ -84,6 +87,22 @@ public class CFPushBotHardware extends OpMode {
     private static final double ArmWristServo_MaxPosition = 0.99;
     private double l_arm_wrist_position = 0.45D;  //init arm elbow Position
 
+    // v_servo_flip_right
+    private Servo v_servo_flip_right;
+    //private static final double FlipRightServo_Delta = 0.005;
+    //private static final double FlipRightServo_Delta_Fast = 0.05;
+    public static final double FlipRightServo_MinPosition = 0.13;
+    public static final double FlipRightServo_MaxPosition = 0.99;
+    private double l_flip_right_position = 0.99D;  //init flip_right Position
+
+    // v_servo_flip_left
+    private Servo v_servo_flip_left;
+   // private static final double FlipLeftServo_Delta = 0.005;
+   // private static final double FlipLeftServo_Delta_Fast = 0.05;
+    public static final double FlipLeftServo_MinPosition = 0.05;
+    private static final double FlipLeftServo_MaxPosition = 0.89;
+    private double l_flip_left_position = 0.05D;  //init flip_right Position
+
     /**
      * Used in Manual mode to set min trigger pull for slow wrist action
      *
@@ -97,6 +116,7 @@ public class CFPushBotHardware extends OpMode {
 
     //Legecy Color Sensor
     private ColorSensor v_sensor_colorLegecy;
+    private final static String v_sensor_colorLegecy_name="color1";
     private boolean v_sensor_colorLegecy_led_enabled = false;
     // v_sensor_color_hsvValues is an array that will hold the hue, saturation, and value information.
     private float v_sensor_colorLegecy_hsvValues[] = {0F,0F,0F};
@@ -106,15 +126,25 @@ public class CFPushBotHardware extends OpMode {
 
     //Adafruit RGB Sensor
     private ColorSensor v_sensor_color_i2c;
-    private static final int v_sensor_color_i2c_led_pin = 1;
+    private static final int v_sensor_color_i2c_led_pin = 5;
     // bEnabled represents the state of the LED.
     private boolean v_sensor_color_i2c_led_enabled = false;
     //red, green, blue, alpha
     private int v_sensor_color_i2c_rgbaValues[]= {0,0,0,0};
 
     //Legecy OSD Sensor
-    private OpticalDistanceSensor v_sensor_odsLegecy;
-    private boolean v_sensor_odsLegecy_enabled = false;
+    //private OpticalDistanceSensor v_sensor_odsLegecy;
+    //private boolean v_sensor_odsLegecy_enabled = false;
+
+    //Legecy Light Sensor
+    private LightSensor v_sensor_lightLegecy;
+    private static final String v_sensor_lightLegecy_name = "light1";
+    private boolean v_sensor_lightLegecy_enabled = false;
+
+    private static final String v_sensor_ultraLegecy_name = "ultra1";
+    private UltrasonicSensor v_sensor_ultraLegecy;
+    private int v_sensor_ultraLegecy_ticksPerRead = 20;
+    private double v_sensor_ultraLegecy_distance;
 
    //Modern Robotics gyro1
     GyroSensor v_sensor_gyro;
@@ -122,9 +152,9 @@ public class CFPushBotHardware extends OpMode {
     private int v_sensor_gyro_heading = 0;
 
     private LED v_led_heartbeat;
-    private boolean v_led_heartbeat_enabled = false;
+    private boolean v_led_heartbeat_enabled = true;
     private  static final int v_led_heartbeat_tickPerToggle = 20;
-    private int v_led_heartbeat_ticks = 0;
+    //private int v_led_heartbeat_ticks = 0;
 
     private DeviceInterfaceModule v_dim;
 
@@ -267,6 +297,7 @@ public class CFPushBotHardware extends OpMode {
         try
         {
             v_motor_right_drive = hardwareMap.dcMotor.get ("right_drive");
+
             //v_motor_right_drive.setDirection (DcMotor.Direction.REVERSE);
         }
         catch (Exception p_exeception)
@@ -353,6 +384,34 @@ public class CFPushBotHardware extends OpMode {
         }
 
         //
+        // Connect the flip right servo.
+        //
+        try
+        {
+            v_servo_flip_right = hardwareMap.servo.get("flip_right");
+            v_servo_flip_right.setPosition (l_flip_right_position);
+        }
+        catch (Exception p_exeception)
+        {
+            debugLogException("flip_right", "missing", p_exeception);
+            v_servo_flip_right = null;
+        }
+
+        //
+        // Connect the flip left servo.
+        //
+        try
+        {
+            v_servo_flip_left = hardwareMap.servo.get("flip_left");
+            v_servo_flip_left.setPosition (l_flip_left_position);
+        }
+        catch (Exception p_exeception)
+        {
+            debugLogException("flip_left", "missing", p_exeception);
+            v_servo_flip_left = null;
+        }
+
+        //
         // Connect the heartbeat led.
         //
         try
@@ -374,7 +433,7 @@ public class CFPushBotHardware extends OpMode {
         {
             v_servo_rpa_base = hardwareMap.servo.get ("rpa_base");
             v_servo_rpa_base.scaleRange(RPABaseServo_MinPosition,RPABaseServo_MaxPosition); //set the max range to allow the servo to move
-            v_servo_rpa_base.setPosition (l_rpa_base_position);
+            v_servo_rpa_base.setPosition(l_rpa_base_position);
         }
         catch (Exception p_exeception)
         {
@@ -385,7 +444,7 @@ public class CFPushBotHardware extends OpMode {
         try
         {
             // get a reference to our ColorSensor object.
-            v_sensor_colorLegecy = hardwareMap.colorSensor.get("color1");
+            v_sensor_colorLegecy = hardwareMap.colorSensor.get(v_sensor_colorLegecy_name);
             // bEnabled represents the state of the LED.
             boolean v_sensor_colorLegecy_led_enabled = true;
             // turn the LED on in the beginning, just so user will know that the sensor is active.
@@ -394,20 +453,45 @@ public class CFPushBotHardware extends OpMode {
         }
         catch (Exception p_exeception)
         {
-            debugLogException("color1", "missing", p_exeception);
+            debugLogException(v_sensor_colorLegecy_name, "missing", p_exeception);
             v_sensor_colorLegecy = null;
+        }
+
+       /* try
+        {
+            v_sensor_odsLegecy = hardwareMap.opticalDistanceSensor.get ("ods1");
+
+        }
+        catch (Exception p_exeception)
+        {
+            debugLogException("ods1", "missing", p_exeception);
+            v_sensor_odsLegecy = null;
+
+        }*/
+        try
+        {
+            v_sensor_lightLegecy = hardwareMap.lightSensor.get (v_sensor_lightLegecy_name);
+
+        }
+        catch (Exception p_exeception)
+        {
+            debugLogException(v_sensor_lightLegecy_name, "missing", p_exeception);
+            v_sensor_lightLegecy = null;
+
         }
 
         try
         {
-            v_sensor_odsLegecy = hardwareMap.opticalDistanceSensor.get ("ods1");
+            v_sensor_ultraLegecy = hardwareMap.ultrasonicSensor.get (v_sensor_ultraLegecy_name);
+
         }
         catch (Exception p_exeception)
         {
-            debugLogException("sensor_odsLegecy", "missing", p_exeception);
-            v_sensor_odsLegecy = null;
+            debugLogException(v_sensor_ultraLegecy_name, "missing", p_exeception);
+            v_sensor_ultraLegecy = null;
 
         }
+
         try{
 
             v_ledseg = new AdafruitLEDBackpack7Seg(hardwareMap, "ledseg");
@@ -529,7 +613,7 @@ public class CFPushBotHardware extends OpMode {
         //
         // This method is designed to be overridden.
         //
-        loop_tick();
+
     } // loop
 
     //--------------------------------------------------------------------------
@@ -546,18 +630,34 @@ public class CFPushBotHardware extends OpMode {
         //
         // Nothing needs to be done for this method.
         //
-
+        hardware_stop();
     } // stop
 
 
     /** called each time through the loop needed to sync hardware and look for status changes
      *
      */
-    public void loop_tick(){
+    public void hardware_loop(){
         v_loop_ticks++;
         heartbeat_tick();
         if(v_ledseg != null){
             v_ledseg.loop();
+        }
+        if(v_rpabase_moveToClimb == true){
+            if (rpa_arm_extended() == false){
+                rpaarm_moveUp(true);
+            }else{
+                v_rpabase_moveToClimb = false;
+            }
+        }
+    }
+
+    public void hardware_stop(){
+        if(v_led_heartbeat !=null){
+            v_led_heartbeat.enable(false);
+        }
+        if(v_ledseg != null){
+            v_ledseg.stop();
         }
     }
 
@@ -1177,18 +1277,26 @@ public class CFPushBotHardware extends OpMode {
     private long v_drive_inches_ticks;
     private float v_drive_inches_power;
     public void drive_inches(float power,float inches){
-        //
-        // Tell the system that motor encoders will be used.  This call MUST
-        // be in this state and NOT the previous or the encoders will not
-        // work.  It doesn't need to be in subsequent states.
-        //
-        run_using_encoders ();
-        v_drive_inches_power = power;
-        v_drive_inches_ticks = Math.round(inches * driveInches_ticksPerInch);
-        //
-        // Start the drive wheel motors at full power.
-        //
-        set_drive_power (v_drive_inches_power, v_drive_inches_power);
+        try {
+            //
+            // Tell the system that motor encoders will be used.  This call MUST
+            // be in this state and NOT the previous or the encoders will not
+            // work.  It doesn't need to be in subsequent states.
+            //
+            run_using_encoders();
+            v_drive_inches_power = power;
+            v_drive_inches_ticks = Math.round(inches * driveInches_ticksPerInch);
+            //
+            // Start the drive wheel motors at full power.
+            //
+            //debugLogException("drive_inches", "Target " + v_drive_inches_ticks, null);
+            set_drive_power(v_drive_inches_power, v_drive_inches_power);
+        }catch (Exception p_exeception)
+        {
+            debugLogException("drive inches", "drive_inches", p_exeception);
+
+
+        }
     }
 
     public boolean drive_inches_complete(){
@@ -1200,25 +1308,7 @@ public class CFPushBotHardware extends OpMode {
         // If they haven't, then the op-mode remains in this state (i.e this
         // block will be executed the next time this method is called).
         //
-        if (have_drive_encoders_reached (v_drive_inches_ticks - driveInches_ticksSlowDown1, v_drive_inches_ticks - driveInches_ticksSlowDown1))
-        {
-
-            //
-            // slow the motors to slowdown 1
-            //
-            if(v_drive_inches_power > v_drive_power_slowdown1) {
-                set_drive_power(v_drive_power_slowdown1, v_drive_power_slowdown1);
-            }
-        }else if (have_drive_encoders_reached (v_drive_inches_ticks - driveInches_ticksSlowDown2, v_drive_inches_ticks - driveInches_ticksSlowDown2))
-        {
-            //
-            // slow the motors to slowdown 2
-            //
-            if(v_drive_inches_power > v_drive_power_slowdown2) {
-                set_drive_power(v_drive_power_slowdown2, v_drive_power_slowdown2);
-            }
-
-        }else if (have_drive_encoders_reached (v_drive_inches_ticks , v_drive_inches_ticks ))
+        if (have_drive_encoders_reached (v_drive_inches_ticks , v_drive_inches_ticks ))
         {
             //
             // Stop the motors.
@@ -1233,7 +1323,27 @@ public class CFPushBotHardware extends OpMode {
             // again.
             //
             return true;
+        }else if (have_drive_encoders_reached (v_drive_inches_ticks - driveInches_ticksSlowDown2, v_drive_inches_ticks - driveInches_ticksSlowDown2))
+        {
+            //
+            // slow the motors to slowdown 2
+            //
+            if(v_drive_inches_power > v_drive_power_slowdown2) {
+                set_drive_power(v_drive_power_slowdown2, v_drive_power_slowdown2);
+            }
+
+        }else if (have_drive_encoders_reached (v_drive_inches_ticks - driveInches_ticksSlowDown1, v_drive_inches_ticks - driveInches_ticksSlowDown1))
+        {
+
+            //
+            // slow the motors to slowdown 1
+            //
+            if(v_drive_inches_power > v_drive_power_slowdown1) {
+                set_drive_power(v_drive_power_slowdown1, v_drive_power_slowdown1);
+            }
         }
+
+
         return false;
     }
 
@@ -1254,6 +1364,7 @@ public class CFPushBotHardware extends OpMode {
     /**
      *
      * @param degrees the amount in degrees you want to turn postive number is to the right negitive to the left
+     * @param turnslow make a slowTurn
      * @param useGyro use the Gyro to turn if false then ticks of the encoder will be used
      *
      */
@@ -1261,8 +1372,15 @@ public class CFPushBotHardware extends OpMode {
     public void turn_degrees(int degrees, boolean turnslow, boolean useGyro){
         v_turn_degrees_usingGyro = useGyro;
         if (v_turn_degrees_usingGyro) {
-            v_turn_degrees_heading_target = v_sensor_gyro.getHeading() + degrees;
+            v_sensor_gyro.resetZAxisIntegrator();
 
+            if (degrees > 0) {
+                //clockwise turn to the right so gyro will count up
+                v_turn_degrees_heading_target = degrees;
+            } else {
+                //clockwise turn to the left so gyro will count down
+                v_turn_degrees_heading_target = 360-degrees;
+            }
         }else {
             run_using_encoders();
             if (degrees > 0) {
@@ -1410,6 +1528,7 @@ public class CFPushBotHardware extends OpMode {
 
             return false;
         }else{
+
             if(fast){
                 m_rpa_arm_power(RPAArmMotor_Speed_Fast);
             }else{
@@ -1433,6 +1552,7 @@ public class CFPushBotHardware extends OpMode {
         if(rpa_arm_retracted() == true) {
             return false;
         }else{
+
             if(fast){
                 m_rpa_arm_power(0-RPAArmMotor_Speed_Fast);
             }else{
@@ -1440,7 +1560,7 @@ public class CFPushBotHardware extends OpMode {
             }
             return true;
         }
-    } // rpabase_moveDown
+    } // rpaarm_moveDown
 
 
     //--------------------------------------------------------------------------
@@ -1450,9 +1570,11 @@ public class CFPushBotHardware extends OpMode {
     /**
      * move the rpabase servo in the up Direction.
      */
-    double rpabase_moveUp (boolean fast)
+    public double rpabase_moveUp (boolean fast)
     {
         double l_temptarget;
+        //move the wrist out of the way
+        m_arm_wrist_position(ArmWristServo_MinPosition);
         if (fast) {
             l_temptarget = a_rpabase_position() + RPABaseServo_Delta_Fast;
         }else{
@@ -1469,15 +1591,34 @@ public class CFPushBotHardware extends OpMode {
     /**
      * move the rpabase servo in the down Direction.
      */
-    double rpabase_moveDown (boolean fast)
+    public double rpabase_moveDown (boolean fast)
     {
         double l_temptarget;
+        //move the wrist out of the way
+        m_arm_wrist_position(ArmWristServo_MinPosition);
         if (fast) {
             l_temptarget = a_rpabase_position() - RPABaseServo_Delta_Fast;
         }else{
             l_temptarget = a_rpabase_position() - RPABaseServo_Delta;
         }
         return m_rpabase_position(l_temptarget);
+    } // rpabase_moveDown
+
+
+    //--------------------------------------------------------------------------
+    //
+    // rpabase_moveDown
+    //
+    /**
+     * move the rpabase servo in the down Direction.
+     */
+    private boolean v_rpabase_moveToClimb = false;
+    public double rpabase_moveToClimb ()
+    {
+        //move the wrist out of the way
+        v_rpabase_moveToClimb = true;
+        m_arm_wrist_position(ArmWristServo_MinPosition);
+        return m_rpabase_position(RPABaseServo_ClimbPosition);
     } // rpabase_moveDown
 
 
@@ -1816,6 +1957,76 @@ public class CFPushBotHardware extends OpMode {
 
 
 
+    /**
+     * Mutate the flip right position.
+     */
+    double m_flip_right_position (double p_position)
+    {
+        //
+        // Ensure the specific value is legal.
+        //
+        l_flip_right_position = Range.clip
+                ( p_position
+                        , FlipRightServo_MinPosition
+                        , FlipRightServo_MaxPosition
+                );
+        try {
+            if (v_servo_flip_right != null) {
+                v_servo_flip_right.setPosition(l_flip_right_position);
+                return l_flip_right_position;
+            } else {
+                return ServoErrorResultPosition;
+            }
+        }catch (Exception p_exeception)
+        {
+            debugLogException("flip_right", "m_flip_right_position", p_exeception);
+            return ServoErrorResultPosition;
+        }
+    } // m_flip_right_position
+
+    /**
+     * Access the flip_right position.
+     */
+    double a_flip_right_position ()
+    {
+        return l_flip_right_position;
+    } // a_flip_right_position
+
+    /**
+     * Mutate the flip right position.
+     */
+    double m_flip_left_position (double p_position)
+    {
+        //
+        // Ensure the specific value is legal.
+        //
+        l_flip_left_position = Range.clip
+                ( p_position
+                        , FlipLeftServo_MinPosition
+                        , FlipLeftServo_MaxPosition
+                );
+        try {
+            if (v_servo_flip_left != null) {
+                v_servo_flip_left.setPosition(l_flip_left_position);
+                return l_flip_left_position;
+            } else {
+                return ServoErrorResultPosition;
+            }
+        }catch (Exception p_exeception)
+        {
+            debugLogException("flip_left", "m_flip_left_position", p_exeception);
+            return ServoErrorResultPosition;
+        }
+    } // m_flip_left_position
+
+    /**
+     * Access the flip_right position.
+     */
+    double a_flip_left_position ()
+    {
+        return l_flip_left_position;
+    } // a_flip_left_position
+
 
     /**
      * ticks the heartbeat which should happen every time though our loop
@@ -1824,10 +2035,9 @@ public class CFPushBotHardware extends OpMode {
 
     public void heartbeat_tick(){
         try {
-            v_led_heartbeat_ticks++;
-            if (v_led_heartbeat_ticks > v_led_heartbeat_tickPerToggle) {
+
+            if ((v_loop_ticks % v_led_heartbeat_tickPerToggle) == 0) {
                 heartbeat_toggle();
-                v_led_heartbeat_ticks = 0;
             }
         }catch (Exception p_exeception)
         {
@@ -2100,7 +2310,8 @@ public class CFPushBotHardware extends OpMode {
     public int sensor_gyro_get_rawX(){
         try{
             // get the heading info.
-            // the Modern Robotics' gyro sensor keeps
+            //move the wrist out of the way
+            m_arm_wrist_position(ArmWristServo_MinPosition);       // the Modern Robotics' gyro sensor keeps
             // track of the current heading for the Z axis only.
             if(v_sensor_gyro != null) {
                 v_sensor_gyro_x = v_sensor_gyro.rawX();
@@ -2233,8 +2444,24 @@ public class CFPushBotHardware extends OpMode {
         }
     }
 
+public double sensor_ultraLegecy_distance(){
+    try{
+        if(v_sensor_ultraLegecy != null){
+            if ((v_loop_ticks % v_sensor_ultraLegecy_ticksPerRead) == 0) {
+               v_sensor_ultraLegecy_distance = v_sensor_ultraLegecy.getUltrasonicLevel();
+            }
+            return v_sensor_ultraLegecy_distance;
+        }else{
+            return 9999.9999;
+        }
+    }catch (Exception p_exeception)
+    {
+        debugLogException("sensor_ultraLegecy", "sensor_ultraLegecy_distance", p_exeception);
+        return 9999.9999;
+    }
+}
 
-    //osd Legecy Sensor Methods
+    //Lego Light Legecy Sensor Methods
 
     //--------------------------------------------------------------------------
     //
@@ -2243,32 +2470,44 @@ public class CFPushBotHardware extends OpMode {
     /**
      * Access the amount of light detected by the Optical Distance Sensor.
      */
-    private double a_ods_light_detected ()
+    public double sensor_lightLegecy_amountDetected ()
 
     {
         double l_return = 0.0;
 
-        if (v_sensor_odsLegecy != null)
+        if (v_sensor_lightLegecy != null)
         {
-            v_sensor_odsLegecy.getLightDetected ();
+            v_sensor_lightLegecy.getLightDetected ();
         }
 
         return l_return;
 
-    } // a_ods_light_detected
+    }
+public boolean sensor_lightLegecy_led(boolean enable){
+    if(v_sensor_lightLegecy != null) {
+        v_sensor_lightLegecy_enabled = enable;
+        v_sensor_lightLegecy.enableLed(enable);
+        return true;
+    }else{
+        return false;
+    }
+}
 
-    public boolean sensor_odsLegecy_white_tape_detected(){
-        return a_ods_white_tape_detected();
+    public boolean sensor_lightLegecy_led_status(){
+        return v_sensor_lightLegecy_enabled;
+    }
+    public boolean sensor_lightLegecy_white_tape_detected(){
+        return a_light_white_tape_detected();
     }
 
     //--------------------------------------------------------------------------
     //
-    // a_ods_white_tape_detected
+    // a_light_white_tape_detected
     //
     /**
-     * Access whether the EOP is detecting white tape.
+     * Access whether the Light Sensor is detecting white tape.
      */
-    private boolean a_ods_white_tape_detected ()
+    private boolean a_light_white_tape_detected ()
     {
 
         //
@@ -2276,13 +2515,13 @@ public class CFPushBotHardware extends OpMode {
         //
         boolean l_return = false;
 
-        if (v_sensor_odsLegecy != null)
+        if (v_sensor_lightLegecy != null)
         {
             //
             // Is the amount of light detected above the threshold for white
             // tape?
             //
-            if (v_sensor_odsLegecy.getLightDetected () > 0.8)
+            if (v_sensor_lightLegecy.getLightDetected () > 0.8)
             {
                 l_return = true;
             }

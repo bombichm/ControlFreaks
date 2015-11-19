@@ -67,6 +67,7 @@ public class CFPushBotAuto_Blue4 extends CFPushBotTelemetry {
     @Override public void loop ()
 
     {
+        hardware_loop();
         //----------------------------------------------------------------------
         //
         // State: Initialize (i.e. state_0).
@@ -81,17 +82,26 @@ public class CFPushBotAuto_Blue4 extends CFPushBotTelemetry {
                 // Reset the encoders to ensure they are at a known good value.
                 //
                 reset_drive_encoders ();
+                v_state++;
+                break;
+            case 1:
+                //
+                // Reset the encoders to ensure they are at a known good value.
+                //
+                //reset_drive_encoders ();
 
                 //
                 // Transition to the next state when this method is called again.
-                //
-                v_state++;
+                if (have_drive_encoders_reset()) {
+                    //
+                    v_state++;
+                }
 
                 break;
             //
             // Drive forward until the encoders exceed the specified values.
             //
-            case 1:
+            case 2:
                 //Drive forward 74.5 inches Positive Power is forward
                 drive_inches(1.0f,74.5f);
                 v_state++;
@@ -99,25 +109,46 @@ public class CFPushBotAuto_Blue4 extends CFPushBotTelemetry {
             //
             // Wait...
             //
-            case 2:
+            case 3:
                 //keep checking if we have reached the distance we need to reach
                 if (drive_inches_complete ())
                 {
                     v_state++;
                 }
                 break;
+            case 4:
+                //
+                // Reset the encoders to ensure they are at a known good value.
+                //
+                reset_drive_encoders ();
+                v_state++;
+                break;
+            case 5:
+                //
+                // Reset the encoders to ensure they are at a known good value.
+                //
+                //reset_drive_encoders ();
+
+                //
+                // Transition to the next state when this method is called again.
+                if (have_drive_encoders_reset()) {
+                    //
+                    v_state++;
+                }
+
+                break;
             //
             // Turn right 90 degres.
             //
-            case 3:
+            case 6:
                 // positive is right turn
-               turn_degrees(90, false, true);
+               turn_degrees(90, true, true);
                 v_state++;
                 break;
             //
             // Wait...
             //
-            case 4:
+            case 7:
                 if (turn_complete ());
                 {
                     v_state++;
@@ -126,7 +157,7 @@ public class CFPushBotAuto_Blue4 extends CFPushBotTelemetry {
 //            //
 //            // Turn right until the encoders exceed the specified values.
 //            //
-            case 5:
+            /*case 6:
                 drive_inches(1.0f,52.5f);
                 {
 
@@ -134,12 +165,12 @@ public class CFPushBotAuto_Blue4 extends CFPushBotTelemetry {
                 }
                 break;
 
-            case 6:
+            case 7:
                 if (drive_inches_complete())
                 {
                     v_state++;
                 }
-               break;
+               break;*/
 //            //
 //            // Perform no action - stay in this case until the OpMode is stopped.
 //            // This method will still be called regardless of the state machine.
