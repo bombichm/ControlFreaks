@@ -49,8 +49,8 @@ public class CFPushBotAuto extends CFPushBotTelemetry {
         //
         // Reset the motor encoders on the drive wheels.
         //
-        reset_drive_encoders ();
-
+        //reset_drive_encoders ();
+        //run_without_drive_encoders();
     } // start
 
     //--------------------------------------------------------------------------
@@ -79,82 +79,109 @@ public class CFPushBotAuto extends CFPushBotTelemetry {
             //
             case 0:
                 //
-                // Reset the encoders to ensure they are at a known good value.
+                // drive Forward 12 inches
                 //
-                reset_drive_encoders ();
+                drive_inches(1.0f,12, true);
+
+                //set_drive_power(1.0d, 1.0d);
+                v_state++;
+                break;
+            case 1:
 
                 //
                 // Transition to the next state when this method is called again.
-                //
-                v_state++;
+                if (drive_inches_complete()) {
+                    //
+                    v_state++;
+                }
 
                 break;
-            //
-            // Drive forward until the encoders exceed the specified values.
-            //
-            case 1:
-                //Drive forward 74.5 inches Positive Power is forward
-                drive_inches(1.0f,74.5f);
-                v_state++;
 
+            case 2:
+                // positive is right turn
+                turn_degrees(90, false, true);
+                set_second_message("turn 90 to the right");
+                v_state++;
                 break;
             //
             // Wait...
-            //
-            case 2:
-                if (drive_inches_complete ())
-                {
-                    if (have_drive_encoders_reset ())
-                    {
-                        v_state++;
-                    }
-                }
-                break;
-            //
-            // Turn left until the encoders exceed the specified values.
             //
             case 3:
+                //keep checking if we have reached the distance we need to reach
+                if (turn_complete ())
+                {
+                    set_second_message("turn Complete");
+                    v_state++;
+                }
+                break;
+            case 4:
+                //
+                // drive Forward 12 inches
+                //
+                drive_inches(1.0f,12, true);
+
+                //set_drive_power(1.0d, 1.0d);
+                v_state++;
+                break;
+            case 5:
+                //
+                // Transition to the next state when this method is called again.
+                if (drive_inches_complete()) {
+                    //
+                    v_state++;
+                }
+                break;
+            case 6:
                 // positive is right turn
-                turn_degrees(90,false,true);
+                turn_degrees(90, false, true);
+                set_second_message("turn 90 to the right");
                 v_state++;
                 break;
             //
             // Wait...
             //
-            case 4:
-                if (turn_complete ()){
-                    if (have_drive_encoders_reset ())
-                    {
-                        v_state++;
-                    }
+            case 7:
+                //keep checking if we have reached the distance we need to reach
+                if (turn_complete ())
+                {
+                    set_second_message("turn Complete");
+                    v_state++;
                 }
                 break;
-//            //
-//            // Turn right until the encoders exceed the specified values.
-//            //
-//            case 5:
-//                run_using_encoders ();
-//                set_drive_power (1.0f, -1.0f);
-//                if (have_drive_encoders_reached (2880, 2880))
-//                {
-//                    reset_drive_encoders ();
-//                    set_drive_power (0.0f, 0.0f);
-//                    v_state++;
-//                }
-//                break;
-//            //
-//            // Wait...
-//            //
-//            case 6:
-//                if (have_drive_encoders_reset ())
-//                {
-//                    v_state++;
-//                }
-//                break;
-//            //
-//            // Perform no action - stay in this case until the OpMode is stopped.
-//            // This method will still be called regardless of the state machine.
-//            //
+            case 8:
+                //
+                // drive Forward 12 inches
+                //
+                drive_inches(1.0f,12, true);
+
+                //set_drive_power(1.0d, 1.0d);
+                v_state++;
+                break;
+            case 9:
+                //
+                // Transition to the next state when this method is called again.
+                if (drive_inches_complete()) {
+                    //
+                    v_state++;
+                }
+                break;
+            case 10:
+                // positive is right turn
+                turn_degrees(90, false, true);
+                set_second_message("turn 90 to the right");
+                v_state++;
+                break;
+            //
+            // Wait...
+            //
+            case 11:
+                //keep checking if we have reached the distance we need to reach
+                if (turn_complete ())
+                {
+                    set_second_message("turn Complete");
+                    v_state++;
+                }
+                break;
             default:
                 //
                 // The autonomous actions have been accomplished (i.e. the state has
@@ -166,8 +193,10 @@ public class CFPushBotAuto extends CFPushBotTelemetry {
         //
         // Send telemetry data to the driver station.
         //
-        update_telemetry (); // Update common telemetry
-        telemetry.addData ("18", "State: " + v_state);
+        if ((loopCounter() % 10) == 0) {
+            update_telemetry(); // Update common telemetry
+            telemetry.addData("18", "State: " + v_state);
+        }
 
     } // loop
 

@@ -28,7 +28,8 @@ public class CFPushBotTelemetry extends CFPushBotHardware {
         // Initialize class members.
         //
         // All via self-construction.
-
+        //push ref to our base so it can call our functions
+        this.setTelemetry(this);
     } // PushBotTelemetry
 
     //--------------------------------------------------------------------------
@@ -48,13 +49,15 @@ public class CFPushBotTelemetry extends CFPushBotHardware {
             //
             // Send telemetry data to the driver station.
             //
-            telemetry.addData("01", secondMessage);
+            telemetry.addData("01", loopCounter() + ":" + secondMessage);
             telemetry.addData
                     ("02"
                             , "Left Drive: "
                                     + a_left_drive_power()
                                     + ", "
                                     + a_left_encoder_count()
+                                    + ", "
+                                    + a_left_drive_mode()
                     );
             telemetry.addData
                     ("03"
@@ -62,6 +65,8 @@ public class CFPushBotTelemetry extends CFPushBotHardware {
                                     + a_right_drive_power()
                                     + ", "
                                     + a_right_encoder_count()
+                                    + ", "
+                                    + a_right_drive_mode()
                     );
             telemetry.addData
                     ("04"
@@ -157,7 +162,7 @@ public class CFPushBotTelemetry extends CFPushBotHardware {
 
     {
         secondMessage = p_message;
-
+        DbgLog.msg(p_message);
 
     } // set_first_message
     //--------------------------------------------------------------------------

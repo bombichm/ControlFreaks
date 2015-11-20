@@ -103,7 +103,7 @@ public class CFPushBotAuto_Blue4 extends CFPushBotTelemetry {
             //
             case 2:
                 //Drive forward 74.5 inches Positive Power is forward
-                drive_inches(1.0f,74.5f);
+                drive_inches(1.0f,74.5f, true);
                 v_state++;
                 break;
             //

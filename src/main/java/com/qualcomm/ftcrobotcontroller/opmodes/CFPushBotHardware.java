@@ -83,9 +83,16 @@ public class CFPushBotHardware extends OpMode {
     private Servo v_servo_arm_wrist;
     private static final double ArmWristServo_Delta = 0.005;
     private static final double ArmWristServo_Delta_Fast = 0.05;
-    private static final double ArmWristServo_MinPosition = 0.05;
-    private static final double ArmWristServo_MaxPosition = 0.99;
-    private double l_arm_wrist_position = 0.45D;  //init arm elbow Position
+    private static final double ArmWristServo_MinPosition = 0.00;
+    private static final double ArmWristServo_MaxPosition = 1.00;
+    private double l_arm_wrist_position = 0.0D;  //init arm elbow Position
+    //Used in Manual mode to set min trigger pull for slow wrist action
+
+    public static final double ArmWristTrigger_Threshold = 0.2;
+    //Used in Manual mode to set min trigger pull for fast wrist action
+
+    public static final double ArmWristTrigger_Threshold_Fast = 0.9;
+
 
     // v_servo_flip_right
     private Servo v_servo_flip_right;
@@ -103,16 +110,7 @@ public class CFPushBotHardware extends OpMode {
     private static final double FlipLeftServo_MaxPosition = 0.89;
     private double l_flip_left_position = 0.05D;  //init flip_right Position
 
-    /**
-     * Used in Manual mode to set min trigger pull for slow wrist action
-     *
-     */
-    public static final double ArmWristTrigger_Threshold = 0.2;
-    /**
-     * Used in Manual mode to set min trigger pull for fast wrist action
-     *
-     */
-    public static final double ArmWristTrigger_Threshold_Fast = 0.9;
+
 
     //Legecy Color Sensor
     private ColorSensor v_sensor_colorLegecy;
@@ -177,8 +175,17 @@ public class CFPushBotHardware extends OpMode {
      */
     private DcMotor v_motor_right_drive;
 
+    private CFPushBotTelemetry v_CFPushBotTelemetry; //hack to allow use to set error messages using telmentry
 
+    public void setTelemetry(CFPushBotTelemetry objCFPushBotTelemetry){
+        v_CFPushBotTelemetry= objCFPushBotTelemetry;
+    }
+    private void setSecondMessage(String message){
+        if (v_CFPushBotTelemetry != null){
 
+            v_CFPushBotTelemetry.set_second_message(message);
+        }
+    }
     //--------------------------------------------------------------------------
     //
     // v_warning_generated
@@ -270,6 +277,7 @@ public class CFPushBotHardware extends OpMode {
             while (v_sensor_gyro.isCalibrating())  {
                 Thread.sleep(50);
             }
+            v_sensor_gyro.resetZAxisIntegrator();
         }catch(Exception p_exeception){
 
             m_warning_message ("gyro1");
@@ -519,19 +527,24 @@ public class CFPushBotHardware extends OpMode {
 
     } // a_warning_generated
 
+    /**
+     * Used to retrive the total loop count
+     * @return The number of time loop has been executed
+     */
+    public long loopCounter(){
+        return v_loop_ticks;
+    }
     void debugLogException(String type, String msg, Exception ex){
-        m_warning_message(type);
+        if (ex != null){
+            m_warning_message(type);
+        }
         String debugMessage = type + ":" + msg;
         if (ex != null) {
             String errMsg = ex.getLocalizedMessage();
             if (errMsg != null) {
                 debugMessage = debugMessage + errMsg;
-            }else{
-                debugMessage = debugMessage + " error. is null";
             }
-        }else{
-            debugMessage = debugMessage + " error is null";
-            }
+        }
 
         DbgLog.msg(debugMessage );
     }
@@ -771,7 +784,7 @@ public class CFPushBotHardware extends OpMode {
         {
             v_motor_right_drive.setPower(p_right_power);
         }
-
+        //setSecondMessage("set_drive_power " + p_left_power + ":" + p_right_power);
     } // set_drive_power
 
     //--------------------------------------------------------------------------
@@ -913,6 +926,17 @@ public class CFPushBotHardware extends OpMode {
 
     } // reset_left_drive_encoder
 
+    public boolean isInDriveMode(DcMotorController.RunMode RunMode){
+        if (v_motor_left_drive != null && v_motor_right_drive != null){
+            if(v_motor_left_drive.getMode() == RunMode && v_motor_right_drive.getMode() == RunMode){
+                return true;
+            }else{
+                return false;
+            }
+        }
+        return true;
+    }
+
     //--------------------------------------------------------------------------
     //
     // reset_right_drive_encoder
@@ -969,6 +993,39 @@ public class CFPushBotHardware extends OpMode {
         return l_return;
 
     } // a_left_encoder_count
+
+    /**
+     * Access the left drive mode.
+     */
+    DcMotorController.RunMode a_left_drive_mode ()
+    {
+
+
+        if (v_motor_left_drive != null)
+        {
+            return v_motor_left_drive.getMode();
+        }
+
+        return DcMotorController.RunMode.RUN_WITHOUT_ENCODERS;
+
+    } // a_left_drive_mode
+
+    /**
+     * Access the right drive mode.
+     */
+    DcMotorController.RunMode a_right_drive_mode ()
+    {
+
+
+        if (v_motor_right_drive != null)
+        {
+            return v_motor_right_drive.getMode();
+        }
+
+        return DcMotorController.RunMode.RUN_WITHOUT_ENCODERS;
+
+    } // a_right_drive_mode
+
 
     //--------------------------------------------------------------------------
     //
@@ -1154,10 +1211,6 @@ public class CFPushBotHardware extends OpMode {
         //
         if (have_drive_encoders_reached (p_left_count, p_right_count))
         {
-            //
-            // Reset the encoders to ensure they are at a known good value.
-            //
-            reset_drive_encoders ();
 
             //
             // Stop the motors.
@@ -1276,21 +1329,25 @@ public class CFPushBotHardware extends OpMode {
 
     private long v_drive_inches_ticks;
     private float v_drive_inches_power;
-    public void drive_inches(float power,float inches){
+    private boolean v_drive_inches_useGyro;
+    private int v_drive_inches_state;
+    public void drive_inches(float power,float inches, boolean useGyro){
         try {
             //
             // Tell the system that motor encoders will be used.  This call MUST
             // be in this state and NOT the previous or the encoders will not
             // work.  It doesn't need to be in subsequent states.
             //
-            run_using_encoders();
+            reset_drive_encoders();
             v_drive_inches_power = power;
             v_drive_inches_ticks = Math.round(inches * driveInches_ticksPerInch);
+            v_drive_inches_useGyro = useGyro;
+            v_drive_inches_state = 0;
             //
             // Start the drive wheel motors at full power.
             //
             //debugLogException("drive_inches", "Target " + v_drive_inches_ticks, null);
-            set_drive_power(v_drive_inches_power, v_drive_inches_power);
+
         }catch (Exception p_exeception)
         {
             debugLogException("drive inches", "drive_inches", p_exeception);
@@ -1301,48 +1358,79 @@ public class CFPushBotHardware extends OpMode {
 
     public boolean drive_inches_complete(){
 
+        switch(v_drive_inches_state){
+            case 0:
+                if(have_drive_encoders_reset()){
+                    run_using_encoders();
+                    setSecondMessage("drive_inches_complete: encoders have reset");
+                    v_drive_inches_state++;
+                }
 
-        //
-        // Have the motor shafts turned the required amount?
-        //
-        // If they haven't, then the op-mode remains in this state (i.e this
-        // block will be executed the next time this method is called).
-        //
-        if (have_drive_encoders_reached (v_drive_inches_ticks , v_drive_inches_ticks ))
-        {
-            //
-            // Stop the motors.
-            //
-            set_drive_power (0.0f, 0.0f);
-            //
-            // Reset the encoders to ensure they are at a known good value.
-            //
-            reset_drive_encoders();
-            //
-            // Transition to the next state when this method is called
-            // again.
-            //
-            return true;
-        }else if (have_drive_encoders_reached (v_drive_inches_ticks - driveInches_ticksSlowDown2, v_drive_inches_ticks - driveInches_ticksSlowDown2))
-        {
-            //
-            // slow the motors to slowdown 2
-            //
-            if(v_drive_inches_power > v_drive_power_slowdown2) {
-                set_drive_power(v_drive_power_slowdown2, v_drive_power_slowdown2);
-            }
+            case 1:
+                if(isInDriveMode(DcMotorController.RunMode.RUN_USING_ENCODERS)){
+                    setSecondMessage("drive_inches_complete: isInDriveMode Run_Using_Encoders");
 
-        }else if (have_drive_encoders_reached (v_drive_inches_ticks - driveInches_ticksSlowDown1, v_drive_inches_ticks - driveInches_ticksSlowDown1))
-        {
+                    v_drive_inches_state++;
+                }
 
-            //
-            // slow the motors to slowdown 1
-            //
-            if(v_drive_inches_power > v_drive_power_slowdown1) {
-                set_drive_power(v_drive_power_slowdown1, v_drive_power_slowdown1);
-            }
+                break;
+            case 2:
+                v_drive_inches_state++;
+                break;
+            case 3:
+                set_drive_power(v_drive_inches_power,v_drive_inches_power);
+                setSecondMessage("drive_inches_complete: set the drive power");
+                v_drive_inches_state++;
+                break;
+            case 4:
+                //
+                // Have the motor shafts turned the required amount?
+                //
+                // If they haven't, then the op-mode remains in this state (i.e this
+                // block will be executed the next time this method is called).
+                //
+                if (have_drive_encoders_reached (v_drive_inches_ticks , v_drive_inches_ticks ))
+                {
+                    //
+                    // Stop the motors.
+                    //
+                    set_drive_power (0.0f, 0.0f);
+                    //
+                    // Reset the encoders to ensure they are at a known good value.
+                    //
+                    //reset_drive_encoders();
+                    //
+                    // Transition to the next state when this method is called
+                    // again.
+                    //
+                    setSecondMessage("drive_inches_complete: drive complete");
+                    v_drive_inches_state++;
+                    return true;
+                }else if (have_drive_encoders_reached (v_drive_inches_ticks - driveInches_ticksSlowDown2, v_drive_inches_ticks - driveInches_ticksSlowDown2))
+                {
+                    //
+                    // slow the motors to slowdown 2
+                    //
+                    if(v_drive_inches_power > v_drive_power_slowdown2) {
+                        set_drive_power(v_drive_power_slowdown2, v_drive_power_slowdown2);
+                        setSecondMessage("drive_inches_complete: slowdown 2");
+                    }
+
+                }else if (have_drive_encoders_reached (v_drive_inches_ticks - driveInches_ticksSlowDown1, v_drive_inches_ticks - driveInches_ticksSlowDown1))
+                {
+
+                    //
+                    // slow the motors to slowdown 1
+                    //
+                    if(v_drive_inches_power > v_drive_power_slowdown1) {
+                        setSecondMessage("drive_inches_complete: slow down 1");
+                        set_drive_power(v_drive_power_slowdown1, v_drive_power_slowdown1);
+                    }
+                }
+            break;
+            default:
+                return true;
         }
-
 
         return false;
     }
@@ -1355,56 +1443,80 @@ public class CFPushBotHardware extends OpMode {
         }
     }
     private static final float v_turn_ticks_per_degree = 18.8f;
-    private static final float v_turn_ticks_per_degree_motorspeed = 1.0f;
-    private static final float v_turn_ticks_per_degree_motorspeed_slow = .5f;
+    private static final float v_turn_motorspeed = .3f;
+    private static final float v_turn_motorspeed_slow = .2f;
     private long v_turn_degrees_ticks;
+    private static final int v_turn_degrees_heading_drift_error = 3;
     private int v_turn_degrees_heading_target;
+    private int v_turn_degrees_heading_start;
+    private int v_turn_degrees_heading_start_error;
     private boolean v_turn_degrees_usingGyro;
     private boolean v_turn_degrees_iscwturn;
+    private boolean v_turn_degrees_isSlowTurn;
+    private int v_turn_degrees_state;
     /**
      *
      * @param degrees the amount in degrees you want to turn postive number is to the right negitive to the left
-     * @param turnslow make a slowTurn
+     * @param turnSlow make a slowTurn
      * @param useGyro use the Gyro to turn if false then ticks of the encoder will be used
      *
      */
 
-    public void turn_degrees(int degrees, boolean turnslow, boolean useGyro){
+    public void turn_degrees(int degrees, boolean turnSlow, boolean useGyro){
+        //Do nothing is turn is zero
+        if(degrees == 0){
+            return;
+        }
         v_turn_degrees_usingGyro = useGyro;
+        v_turn_degrees_isSlowTurn = turnSlow;
+
         if (v_turn_degrees_usingGyro) {
-            v_sensor_gyro.resetZAxisIntegrator();
+            run_without_drive_encoders();
+            //set the state to 1 as we don't need to wait for drive encoder reset
+            v_turn_degrees_state = 1;
+            //v_sensor_gyro.resetZAxisIntegrator();
+            v_turn_degrees_heading_start = sensor_gyro_get_heading();
 
             if (degrees > 0) {
+                //used to account for gyro drift so a drift -1 on the intial start doesn't mark turn complete
+                v_turn_degrees_heading_start_error = v_turn_degrees_heading_start - v_turn_degrees_heading_drift_error;
+                if (v_turn_degrees_heading_start_error < 0){
+                    v_turn_degrees_heading_start_error = 360 + v_turn_degrees_heading_start_error;
+                }
                 //clockwise turn to the right so gyro will count up
-                v_turn_degrees_heading_target = degrees;
+                v_turn_degrees_heading_target = v_turn_degrees_heading_start + (degrees - v_turn_degrees_heading_drift_error);
+                //add above could be greater then
+                if (v_turn_degrees_heading_target >= 360){
+                    v_turn_degrees_heading_target =  v_turn_degrees_heading_target - 360;
+                }
             } else {
+                v_turn_degrees_heading_start_error = v_turn_degrees_heading_start + v_turn_degrees_heading_drift_error;
+                if (v_turn_degrees_heading_start_error >= 360){
+                    v_turn_degrees_heading_start_error =  v_turn_degrees_heading_start_error - 360;
+                }
                 //clockwise turn to the left so gyro will count down
-                v_turn_degrees_heading_target = 360-degrees;
+                v_turn_degrees_heading_target = v_turn_degrees_heading_start + (degrees +  v_turn_degrees_heading_drift_error);
+                //degrees is a negitive so add above could be a negitive number
+                if (v_turn_degrees_heading_target < 0){
+                    v_turn_degrees_heading_target = 360 + v_turn_degrees_heading_target;
+                }
             }
         }else {
-            run_using_encoders();
+            reset_drive_encoders();
+            //set state to 0 so we wait for encoder reset
+            v_turn_degrees_state = 0;
             if (degrees > 0) {
                 v_turn_degrees_ticks = Math.round(degrees * v_turn_ticks_per_degree);
             } else {
                 v_turn_degrees_ticks = Math.round((0 - degrees) * v_turn_ticks_per_degree);
             }
         }
-        if (degrees > 0) {
+
+         if (degrees > 0) {
             //greater then 0 turn cw or to the right
             v_turn_degrees_iscwturn = true;
-            if (turnslow) {
-                set_drive_power(0 - v_turn_ticks_per_degree_motorspeed_slow, v_turn_ticks_per_degree_motorspeed_slow);
-            }else {
-                set_drive_power(0 - v_turn_ticks_per_degree_motorspeed_slow, v_turn_ticks_per_degree_motorspeed_slow);
-            }
         } else {
             v_turn_degrees_iscwturn = false;
-            //less then 0 turn ccw or to the left
-            if (turnslow) {
-                set_drive_power(v_turn_ticks_per_degree_motorspeed_slow, 0 - v_turn_ticks_per_degree_motorspeed_slow);
-            }else {
-                set_drive_power(v_turn_ticks_per_degree_motorspeed, 0-v_turn_ticks_per_degree_motorspeed);
-            }
         }
     }
 
@@ -1413,29 +1525,95 @@ public class CFPushBotHardware extends OpMode {
      *
      * @return true if the turn is complete false if not
      */
-    public boolean turn_complete(){
-        if (v_turn_degrees_usingGyro) {
-            if(v_turn_degrees_iscwturn){
-                //if we are turning clockwise then we stop >= then our target
-                if(sensor_gyro_get_heading() >= v_turn_degrees_heading_target){
-                    set_drive_power(0.0f, 0.0f);
-                    return true;
-                }
-            }else{
-                //we are turning counterclockwise so we stop <= our target heading
-                if(sensor_gyro_get_heading() <= v_turn_degrees_heading_target){
-                    set_drive_power(0.0f, 0.0f);
-                    return true;
-                }
-            }
 
-        }else {
-            if (have_drive_encoders_reached(v_turn_degrees_ticks, v_turn_degrees_ticks)) {
-                set_drive_power(0.0f, 0.0f);
-                reset_drive_encoders();
+    public boolean turn_complete(){
+
+
+        switch(v_turn_degrees_state){
+            case 0:
+                if (have_drive_encoders_reset()) {
+                    setSecondMessage("turn_complete: encoders have reset");
+                    run_using_encoders();
+                    v_turn_degrees_state++;
+                }
+
+            case 1:
+                if (v_turn_degrees_usingGyro) {
+                    if (isInDriveMode(DcMotorController.RunMode.RUN_WITHOUT_ENCODERS)){
+                        setSecondMessage("turn_complete: gyro in run without encoders");
+                        v_turn_degrees_state++;
+                    }
+                }else {
+                    if (isInDriveMode(DcMotorController.RunMode.RUN_USING_ENCODERS)){
+                        setSecondMessage("turn_complete: gyro in run using encoders");
+                        v_turn_degrees_state++;
+                    }
+                }
+            case 2:
+                if (v_turn_degrees_iscwturn) {
+                    if (v_turn_degrees_isSlowTurn) {
+                        set_drive_power(v_turn_motorspeed_slow, 0-v_turn_motorspeed_slow);
+                        setSecondMessage("turn_complete: set slow turn clock wise");
+                    }else {
+                        set_drive_power(v_turn_motorspeed, 0- v_turn_motorspeed);
+                        setSecondMessage("turn_complete: set fast turn clock wise");
+                    }
+                } else {
+                    if (v_turn_degrees_isSlowTurn) {
+                        set_drive_power(0-v_turn_motorspeed_slow,  v_turn_motorspeed_slow);
+                        setSecondMessage("turn_complete: set slow turn counter clock wise");
+                    }else {
+                        set_drive_power(0-v_turn_motorspeed, v_turn_motorspeed);
+                        setSecondMessage("turn_complete: set fast turn counter clock wise");
+                    }
+                }
+                v_turn_degrees_state++;
+                break;
+            case 3:
+                if (v_turn_degrees_usingGyro) {
+                    int currentHeading = sensor_gyro_get_heading();
+                    //debugLogException("turn_complete ", "H:" + currentHeading + ",T:" + v_turn_degrees_heading_target + ",SH:" + v_turn_degrees_heading_start + ",SHE:" + v_turn_degrees_heading_start_error, null );
+                    setSecondMessage("turn_complete: H:" + currentHeading + ", T:" + v_turn_degrees_heading_target + ",SH:" + v_turn_degrees_heading_start + ",SHE:" + v_turn_degrees_heading_start_error);
+                    if(v_turn_degrees_iscwturn){
+                        //if we are turning clockwise then we stop >= then our target
+
+                        if(currentHeading >= v_turn_degrees_heading_target
+                                && (
+                                    ( v_turn_degrees_heading_start_error >  v_turn_degrees_heading_target && currentHeading < v_turn_degrees_heading_start_error)
+                                    || (v_turn_degrees_heading_start_error <  v_turn_degrees_heading_target && currentHeading > v_turn_degrees_heading_start_error) )
+                                )
+                        {
+
+                            set_drive_power(0.0f, 0.0f);
+                            v_turn_degrees_state++;
+                            return true;
+                        }
+                    }else{
+                        //we are turning counterclockwise so we stop <= our target heading
+                        if(currentHeading <= v_turn_degrees_heading_target && currentHeading > v_turn_degrees_heading_start_error
+                                && (
+                                ( v_turn_degrees_heading_start_error <  v_turn_degrees_heading_target && currentHeading > v_turn_degrees_heading_start_error)
+                                        || (v_turn_degrees_heading_start_error >  v_turn_degrees_heading_target && currentHeading < v_turn_degrees_heading_start_error) )
+                                ){
+                            set_drive_power(0.0f, 0.0f);
+                            v_turn_degrees_state++;
+                            return true;
+                        }
+                    }
+
+                }else {
+                    if (have_drive_encoders_reached(v_turn_degrees_ticks, v_turn_degrees_ticks)) {
+                        set_drive_power(0.0f, 0.0f);
+                        setSecondMessage("turn_complete: encoders reached value");
+                        v_turn_degrees_state++;
+                        return true;
+                    }
+                }
+                break;
+            default:
                 return true;
-            }
         }
+
         return false;
     }
 
