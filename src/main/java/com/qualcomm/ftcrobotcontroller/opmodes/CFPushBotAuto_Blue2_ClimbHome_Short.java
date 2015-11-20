@@ -3,7 +3,7 @@ package com.qualcomm.ftcrobotcontroller.opmodes;
 /**
  * Created by adevries on 11/6/2015.
  */
-public class CFPushBotAuto_Blue4 extends CFPushBotTelemetry {
+public class CFPushBotAuto_Blue2_ClimbHome_Short extends CFPushBotTelemetry {
 
     //--------------------------------------------------------------------------
     //
@@ -14,7 +14,7 @@ public class CFPushBotAuto_Blue4 extends CFPushBotTelemetry {
      *
      * The system calls this member when the class is instantiated.
      */
-    public CFPushBotAuto_Blue4()
+    public CFPushBotAuto_Blue2_ClimbHome_Short()
 
     {
         //
@@ -79,7 +79,7 @@ public class CFPushBotAuto_Blue4 extends CFPushBotTelemetry {
                 // drive Forward 24 inches
                 //
                 led7seg_timer_init(30);
-                drive_inches(1.0f,66, true);
+                drive_inches(1.0f,4, true);
                 v_state++;
                 break;
             case 1:
@@ -95,8 +95,8 @@ public class CFPushBotAuto_Blue4 extends CFPushBotTelemetry {
 
             case 2:
                 // positive is right turn
-                turn_degrees(133, false, true);
-                set_second_message("turn 135 degrees to the right");
+                turn_degrees(45, false, true);
+                set_second_message("turn 45 degrees to the right");
                 v_state++;
                 break;
             //
@@ -114,12 +114,46 @@ public class CFPushBotAuto_Blue4 extends CFPushBotTelemetry {
                 //
                 // drive Forward 12 inches
                 //
-                drive_inches(1.0f,50, true);
+                drive_inches(1.0f,85, true);
 
                 //set_drive_power(1.0d, 1.0d);
                 v_state++;
                 break;
             case 5:
+                //
+                // Transition to the next state when this method is called again.
+                if (drive_inches_complete()) {
+                    //
+                    v_state++;
+                }
+                break;
+            case 6:
+                // positive is right turn
+                turn_degrees(88, false, true);
+                set_second_message("turn 88 degrees to the right");
+                v_state++;
+                break;
+            //
+            // Wait...
+            //
+            case 7:
+                //keep checking if we have reached the distance we need to reach
+                if (turn_complete ())
+                {
+                    set_second_message("turn Complete");
+                    v_state++;
+                }
+                break;
+            case 8:
+                //
+                // drive Forward 12 inches
+                //
+                drive_inches(1.0f,32, true);
+
+                //set_drive_power(1.0d, 1.0d);
+                v_state++;
+                break;
+            case 9:
                 //
                 // Transition to the next state when this method is called again.
                 if (drive_inches_complete()) {

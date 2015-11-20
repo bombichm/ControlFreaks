@@ -511,6 +511,10 @@ public class CFPushBotHardware extends OpMode {
 
         }
 
+        //update our telmentry after init so we know if we are missing anything
+        if(v_CFPushBotTelemetry != null){
+            v_CFPushBotTelemetry.update_telemetry();
+        }
     } // init
 
     //--------------------------------------------------------------------------
@@ -1331,6 +1335,8 @@ public class CFPushBotHardware extends OpMode {
     private float v_drive_inches_power;
     private boolean v_drive_inches_useGyro;
     private int v_drive_inches_state;
+    private int v_drive_inches_heading;
+    private static final float v_drive_inches_power_gyro_correction = 0.2f;
     public void drive_inches(float power,float inches, boolean useGyro){
         try {
             //
@@ -1356,6 +1362,25 @@ public class CFPushBotHardware extends OpMode {
         }
     }
 
+    /**
+     * Inits the led 7 segment counter to start a count down in seconds
+     * @param seconds
+     * @return
+     */
+    public boolean led7seg_timer_init(int seconds){
+        return false;
+    }
+
+    /**
+     * starts led 7 segment counter to to count down in seconds
+     * @param seconds
+     * @return
+     */
+
+    public boolean led7seg_timer_start(int seconds){
+        return false;
+    }
+
     public boolean drive_inches_complete(){
 
         switch(v_drive_inches_state){
@@ -1378,8 +1403,11 @@ public class CFPushBotHardware extends OpMode {
                 v_drive_inches_state++;
                 break;
             case 3:
+                if (v_drive_inches_useGyro) {
+                    v_drive_inches_heading = sensor_gyro_get_heading();
+                }
                 set_drive_power(v_drive_inches_power,v_drive_inches_power);
-                setSecondMessage("drive_inches_complete: set the drive power");
+                setSecondMessage("drive_inches_complete: set the drive power , H:" + v_drive_inches_heading);
                 v_drive_inches_state++;
                 break;
             case 4:
@@ -1403,7 +1431,8 @@ public class CFPushBotHardware extends OpMode {
                     // Transition to the next state when this method is called
                     // again.
                     //
-                    setSecondMessage("drive_inches_complete: drive complete");
+                    setSecondMessage("drive_inches_complete: drive complete t:" + v_drive_inches_ticks
+                            + ",l:" + a_left_encoder_count() + ",r:" + a_right_encoder_count() );
                     v_drive_inches_state++;
                     return true;
                 }else if (have_drive_encoders_reached (v_drive_inches_ticks - driveInches_ticksSlowDown2, v_drive_inches_ticks - driveInches_ticksSlowDown2))
@@ -1413,7 +1442,8 @@ public class CFPushBotHardware extends OpMode {
                     //
                     if(v_drive_inches_power > v_drive_power_slowdown2) {
                         set_drive_power(v_drive_power_slowdown2, v_drive_power_slowdown2);
-                        setSecondMessage("drive_inches_complete: slowdown 2");
+                        setSecondMessage("drive_inches_complete: slowdown 2 t:" + v_drive_inches_ticks
+                                + ",l:" + a_left_encoder_count() + ",r:" + a_right_encoder_count());
                     }
 
                 }else if (have_drive_encoders_reached (v_drive_inches_ticks - driveInches_ticksSlowDown1, v_drive_inches_ticks - driveInches_ticksSlowDown1))
@@ -1423,9 +1453,33 @@ public class CFPushBotHardware extends OpMode {
                     // slow the motors to slowdown 1
                     //
                     if(v_drive_inches_power > v_drive_power_slowdown1) {
-                        setSecondMessage("drive_inches_complete: slow down 1");
+                        setSecondMessage("drive_inches_complete: slow down 1 t:" + v_drive_inches_ticks
+                                + ",l:" + a_left_encoder_count() + ",r:" + a_right_encoder_count());
                         set_drive_power(v_drive_power_slowdown1, v_drive_power_slowdown1);
                     }
+                }else if(v_drive_inches_useGyro){
+                    //the logic here is to try to hold a gyro heading by slowing a track down a touch v_drive_inches_power_gyro_correction
+                    //the issue is our gyro is slow to refresh so may need to only do this a couple of loops then turn off
+                    //not sure yet still testing 11/19/2015 Two days to first competition wow this is tight deadline
+                    int currentHeading = sensor_gyro_get_heading();
+                    if ((v_drive_inches_heading - currentHeading) > 180 ) {
+                        currentHeading = 360 + currentHeading;
+                    }else if ((v_drive_inches_heading - currentHeading) < -180 ) {
+                        currentHeading = currentHeading - 360;
+                    }
+                    if (v_drive_inches_heading > currentHeading){
+                        set_drive_power(v_drive_inches_power, v_drive_inches_power - v_drive_inches_power_gyro_correction);
+                    }else if (v_drive_inches_heading < currentHeading){
+                        set_drive_power(v_drive_inches_power - v_drive_inches_power_gyro_correction, v_drive_inches_power );
+                    }else {
+                        set_drive_power(v_drive_inches_power, v_drive_inches_power );
+                    }
+                    setSecondMessage("drive_inches_complete: gyro H:" + currentHeading + ", TH:" + v_drive_inches_heading
+                            + "t:" + v_drive_inches_ticks
+                            + ",l:" + a_left_encoder_count() + ",r:" + a_right_encoder_count());
+                }else{
+                    setSecondMessage("drive_inches_complete: t:" + v_drive_inches_ticks
+                            + ",l:" + a_left_encoder_count() + ",r:" + a_right_encoder_count());
                 }
             break;
             default:
@@ -1527,7 +1581,11 @@ public class CFPushBotHardware extends OpMode {
      */
 
     public boolean turn_complete(){
-
+        if(v_motor_left_drive == null || v_motor_right_drive == null){
+            setSecondMessage("turn_complete: no motors");
+            v_drive_inches_state = -1;
+            return true;
+        }
 
         switch(v_turn_degrees_state){
             case 0:
@@ -1552,18 +1610,31 @@ public class CFPushBotHardware extends OpMode {
             case 2:
                 if (v_turn_degrees_iscwturn) {
                     if (v_turn_degrees_isSlowTurn) {
-                        set_drive_power(v_turn_motorspeed_slow, 0-v_turn_motorspeed_slow);
+                        //have an issue where motors not turning on at same time so need to call directly
+                        //turning right so turn on left motor first
+                        v_motor_left_drive.setPower(v_turn_motorspeed_slow);
+                        v_motor_right_drive.setPower(0-v_turn_motorspeed_slow);
+                        //set_drive_power(v_turn_motorspeed_slow, 0-v_turn_motorspeed_slow);
                         setSecondMessage("turn_complete: set slow turn clock wise");
                     }else {
-                        set_drive_power(v_turn_motorspeed, 0- v_turn_motorspeed);
+                        //turning right so turn on left motor first
+                        v_motor_left_drive.setPower(v_turn_motorspeed);
+                        v_motor_right_drive.setPower(0-v_turn_motorspeed);
+                        //set_drive_power(v_turn_motorspeed, 0- v_turn_motorspeed);
                         setSecondMessage("turn_complete: set fast turn clock wise");
                     }
                 } else {
                     if (v_turn_degrees_isSlowTurn) {
-                        set_drive_power(0-v_turn_motorspeed_slow,  v_turn_motorspeed_slow);
+                        //turning left so turn on right motor first
+                        v_motor_right_drive.setPower(v_turn_motorspeed_slow);
+                        v_motor_left_drive.setPower(0-v_turn_motorspeed_slow);
+                        //set_drive_power(0-v_turn_motorspeed_slow,  v_turn_motorspeed_slow);
                         setSecondMessage("turn_complete: set slow turn counter clock wise");
                     }else {
-                        set_drive_power(0-v_turn_motorspeed, v_turn_motorspeed);
+                        //turning left so turn on right motor first
+                        v_motor_right_drive.setPower(v_turn_motorspeed_slow);
+                        v_motor_left_drive.setPower(0-v_turn_motorspeed_slow);
+                        //set_drive_power(0-v_turn_motorspeed, v_turn_motorspeed);
                         setSecondMessage("turn_complete: set fast turn counter clock wise");
                     }
                 }
@@ -1583,8 +1654,10 @@ public class CFPushBotHardware extends OpMode {
                                     || (v_turn_degrees_heading_start_error <  v_turn_degrees_heading_target && currentHeading > v_turn_degrees_heading_start_error) )
                                 )
                         {
-
-                            set_drive_power(0.0f, 0.0f);
+                            //turning right so stop right first then left
+                            v_motor_right_drive.setPower(0.0d);
+                            v_motor_left_drive.setPower(0.0d);
+                            //set_drive_power(0.0f, 0.0f);
                             v_turn_degrees_state++;
                             return true;
                         }
@@ -1595,7 +1668,10 @@ public class CFPushBotHardware extends OpMode {
                                 ( v_turn_degrees_heading_start_error <  v_turn_degrees_heading_target && currentHeading > v_turn_degrees_heading_start_error)
                                         || (v_turn_degrees_heading_start_error >  v_turn_degrees_heading_target && currentHeading < v_turn_degrees_heading_start_error) )
                                 ){
-                            set_drive_power(0.0f, 0.0f);
+                            //turning left so stop left first then right
+                            v_motor_left_drive.setPower(0.0d);
+                            v_motor_right_drive.setPower(0.0d);
+                            //set_drive_power(0.0f, 0.0f);
                             v_turn_degrees_state++;
                             return true;
                         }

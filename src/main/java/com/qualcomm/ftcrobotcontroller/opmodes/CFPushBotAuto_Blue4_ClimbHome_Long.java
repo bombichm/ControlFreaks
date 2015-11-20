@@ -3,7 +3,7 @@ package com.qualcomm.ftcrobotcontroller.opmodes;
 /**
  * Created by adevries on 11/6/2015.
  */
-public class CFPushBotAuto_Blue4 extends CFPushBotTelemetry {
+public class CFPushBotAuto_Blue4_ClimbHome_Long extends CFPushBotTelemetry {
 
     //--------------------------------------------------------------------------
     //
@@ -14,7 +14,7 @@ public class CFPushBotAuto_Blue4 extends CFPushBotTelemetry {
      *
      * The system calls this member when the class is instantiated.
      */
-    public CFPushBotAuto_Blue4()
+    public CFPushBotAuto_Blue4_ClimbHome_Long()
 
     {
         //
