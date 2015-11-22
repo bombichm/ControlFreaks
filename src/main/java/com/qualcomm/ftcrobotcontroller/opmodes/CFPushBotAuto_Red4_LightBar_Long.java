@@ -3,7 +3,7 @@ package com.qualcomm.ftcrobotcontroller.opmodes;
 /**
  * Created by adevries on 11/6/2015.
  */
-public class CFPushBotAuto_Blue4_ClimbHome_Long extends CFPushBotTelemetry {
+public class CFPushBotAuto_Red4_LightBar_Long extends CFPushBotTelemetry {
 
     //--------------------------------------------------------------------------
     //
@@ -14,7 +14,7 @@ public class CFPushBotAuto_Blue4_ClimbHome_Long extends CFPushBotTelemetry {
      *
      * The system calls this member when the class is instantiated.
      */
-    public CFPushBotAuto_Blue4_ClimbHome_Long()
+    public CFPushBotAuto_Red4_LightBar_Long()
 
     {
         //
@@ -45,7 +45,7 @@ public class CFPushBotAuto_Blue4_ClimbHome_Long extends CFPushBotTelemetry {
         // Call the PushBotHardware (super/base class) start method.
         //
         super.start ();
-        blueled_on();
+        redled_on();
         led7seg_timer_init(30);
 
     } // start
@@ -79,7 +79,7 @@ public class CFPushBotAuto_Blue4_ClimbHome_Long extends CFPushBotTelemetry {
                 // drive Forward 24 inches
                 //
                 led7seg_timer_init(30);
-                drive_inches(1.0f,66, true);
+                drive_inches(1.0f,74.5f, true);
                 v_state++;
                 break;
             case 1:
@@ -95,8 +95,8 @@ public class CFPushBotAuto_Blue4_ClimbHome_Long extends CFPushBotTelemetry {
 
             case 2:
                 // positive is right turn
-                turn_degrees(133, false, false);
-                set_second_message("turn 135 degrees to the right");
+                turn_degrees(-88, false, true);
+                set_second_message("turn 88 degrees to the left");
                 v_state++;
                 break;
             //
@@ -114,7 +114,7 @@ public class CFPushBotAuto_Blue4_ClimbHome_Long extends CFPushBotTelemetry {
                 //
                 // drive Forward 12 inches
                 //
-                drive_inches(1.0f,50, true);
+                drive_inches(1.0f,47, true);
 
                 //set_drive_power(1.0d, 1.0d);
                 v_state++;

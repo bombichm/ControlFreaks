@@ -49,8 +49,7 @@ public class CFPushBotAuto extends CFPushBotTelemetry {
         //
         // Reset the motor encoders on the drive wheels.
         //
-        //reset_drive_encoders ();
-        //run_without_drive_encoders();
+        run_using_encoders();
     } // start
 
     //--------------------------------------------------------------------------
@@ -99,8 +98,8 @@ public class CFPushBotAuto extends CFPushBotTelemetry {
 
             case 2:
                 // positive is right turn
-                turn_degrees(90, false, true);
-                set_second_message("turn 90 to the right");
+                turn_degrees(-90, false, true);
+                set_second_message("turn 90 to the left");
                 v_state++;
                 break;
             //
@@ -115,23 +114,40 @@ public class CFPushBotAuto extends CFPushBotTelemetry {
                 }
                 break;
             case 4:
-                //
-                // drive Forward 12 inches
-                //
-                drive_inches(1.0f,12, true);
-
-                //set_drive_power(1.0d, 1.0d);
+                // positive is right turn
+                turn_degrees(90, false, true);
+                set_second_message("turn 90 to the right");
                 v_state++;
                 break;
+            //
+            // Wait...
+            //
             case 5:
-                //
-                // Transition to the next state when this method is called again.
-                if (drive_inches_complete()) {
-                    //
+                //keep checking if we have reached the distance we need to reach
+                if (turn_complete ())
+                {
+                    set_second_message("turn Complete");
                     v_state++;
                 }
                 break;
             case 6:
+            // positive is right turn
+            turn_degrees(-90, false, true);
+            set_second_message("turn 90 to the left");
+            v_state++;
+            break;
+            //
+            // Wait...
+            //
+            case 7:
+                //keep checking if we have reached the distance we need to reach
+                if (turn_complete ())
+                {
+                    set_second_message("turn Complete");
+                    v_state++;
+                }
+                break;
+            /*case 6:
                 // positive is right turn
                 turn_degrees(90, false, true);
                 set_second_message("turn 90 to the right");
@@ -181,7 +197,7 @@ public class CFPushBotAuto extends CFPushBotTelemetry {
                     set_second_message("turn Complete");
                     v_state++;
                 }
-                break;
+                break;*/
             default:
                 //
                 // The autonomous actions have been accomplished (i.e. the state has

@@ -3,7 +3,7 @@ package com.qualcomm.ftcrobotcontroller.opmodes;
 /**
  * Created by adevries on 11/6/2015.
  */
-public class CFPushBotAuto_Blue4_ClimbHome_Long extends CFPushBotTelemetry {
+public class CFPushBotAuto_Red4_ClimbHome_Long extends CFPushBotTelemetry {
 
     //--------------------------------------------------------------------------
     //
@@ -14,7 +14,7 @@ public class CFPushBotAuto_Blue4_ClimbHome_Long extends CFPushBotTelemetry {
      *
      * The system calls this member when the class is instantiated.
      */
-    public CFPushBotAuto_Blue4_ClimbHome_Long()
+    public CFPushBotAuto_Red4_ClimbHome_Long()
 
     {
         //
@@ -45,7 +45,7 @@ public class CFPushBotAuto_Blue4_ClimbHome_Long extends CFPushBotTelemetry {
         // Call the PushBotHardware (super/base class) start method.
         //
         super.start ();
-        blueled_on();
+        redled_on();
         led7seg_timer_init(30);
 
     } // start
@@ -95,8 +95,8 @@ public class CFPushBotAuto_Blue4_ClimbHome_Long extends CFPushBotTelemetry {
 
             case 2:
                 // positive is right turn
-                turn_degrees(133, false, false);
-                set_second_message("turn 135 degrees to the right");
+                turn_degrees(-133, false, true);
+                set_second_message("turn 135 degrees to the left");
                 v_state++;
                 break;
             //

@@ -34,7 +34,7 @@ public class CFPushBotHardware extends OpMode {
 
     private long v_loop_ticks = 0;
 
-    private static final double driveInches_ticksPerInch = 182.35;
+    private static final double driveInches_ticksPerInch = 205.35;
     private static final double driveInches_ticksSlowDown1 = 300;
     private static final double driveInches_ticksSlowDown2 = 150;
     private static final float v_drive_power_slowdown1 = .5f;
@@ -44,7 +44,7 @@ public class CFPushBotHardware extends OpMode {
     //RPA Base Varables
     private Servo v_servo_rpa_base;
     private static final double RPABaseServo_Delta = 0.0005;
-    private static final double RPABaseServo_Delta_Fast = 0.01;
+    private static final double RPABaseServo_Delta_Fast = 0.04;
     private double RPABaseServo_MinPosition = 0.01;  //Need to unhook gear int so it goes to zero then rehook servo gear
     private double RPABaseServo_ClimbPosition = 0.65;
     private double RPABaseServo_MaxPosition = 0.70;
@@ -107,7 +107,7 @@ public class CFPushBotHardware extends OpMode {
    // private static final double FlipLeftServo_Delta = 0.005;
    // private static final double FlipLeftServo_Delta_Fast = 0.05;
     public static final double FlipLeftServo_MinPosition = 0.05;
-    private static final double FlipLeftServo_MaxPosition = 0.89;
+    public static final double FlipLeftServo_MaxPosition = 0.89;
     private double l_flip_left_position = 0.05D;  //init flip_right Position
 
 
@@ -278,6 +278,7 @@ public class CFPushBotHardware extends OpMode {
                 Thread.sleep(50);
             }
             v_sensor_gyro.resetZAxisIntegrator();
+            setSecondMessage("Gyro isCalibrated H:" + v_sensor_gyro.getHeading() );
         }catch(Exception p_exeception){
 
             m_warning_message ("gyro1");
@@ -1474,12 +1475,16 @@ public class CFPushBotHardware extends OpMode {
                     }else {
                         set_drive_power(v_drive_inches_power, v_drive_inches_power );
                     }
-                    setSecondMessage("drive_inches_complete: gyro H:" + currentHeading + ", TH:" + v_drive_inches_heading
-                            + "t:" + v_drive_inches_ticks
-                            + ",l:" + a_left_encoder_count() + ",r:" + a_right_encoder_count());
+                    if(v_loop_ticks % 10 == 0) {
+                        setSecondMessage("drive_inches_complete: gyro H:" + currentHeading + ", TH:" + v_drive_inches_heading
+                                + "t:" + v_drive_inches_ticks
+                                + ",l:" + a_left_encoder_count() + ",r:" + a_right_encoder_count());
+                    }
                 }else{
-                    setSecondMessage("drive_inches_complete: t:" + v_drive_inches_ticks
-                            + ",l:" + a_left_encoder_count() + ",r:" + a_right_encoder_count());
+                    if(v_loop_ticks % 10 == 0) {
+                        setSecondMessage("drive_inches_complete: t:" + v_drive_inches_ticks
+                                + ",l:" + a_left_encoder_count() + ",r:" + a_right_encoder_count());
+                    }
                 }
             break;
             default:
@@ -1523,13 +1528,17 @@ public class CFPushBotHardware extends OpMode {
         }
         v_turn_degrees_usingGyro = useGyro;
         v_turn_degrees_isSlowTurn = turnSlow;
-
-        if (v_turn_degrees_usingGyro) {
+        if (v_turn_degrees_usingGyro == true && v_sensor_gyro == null ){
+            setSecondMessage("turn_degrees() no Gyro to use");
+            v_turn_degrees_usingGyro = false;
+        }
+        if (v_turn_degrees_usingGyro == true) {
+            v_sensor_gyro.resetZAxisIntegrator();
             run_without_drive_encoders();
             //set the state to 1 as we don't need to wait for drive encoder reset
             v_turn_degrees_state = 1;
             //v_sensor_gyro.resetZAxisIntegrator();
-            v_turn_degrees_heading_start = sensor_gyro_get_heading();
+            v_turn_degrees_heading_start = 0; //sensor_gyro_get_heading();
 
             if (degrees > 0) {
                 //used to account for gyro drift so a drift -1 on the intial start doesn't mark turn complete
@@ -1554,6 +1563,7 @@ public class CFPushBotHardware extends OpMode {
                 if (v_turn_degrees_heading_target < 0){
                     v_turn_degrees_heading_target = 360 + v_turn_degrees_heading_target;
                 }
+
             }
         }else {
             reset_drive_encoders();
@@ -1589,7 +1599,7 @@ public class CFPushBotHardware extends OpMode {
 
         switch(v_turn_degrees_state){
             case 0:
-                if (have_drive_encoders_reset()) {
+                if (have_drive_encoders_reset() || isInDriveMode( DcMotorController.RunMode.RESET_ENCODERS)) {
                     setSecondMessage("turn_complete: encoders have reset");
                     run_using_encoders();
                     v_turn_degrees_state++;
@@ -1602,9 +1612,11 @@ public class CFPushBotHardware extends OpMode {
                         v_turn_degrees_state++;
                     }
                 }else {
-                    if (isInDriveMode(DcMotorController.RunMode.RUN_USING_ENCODERS)){
-                        setSecondMessage("turn_complete: gyro in run using encoders");
+                    if (isInDriveMode(DcMotorController.RunMode.RUN_USING_ENCODERS) || isInDriveMode(DcMotorController.RunMode.RESET_ENCODERS)){
+                        setSecondMessage("turn_complete: no gyro in run using encoders");
                         v_turn_degrees_state++;
+                    }else{
+                        setSecondMessage("turn_complete: waiting for RunMode.Run_Using_Encoders " + v_motor_left_drive.getMode() + ":" + v_motor_right_drive.getMode() );
                     }
                 }
             case 2:
@@ -1615,13 +1627,17 @@ public class CFPushBotHardware extends OpMode {
                         v_motor_left_drive.setPower(v_turn_motorspeed_slow);
                         v_motor_right_drive.setPower(0-v_turn_motorspeed_slow);
                         //set_drive_power(v_turn_motorspeed_slow, 0-v_turn_motorspeed_slow);
+
                         setSecondMessage("turn_complete: set slow turn clock wise");
+
+
                     }else {
                         //turning right so turn on left motor first
                         v_motor_left_drive.setPower(v_turn_motorspeed);
                         v_motor_right_drive.setPower(0-v_turn_motorspeed);
                         //set_drive_power(v_turn_motorspeed, 0- v_turn_motorspeed);
                         setSecondMessage("turn_complete: set fast turn clock wise");
+
                     }
                 } else {
                     if (v_turn_degrees_isSlowTurn) {
@@ -1629,11 +1645,12 @@ public class CFPushBotHardware extends OpMode {
                         v_motor_right_drive.setPower(v_turn_motorspeed_slow);
                         v_motor_left_drive.setPower(0-v_turn_motorspeed_slow);
                         //set_drive_power(0-v_turn_motorspeed_slow,  v_turn_motorspeed_slow);
+
                         setSecondMessage("turn_complete: set slow turn counter clock wise");
                     }else {
                         //turning left so turn on right motor first
-                        v_motor_right_drive.setPower(v_turn_motorspeed_slow);
-                        v_motor_left_drive.setPower(0-v_turn_motorspeed_slow);
+                        v_motor_right_drive.setPower(v_turn_motorspeed);
+                        v_motor_left_drive.setPower(0-v_turn_motorspeed);
                         //set_drive_power(0-v_turn_motorspeed, v_turn_motorspeed);
                         setSecondMessage("turn_complete: set fast turn counter clock wise");
                     }
@@ -1644,35 +1661,37 @@ public class CFPushBotHardware extends OpMode {
                 if (v_turn_degrees_usingGyro) {
                     int currentHeading = sensor_gyro_get_heading();
                     //debugLogException("turn_complete ", "H:" + currentHeading + ",T:" + v_turn_degrees_heading_target + ",SH:" + v_turn_degrees_heading_start + ",SHE:" + v_turn_degrees_heading_start_error, null );
-                    setSecondMessage("turn_complete: H:" + currentHeading + ", T:" + v_turn_degrees_heading_target + ",SH:" + v_turn_degrees_heading_start + ",SHE:" + v_turn_degrees_heading_start_error);
-                    if(v_turn_degrees_iscwturn){
+
+                        if(v_turn_degrees_iscwturn){
                         //if we are turning clockwise then we stop >= then our target
 
-                        if(currentHeading >= v_turn_degrees_heading_target
-                                && (
+                        if(currentHeading >= v_turn_degrees_heading_target && currentHeading < 270)
+                               /* && (
                                     ( v_turn_degrees_heading_start_error >  v_turn_degrees_heading_target && currentHeading < v_turn_degrees_heading_start_error)
                                     || (v_turn_degrees_heading_start_error <  v_turn_degrees_heading_target && currentHeading > v_turn_degrees_heading_start_error) )
-                                )
+                                )*/
                         {
                             //turning right so stop right first then left
                             v_motor_right_drive.setPower(0.0d);
                             v_motor_left_drive.setPower(0.0d);
                             //set_drive_power(0.0f, 0.0f);
                             v_turn_degrees_state++;
+                            setSecondMessage("turn_complete: done clock wise H:" + currentHeading + ":T"  + v_turn_degrees_heading_target);
                             return true;
                         }
                     }else{
                         //we are turning counterclockwise so we stop <= our target heading
-                        if(currentHeading <= v_turn_degrees_heading_target && currentHeading > v_turn_degrees_heading_start_error
-                                && (
-                                ( v_turn_degrees_heading_start_error <  v_turn_degrees_heading_target && currentHeading > v_turn_degrees_heading_start_error)
-                                        || (v_turn_degrees_heading_start_error >  v_turn_degrees_heading_target && currentHeading < v_turn_degrees_heading_start_error) )
+                        if(currentHeading <= v_turn_degrees_heading_target && currentHeading > 90
+//                                && (
+//                                ( v_turn_degrees_heading_start_error <  v_turn_degrees_heading_target && currentHeading > v_turn_degrees_heading_start_error)
+//                                        || (v_turn_degrees_heading_start_error >  v_turn_degrees_heading_target && currentHeading < v_turn_degrees_heading_start_error) )
                                 ){
                             //turning left so stop left first then right
                             v_motor_left_drive.setPower(0.0d);
                             v_motor_right_drive.setPower(0.0d);
                             //set_drive_power(0.0f, 0.0f);
                             v_turn_degrees_state++;
+                            setSecondMessage("turn_complete: done counter clock wise H:" + currentHeading + ":T"  + v_turn_degrees_heading_target);
                             return true;
                         }
                     }

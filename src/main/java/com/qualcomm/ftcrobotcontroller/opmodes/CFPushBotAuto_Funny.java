@@ -3,7 +3,7 @@ package com.qualcomm.ftcrobotcontroller.opmodes;
 /**
  * Created by adevries on 11/6/2015.
  */
-public class CFPushBotAuto_Blue4_ClimbHome_Long extends CFPushBotTelemetry {
+public class CFPushBotAuto_Funny extends CFPushBotTelemetry {
 
     //--------------------------------------------------------------------------
     //
@@ -14,7 +14,7 @@ public class CFPushBotAuto_Blue4_ClimbHome_Long extends CFPushBotTelemetry {
      *
      * The system calls this member when the class is instantiated.
      */
-    public CFPushBotAuto_Blue4_ClimbHome_Long()
+    public CFPushBotAuto_Funny()
 
     {
         //
@@ -45,9 +45,12 @@ public class CFPushBotAuto_Blue4_ClimbHome_Long extends CFPushBotTelemetry {
         // Call the PushBotHardware (super/base class) start method.
         //
         super.start ();
-        blueled_on();
-        led7seg_timer_init(30);
 
+        //
+        // Reset the motor encoders on the drive wheels.
+        //
+        //reset_drive_encoders ();
+        //run_without_drive_encoders();
     } // start
 
     //--------------------------------------------------------------------------
@@ -76,10 +79,11 @@ public class CFPushBotAuto_Blue4_ClimbHome_Long extends CFPushBotTelemetry {
             //
             case 0:
                 //
-                // drive Forward 24 inches
+                // drive Forward 12 inches
                 //
-                led7seg_timer_init(30);
-                drive_inches(1.0f,66, true);
+                drive_inches(1.0f,12, true);
+
+                //set_drive_power(1.0d, 1.0d);
                 v_state++;
                 break;
             case 1:
@@ -95,8 +99,9 @@ public class CFPushBotAuto_Blue4_ClimbHome_Long extends CFPushBotTelemetry {
 
             case 2:
                 // positive is right turn
-                turn_degrees(133, false, false);
-                set_second_message("turn 135 degrees to the right");
+
+                m_flip_left_position(FlipLeftServo_MaxPosition-.2);
+                m_flip_right_position(FlipRightServo_MinPosition+.2);
                 v_state++;
                 break;
             //
@@ -104,27 +109,27 @@ public class CFPushBotAuto_Blue4_ClimbHome_Long extends CFPushBotTelemetry {
             //
             case 3:
                 //keep checking if we have reached the distance we need to reach
-                if (turn_complete ())
+                if (loopCounter() % 50 == 0)
                 {
-                    set_second_message("turn Complete");
+                    set_second_message("Flip Down");
                     v_state++;
                 }
                 break;
             case 4:
-                //
-                // drive Forward 12 inches
-                //
-                drive_inches(1.0f,50, true);
-
-                //set_drive_power(1.0d, 1.0d);
+                // positive is right turn
+                // positive is right turn
+                m_flip_left_position(FlipLeftServo_MinPosition+.2);
+                m_flip_right_position(FlipRightServo_MaxPosition - .2);
                 v_state++;
+
                 break;
+
             case 5:
-                //
-                // Transition to the next state when this method is called again.
-                if (drive_inches_complete()) {
-                    //
-                    v_state++;
+            // positive is right turn
+                if (loopCounter() % 50 == 0)
+                {
+                    set_second_message("reset");
+                    v_state = 2;
                 }
                 break;
 
@@ -143,7 +148,6 @@ public class CFPushBotAuto_Blue4_ClimbHome_Long extends CFPushBotTelemetry {
             update_telemetry(); // Update common telemetry
             telemetry.addData("18", "State: " + v_state);
         }
-
 
     } // loop
 
