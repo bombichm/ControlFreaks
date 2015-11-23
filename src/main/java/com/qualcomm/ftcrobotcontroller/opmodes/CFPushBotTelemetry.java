@@ -50,8 +50,9 @@ public class CFPushBotTelemetry extends CFPushBotHardware {
             // Send telemetry data to the driver station.
             //
             telemetry.addData("01", loopCounter() + ":" + secondMessage);
+            telemetry.addData("02", "Gyro: H:" + sensor_gyro_get_heading() + ",X:" + sensor_gyro_get_rawX() +",Y:" + sensor_gyro_get_rawY() + ",Z:"+ sensor_gyro_get_rawZ()  );
             telemetry.addData
-                    ("02"
+                    ("03"
                             , "Left Drive: "
                                     + a_left_drive_power()
                                     + ", "
@@ -60,7 +61,7 @@ public class CFPushBotTelemetry extends CFPushBotHardware {
                                     + a_left_drive_mode()
                     );
             telemetry.addData
-                    ("03"
+                    ("04"
                             , "Right Drive: "
                                     + a_right_drive_power()
                                     + ", "
@@ -69,35 +70,33 @@ public class CFPushBotTelemetry extends CFPushBotHardware {
                                     + a_right_drive_mode()
                     );
             telemetry.addData
-                    ("04"
+                    ("05"
                             , "Arm Shoulder: " + a_arm_shoulder_position()
                     );
             telemetry.addData
-                    ("05"
+                    ("06"
                             , "Arm Elbow: " + a_arm_elbow_position()
                     );
             telemetry.addData
-                    ("06"
+                    ("07"
                             , "Arm Wrist: " + a_arm_wrist_position()
                     );
             telemetry.addData
-                    ("07"
+                    ("08"
                             , "RPA Base Position: " + a_rpabase_position()
                     );
             telemetry.addData
-                    ("08"
+                    ("09"
                             , "RPA Arm Position: " + a_rpa_arm_power() + ":" + rpa_arm_extended() + ":" + rpa_arm_retracted()
                     );
             int[] v_color_rgba = sensor_color_get_rgba();
             telemetry.addData(
-                    "09", "Color RGBA: " + v_color_rgba[0]
+                    "10", "Color RGBA: " + v_color_rgba[0]
                             + "," + v_color_rgba[1]
                             + "," + v_color_rgba[2]
                             + "," + v_color_rgba[3]
             );
-            telemetry.addData(
-                    "10", "Gyro: " + sensor_gyro_get_heading()
-            );
+
             telemetry.addData(
                     "1l", "Flip: Right:" + a_flip_right_position() + ", Left:" + a_flip_left_position()
             );
@@ -162,7 +161,7 @@ public class CFPushBotTelemetry extends CFPushBotHardware {
 
     {
         secondMessage = p_message;
-        DbgLog.msg(p_message);
+        DbgLog.msg( loopCounter() + ": " + p_message);
 
     } // set_first_message
     //--------------------------------------------------------------------------

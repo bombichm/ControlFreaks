@@ -1,9 +1,15 @@
 package com.qualcomm.ftcrobotcontroller.opmodes;
 
+import android.media.ToneGenerator;
+
 /**
  * Created by adevries on 11/6/2015.
  */
 public class CFPushBotAuto extends CFPushBotTelemetry {
+
+    boolean v_turn_use_gyro = true;
+    boolean v_turn_slow = true;
+    boolean v_drive_inches_use_gyro = true;
 
     //--------------------------------------------------------------------------
     //
@@ -47,7 +53,7 @@ public class CFPushBotAuto extends CFPushBotTelemetry {
         super.start ();
 
         //
-        // Reset the motor encoders on the drive wheels.
+        // we always run using encoders.
         //
         run_using_encoders();
     } // start
@@ -78,11 +84,11 @@ public class CFPushBotAuto extends CFPushBotTelemetry {
             //
             case 0:
                 //
-                // drive Forward 12 inches
+                // drive Forward 48 inches
                 //
-                drive_inches(1.0f,12, true);
+                drive_inches(1.0f,48, v_drive_inches_use_gyro);
 
-                //set_drive_power(1.0d, 1.0d);
+                set_drive_power(1.0d, 1.0d);
                 v_state++;
                 break;
             case 1:
@@ -92,14 +98,16 @@ public class CFPushBotAuto extends CFPushBotTelemetry {
                 if (drive_inches_complete()) {
                     //
                     v_state++;
+                    sleep(500);
                 }
 
                 break;
 
             case 2:
                 // positive is right turn
-                turn_degrees(-90, false, true);
                 set_second_message("turn 90 to the left");
+                turn_degrees(-90, v_turn_slow, v_turn_use_gyro);
+
                 v_state++;
                 break;
             //
@@ -109,33 +117,39 @@ public class CFPushBotAuto extends CFPushBotTelemetry {
                 //keep checking if we have reached the distance we need to reach
                 if (turn_complete ())
                 {
-                    set_second_message("turn Complete");
+                    //set_second_message("turn Complete");
+                    sound_play_dtmf(ToneGenerator.TONE_DTMF_2,500);
+                    sleep(500);
+                    set_second_message("turn final heading" + sensor_gyro_get_heading());
                     v_state++;
                 }
                 break;
+
             case 4:
-                // positive is right turn
-                turn_degrees(90, false, true);
-                set_second_message("turn 90 to the right");
+                //
+                // drive Forward 12 inches
+                //
+                drive_inches(1.0f,12, v_drive_inches_use_gyro);
                 v_state++;
                 break;
-            //
-            // Wait...
-            //
             case 5:
-                //keep checking if we have reached the distance we need to reach
-                if (turn_complete ())
-                {
-                    set_second_message("turn Complete");
+
+                //
+                // Transition to the next state when this method is called again.
+                if (drive_inches_complete()) {
+
+                    sleep(500);
+                    set_second_message("turn final heading" + sensor_gyro_get_heading());
                     v_state++;
                 }
+
                 break;
             case 6:
-            // positive is right turn
-            turn_degrees(-90, false, true);
-            set_second_message("turn 90 to the left");
-            v_state++;
-            break;
+                // positive is right turn
+                set_second_message("turn 90 to the right");
+                turn_degrees(90, v_turn_slow, v_turn_use_gyro);
+                v_state++;
+                break;
             //
             // Wait...
             //
@@ -144,6 +158,48 @@ public class CFPushBotAuto extends CFPushBotTelemetry {
                 if (turn_complete ())
                 {
                     set_second_message("turn Complete");
+                    sound_play_dtmf(ToneGenerator.TONE_DTMF_3, 500);
+                    sleep(500);
+                    v_state++;
+                }
+                break;
+            case 8:
+                //
+                // drive Forward 12 inches
+                //
+                drive_inches(1.0f,48, v_drive_inches_use_gyro);
+                v_state++;
+                break;
+            case 9:
+
+                //
+                // Transition to the next state when this method is called again.
+                if (drive_inches_complete()) {
+                    //
+                    sleep(500);
+                    set_second_message("turn final heading" + sensor_gyro_get_heading());
+                    v_state++;
+                }
+
+                break;
+            case 10:
+            // positive is right turn
+                set_second_message("turn 90 to the left");
+                turn_degrees(-90, v_turn_slow, v_turn_use_gyro);
+
+                v_state++;
+                break;
+            //
+            // Wait...
+            //
+            case 11:
+                //keep checking if we have reached the distance we need to reach
+                if (turn_complete ())
+                {
+                    set_second_message("turn Complete");
+                    sound_play_dtmf(ToneGenerator.TONE_DTMF_5, 1000);
+                    sleep(500);
+                    set_second_message("turn final heading" + sensor_gyro_get_heading());
                     v_state++;
                 }
                 break;
@@ -183,7 +239,7 @@ public class CFPushBotAuto extends CFPushBotTelemetry {
                 break;
             case 10:
                 // positive is right turn
-                turn_degrees(90, false, true);
+                turn_degrees(90, false, v_turn_complete_use_gyro);
                 set_second_message("turn 90 to the right");
                 v_state++;
                 break;
