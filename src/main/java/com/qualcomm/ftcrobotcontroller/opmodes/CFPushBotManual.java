@@ -3,7 +3,7 @@ package com.qualcomm.ftcrobotcontroller.opmodes;
 /**
  * Created by adevries on 11/6/2015.
  */
-public class CFPushBotManual extends CFPushBotHardware{
+public class CFPushBotManual extends CFPushBotTelemetry{
 
     //--------------------------------------------------------------------------
     //
@@ -45,7 +45,7 @@ public class CFPushBotManual extends CFPushBotHardware{
     @Override public void loop ()
 
     {
-
+        hardware_loop();
         //----------------------------------------------------------------------
         //
         // DC Motors
@@ -148,11 +148,26 @@ public class CFPushBotManual extends CFPushBotHardware{
             arm_wrist_moveRight(false);
         }
 
+        if(gamepad1.right_trigger > FlipRightServo_MinPosition){
+            m_flip_right_position(FlipRightServo_MaxPosition - gamepad1.right_trigger );
+        }else {
+            m_flip_right_position(FlipRightServo_MaxPosition);
+        }
+
+
+        if(gamepad1.left_trigger > FlipLeftServo_MinPosition){
+            m_flip_left_position(gamepad1.left_trigger);
+        }else {
+            m_flip_left_position(FlipLeftServo_MinPosition);
+        }
+        if(gamepad1.y && gamepad1.b){
+            rpabase_moveToClimb();
+        }
         //
         // Send telemetry data to the driver station.
         //
-        //update_telemetry (); // Update common telemetry
-        //update_gamepad_telemetry ();
+        update_telemetry (); // Update common telemetry
+        //update_gamepad_telemetry();
 
     } // loop
 }

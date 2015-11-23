@@ -55,26 +55,38 @@ public class FtcOpModeRegister implements OpModeRegister {
      * If two or more op modes are registered with the same name, the app will display an error.
      */
 
-    manager.register("NullOp", NullOp.class);
+    //manager.register("NullOp", NullOp.class);
 
     //manager.register("MatrixK9TeleOp", MatrixK9TeleOp.class);
     //manager.register("K9TeleOp", K9TeleOp.class);
-    manager.register("K9TankDrive", K9TankDrive.class);
-    manager.register("HTRGBExample", HTRGBExample.class);
-    manager.register ("Control Freaks Auto", CFPushBotAuto.class);
-    manager.register ("Control Freaks Manual", CFPushBotManual.class);
-    manager.register ("CF Auto Blue 4", CFPushBotAuto_Blue4.class);
-    manager.register("LCD Backpack Test", I2CLED7Seg.class);
-    manager.register("DetectColor", DetectColor.class);
-    manager.register("LinearDetectColor", LinearDetectColor.class);
+    //manager.register("K9TankDrive", K9TankDrive.class);
+    //manager.register("HTRGBExample", HTRGBExample.class);
+    manager.register ("Manual Mode", CFPushBotManual.class);
+    manager.register ("Test no Auto", CFPushBotAuto.class);
+    manager.register ("Funny Dance", CFPushBotAuto_Funny.class);
+    manager.register ("Blue 2 Climb Home Short", CFPushBotAuto_Blue2_ClimbHome_Short.class);
+    manager.register ("Blue 3 Climb Home Short", CFPushBotAuto_Blue3_ClimbHome_Short.class);
+    manager.register ("Blue 4 Climb Home Long", CFPushBotAuto_Blue4_ClimbHome_Long.class);
+    manager.register ("Blue 4 Climb Home Short", CFPushBotAuto_Blue4_ClimbHome_Short.class);
+    //manager.register ("Blue 4 LightBar Long", CFPushBotAuto_Blue4_LightBar_Long.class);
+
+    manager.register ("Red 2 Climb Home Short", CFPushBotAuto_Red2_ClimbHome_Short.class);
+    manager.register ("Red 3 Climb Home Short", CFPushBotAuto_Red3_ClimbHome_Short.class);
+    manager.register ("Red 4 Climb Home Long", CFPushBotAuto_Red4_ClimbHome_Long.class);
+    manager.register ("Red 4 Climb Home Short", CFPushBotAuto_Red4_ClimbHome_Short.class);
+    manager.register ("Drive Forward 94 Inch", CFPushBotAuto_Blue2_ClimbHome_Short.class);
+    //manager.register ("Red 4 LightBar Long", CFPushBotAuto_Red4_LightBar_Long.class);
+    //manager.register("LCD Backpack Test", I2CLED7Seg.class);
+    //manager.register("DetectColor", DetectColor.class);
+    //manager.register("LinearDetectColor", LinearDetectColor.class);
 
 
     /*
      * Uncomment any of the following lines if you want to register an op mode.
      */
-    manager.register("MR Gyro Test", MRGyroTest.class);
+    //manager.register("MR Gyro Test", MRGyroTest.class);
 
-    manager.register("AdafruitRGBExample", AdafruitRGBExample.class);
+    //manager.register("AdafruitRGBExample", AdafruitRGBExample.class);
     //manager.register("ColorSensorDriver", ColorSensorDriver.class);
 
     //manager.register("IrSeekerOp", IrSeekerOp.class);

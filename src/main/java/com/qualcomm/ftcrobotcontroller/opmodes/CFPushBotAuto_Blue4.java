@@ -45,11 +45,8 @@ public class CFPushBotAuto_Blue4 extends CFPushBotTelemetry {
         // Call the PushBotHardware (super/base class) start method.
         //
         super.start ();
-
-        //
-        // Reset the motor encoders on the drive wheels.
-        //
-        reset_drive_encoders ();
+        blueled_on();
+        led7seg_timer_init(30);
 
     } // start
 
@@ -67,6 +64,7 @@ public class CFPushBotAuto_Blue4 extends CFPushBotTelemetry {
     @Override public void loop ()
 
     {
+        hardware_loop();
         //----------------------------------------------------------------------
         //
         // State: Initialize (i.e. state_0).
@@ -78,72 +76,58 @@ public class CFPushBotAuto_Blue4 extends CFPushBotTelemetry {
             //
             case 0:
                 //
-                // Reset the encoders to ensure they are at a known good value.
+                // drive Forward 24 inches
                 //
-                reset_drive_encoders ();
+                led7seg_timer_init(30);
+                drive_inches(1.0f,66, true);
+                v_state++;
+                break;
+            case 1:
 
                 //
                 // Transition to the next state when this method is called again.
-                //
-                v_state++;
+                if (drive_inches_complete()) {
+                    //
+                    v_state++;
+                }
 
                 break;
-            //
-            // Drive forward until the encoders exceed the specified values.
-            //
-            case 1:
-                //Drive forward 74.5 inches Positive Power is forward
-                drive_inches(1.0f,74.5f);
+
+            case 2:
+                // positive is right turn
+                turn_degrees(133, false, true);
+                set_second_message("turn 135 degrees to the right");
                 v_state++;
                 break;
             //
             // Wait...
-            //
-            case 2:
-                //keep checking if we have reached the distance we need to reach
-                if (drive_inches_complete ())
-                {
-                    v_state++;
-                }
-                break;
-            //
-            // Turn right 90 degres.
             //
             case 3:
-                // positive is right turn
-               turn_degrees(90, false, true);
+                //keep checking if we have reached the distance we need to reach
+                if (turn_complete ())
+                {
+                    set_second_message("turn Complete");
+                    v_state++;
+                }
+                break;
+            case 4:
+                //
+                // drive Forward 12 inches
+                //
+                drive_inches(1.0f,50, true);
+
+                //set_drive_power(1.0d, 1.0d);
                 v_state++;
                 break;
-            //
-            // Wait...
-            //
-            case 4:
-                if (turn_complete ());
-                {
-                    v_state++;
-                }
-                break;
-//            //
-//            // Turn right until the encoders exceed the specified values.
-//            //
             case 5:
-                drive_inches(1.0f,52.5f);
-                {
-
+                //
+                // Transition to the next state when this method is called again.
+                if (drive_inches_complete()) {
+                    //
                     v_state++;
                 }
                 break;
 
-            case 6:
-                if (drive_inches_complete())
-                {
-                    v_state++;
-                }
-               break;
-//            //
-//            // Perform no action - stay in this case until the OpMode is stopped.
-//            // This method will still be called regardless of the state machine.
-//            //
             default:
                 //
                 // The autonomous actions have been accomplished (i.e. the state has
@@ -155,8 +139,11 @@ public class CFPushBotAuto_Blue4 extends CFPushBotTelemetry {
         //
         // Send telemetry data to the driver station.
         //
-        update_telemetry (); // Update common telemetry
-        telemetry.addData ("18", "State: " + v_state);
+        if ((loopCounter() % 10) == 0) {
+            update_telemetry(); // Update common telemetry
+            telemetry.addData("18", "State: " + v_state);
+        }
+
 
     } // loop
 
