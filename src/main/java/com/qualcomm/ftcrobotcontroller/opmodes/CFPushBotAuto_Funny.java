@@ -45,7 +45,7 @@ public class CFPushBotAuto_Funny extends CFPushBotTelemetry {
         // Call the PushBotHardware (super/base class) start method.
         //
         super.start ();
-
+        run_using_encoders();
         //
         // Reset the motor encoders on the drive wheels.
         //
@@ -81,63 +81,99 @@ public class CFPushBotAuto_Funny extends CFPushBotTelemetry {
                 //
                 // drive Forward 12 inches
                 //
-                drive_inches(1.0f,12, true);
+                drive_inches(1.0f, 12, true);
 
                 //set_drive_power(1.0d, 1.0d);
                 v_state++;
                 break;
             case 1:
-
-                //
-                // Transition to the next state when this method is called again.
-                if (drive_inches_complete()) {
-                    //
+                if(drive_inches_complete()) {
                     v_state++;
                 }
-
                 break;
 
             case 2:
-                // positive is right turn
+                //
+                // drive Forward 12 inches
+                //
+                //drive_inches(1.0f,12, true);
 
-                m_flip_left_position(FlipLeftServo_MaxPosition-.2);
-                m_flip_right_position(FlipRightServo_MinPosition+.2);
+                sleep(2000);
                 v_state++;
                 break;
-            //
-            // Wait...
-            //
             case 3:
-                //keep checking if we have reached the distance we need to reach
-                if (loopCounter() % 50 == 0)
-                {
-                    set_second_message("Flip Down");
+//
+                // drive Forward 12 inches
+                //
+                drive_inches(1.0f, 12, true);
+
+                //set_drive_power(1.0d, 1.0d);
+                v_state++;
+                break;
+            case 4:
+                if(drive_inches_complete()) {
                     v_state++;
                 }
                 break;
-            case 4:
-                // positive is right turn
-                // positive is right turn
-                m_flip_left_position(FlipLeftServo_MinPosition+.2);
-                m_flip_right_position(FlipRightServo_MaxPosition - .2);
+            case 5:
+
+                //
+                // Transition to the next state when this method is called again.
+                sleep(1000);
                 v_state++;
 
+
                 break;
 
-            case 5:
-            // positive is right turn
-                if (loopCounter() % 50 == 0)
-                {
-                    set_second_message("reset");
-                    v_state = 2;
+            case 6:
+                //
+                // drive Forward 12 inches
+                //
+                drive_inches(1.0f, 12, true);
+
+                //set_drive_power(1.0d, 1.0d);
+                v_state++;
+                break;
+            case 7:
+                if(drive_inches_complete()) {
+                    v_state++;
                 }
                 break;
+//            //
+//            // Wait...
+//            //
+//            case 5:
+//                //keep checking if we have reached the distance we need to reach
+//                if (loopCounter() % 50 == 0)
+//                {
+//                    set_second_message("Flip Down");
+//                    v_state++;
+//                }
+//                break;
+//            case 6:
+//                // positive is right turn
+//                // positive is right turn
+//                m_flip_left_position(FlipLeftServo_MinPosition+.2);
+//                m_flip_right_position(FlipRightServo_MaxPosition - .2);
+//                v_state++;
+//
+//                break;
+//
+//            case 7:
+//            // positive is right turn
+//                if (loopCounter() % 50 == 0)
+//                {
+//                    set_second_message("reset");
+//                    v_state = 2;
+//                }
+//                break;
 
             default:
                 //
                 // The autonomous actions have been accomplished (i.e. the state has
                 // transitioned into its final state.
                 //
+                sleep(100);
                 break;
         }
 

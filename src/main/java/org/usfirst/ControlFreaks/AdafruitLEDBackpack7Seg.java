@@ -121,7 +121,9 @@ public class AdafruitLEDBackpack7Seg {
     }
 
     public void stop() {
-        v_ledseg.close();
+        if(v_ledseg != null) {
+            v_ledseg.close();
+        }
     }
     void debugLogException( String msg, Exception ex){
 
