@@ -7,9 +7,12 @@ import android.media.ToneGenerator;
  */
 public class CFPushBotAuto extends CFPushBotTelemetry {
 
-    boolean v_turn_use_gyro = true;
-    boolean v_turn_slow = true;
-    boolean v_drive_inches_use_gyro = true;
+    boolean v_use_gyro = true;
+    boolean v_turn_slow = false;
+    int v_drive_inches = 12;
+    int v_turn_degrees = 90;
+    double v_drive_power = 1.0;
+    //boolean v_drive_inches_use_gyro = true;
 
     //--------------------------------------------------------------------------
     //
@@ -52,10 +55,7 @@ public class CFPushBotAuto extends CFPushBotTelemetry {
         //
         super.start ();
 
-        //
-        // we always run using encoders.
-        //
-        run_using_encoders();
+
     } // start
 
     //--------------------------------------------------------------------------
@@ -77,183 +77,133 @@ public class CFPushBotAuto extends CFPushBotTelemetry {
         //
         // State: Initialize (i.e. state_0).
         //
-        switch (v_state)
-        {
+        switch (v_state) {
             //
             // Synchronize the state machine and hardware.
             //
             case 0:
                 //
-                // drive Forward 48 inches
                 //
-                drive_inches(1.0f,48, v_drive_inches_use_gyro);
+                if (gamepad1.left_bumper) {
+                    //drive forward 12 or 48 inches
+                    v_turn_slow = false;
+                    v_drive_power = 1.0f;
+                } else {
+                    v_turn_slow = true;
+                    v_drive_power = .5f;
+                }
 
-                set_drive_power(1.0d, 1.0d);
-                v_state++;
+                if (gamepad1.right_bumper) {
+                    //drive backward 12 or 48 inches
+                    v_use_gyro = false;
+                } else{
+                    v_use_gyro = true;
+                }
+                if (gamepad1.b) {
+                    //drive backward 12 or 48 inches
+                    v_turn_degrees = 45;
+                    v_drive_inches = 48;
+                } else{
+                    v_turn_degrees = 90;
+                    v_drive_inches = 12;
+                }
+                if (gamepad1.dpad_up) {
+                    //drive forward no gyro 12 or 48 inches
+                    v_state = 1;
+                }else if (gamepad1.dpad_down) {
+                    //drive backward no gyro 12 or 48 inches
+                    v_state = 5;
+                }else if (gamepad1.dpad_left) {
+                    //turn left no gyro 45 or 90
+                    v_state = 3;
+                }else if (gamepad1.dpad_right) {
+                    //turn right no gyro 45 or 90
+                    v_state = 7;
+                }
+
                 break;
             case 1:
+                drive_inches(v_drive_power,v_drive_inches, v_use_gyro);
+                v_state++;
+            case 2:
 
                 //
                 // Transition to the next state when this method is called again.
                 if (drive_inches_complete()) {
-                    //
-                    v_state++;
-                    sleep(500);
+                    sound_play_dtmf(ToneGenerator.TONE_DTMF_2,500);
+                    sleep(200);
+                    set_second_message("drive " + v_drive_inches + " inches forward final h:" + sensor_gyro_get_heading() + ",re:" + a_right_encoder_count() + ",le:" + a_left_encoder_count());
+                    v_state = 0;
+
                 }
+
 
                 break;
 
-            case 2:
+            case 3:
                 // positive is right turn
-                set_second_message("turn 90 to the left");
-                turn_degrees(-90, v_turn_slow, v_turn_use_gyro);
+                set_second_message("turn " + v_turn_degrees + " to the left");
+                        turn_degrees(0 - v_turn_degrees, v_turn_slow, v_use_gyro);
 
                 v_state++;
                 break;
             //
             // Wait...
             //
-            case 3:
+            case 4:
                 //keep checking if we have reached the distance we need to reach
                 if (turn_complete ())
                 {
                     //set_second_message("turn Complete");
                     sound_play_dtmf(ToneGenerator.TONE_DTMF_2,500);
-                    sleep(500);
-                    set_second_message("turn final heading" + sensor_gyro_get_heading());
-                    v_state++;
+                    sleep(200);
+                    set_second_message("turn left " + v_turn_degrees + " final h:" + sensor_gyro_get_heading() + ",re:" + a_right_encoder_count() + ",le:" + a_left_encoder_count());
+                    v_state=0;
                 }
                 break;
 
-            case 4:
-                //
-                // drive Forward 12 inches
-                //
-                drive_inches(1.0f,12, v_drive_inches_use_gyro);
-                v_state++;
-                break;
             case 5:
-
                 //
-                // Transition to the next state when this method is called again.
-                if (drive_inches_complete()) {
-
-                    sleep(500);
-                    set_second_message("turn final heading" + sensor_gyro_get_heading());
-                    v_state++;
-                }
-
+                // drive backwards 12 inches
+                //
+                drive_inches(0-v_drive_power,v_drive_inches, v_use_gyro);
+                v_state++;
                 break;
             case 6:
+
+                //
+                // Transition to the next state when this method is called again.
+                if (drive_inches_complete()) {
+                    sound_play_dtmf(ToneGenerator.TONE_DTMF_2,500);
+                    sleep(200);
+                    set_second_message("drive backwards " + v_drive_inches + " final h:" + sensor_gyro_get_heading() + ",re:" + a_right_encoder_count() + ",le:" + a_left_encoder_count());
+                    v_state=0;
+                }
+
+                break;
+            case 7:
                 // positive is right turn
-                set_second_message("turn 90 to the right");
-                turn_degrees(90, v_turn_slow, v_turn_use_gyro);
+                set_second_message("turn " + v_turn_degrees + " to the right");
+                turn_degrees(v_turn_degrees, v_turn_slow, v_use_gyro);
                 v_state++;
                 break;
             //
             // Wait...
             //
-            case 7:
+            case 8:
                 //keep checking if we have reached the distance we need to reach
                 if (turn_complete ())
                 {
-                    set_second_message("turn Complete");
                     sound_play_dtmf(ToneGenerator.TONE_DTMF_3, 500);
                     sleep(500);
-                    v_state++;
-                }
-                break;
-            case 8:
-                //
-                // drive Forward 12 inches
-                //
-                drive_inches(1.0f,48, v_drive_inches_use_gyro);
-                v_state++;
-                break;
-            case 9:
+                    set_second_message("turn right " + v_turn_degrees + " final h:" + sensor_gyro_get_heading() + ",re:" + a_right_encoder_count() + ",le:" + a_left_encoder_count());
 
-                //
-                // Transition to the next state when this method is called again.
-                if (drive_inches_complete()) {
-                    //
-                    sleep(500);
-                    set_second_message("turn final heading" + sensor_gyro_get_heading());
-                    v_state++;
+                    v_state=0;
                 }
+                break;
 
-                break;
-            case 10:
-            // positive is right turn
-                set_second_message("turn 90 to the left");
-                turn_degrees(-90, v_turn_slow, v_turn_use_gyro);
 
-                v_state++;
-                break;
-            //
-            // Wait...
-            //
-            case 11:
-                //keep checking if we have reached the distance we need to reach
-                if (turn_complete ())
-                {
-                    set_second_message("turn Complete");
-                    sound_play_dtmf(ToneGenerator.TONE_DTMF_5, 1000);
-                    sleep(500);
-                    set_second_message("turn final heading" + sensor_gyro_get_heading());
-                    v_state++;
-                }
-                break;
-            /*case 6:
-                // positive is right turn
-                turn_degrees(90, false, true);
-                set_second_message("turn 90 to the right");
-                v_state++;
-                break;
-            //
-            // Wait...
-            //
-            case 7:
-                //keep checking if we have reached the distance we need to reach
-                if (turn_complete ())
-                {
-                    set_second_message("turn Complete");
-                    v_state++;
-                }
-                break;
-            case 8:
-                //
-                // drive Forward 12 inches
-                //
-                drive_inches(1.0f,12, true);
 
-                //set_drive_power(1.0d, 1.0d);
-                v_state++;
-                break;
-            case 9:
-                //
-                // Transition to the next state when this method is called again.
-                if (drive_inches_complete()) {
-                    //
-                    v_state++;
-                }
-                break;
-            case 10:
-                // positive is right turn
-                turn_degrees(90, false, v_turn_complete_use_gyro);
-                set_second_message("turn 90 to the right");
-                v_state++;
-                break;
-            //
-            // Wait...
-            //
-            case 11:
-                //keep checking if we have reached the distance we need to reach
-                if (turn_complete ())
-                {
-                    set_second_message("turn Complete");
-                    v_state++;
-                }
-                break;*/
             default:
                 //
                 // The autonomous actions have been accomplished (i.e. the state has
@@ -265,6 +215,13 @@ public class CFPushBotAuto extends CFPushBotTelemetry {
         //
         // Send telemetry data to the driver station.
         //
+        if(gamepad1.back){
+            set_drive_power(0.0d, 0.0d);
+            sound_play_dtmf(ToneGenerator.TONE_DTMF_2,500);
+            sleep(200);
+            set_second_message("cancel detected");
+            v_state = 0;
+        }
         if ((loopCounter() % 10) == 0) {
             update_telemetry(); // Update common telemetry
             telemetry.addData("18", "State: " + v_state);

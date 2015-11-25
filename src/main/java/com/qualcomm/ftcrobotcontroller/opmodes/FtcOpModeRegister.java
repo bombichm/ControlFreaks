@@ -62,7 +62,7 @@ public class FtcOpModeRegister implements OpModeRegister {
     //manager.register("K9TankDrive", K9TankDrive.class);
     //manager.register("HTRGBExample", HTRGBExample.class);
     manager.register ("Manual Mode", CFPushBotManual.class);
-    manager.register ("Test no Auto", CFPushBotAuto.class);
+    manager.register ("Test Do Not Use", CFPushBotAuto.class);
     manager.register ("Funny Dance", CFPushBotAuto_Funny.class);
     manager.register ("Blue 2 Climb Home Short", CFPushBotAuto_Blue2_ClimbHome_Short.class);
     manager.register ("Blue 3 Climb Home Short", CFPushBotAuto_Blue3_ClimbHome_Short.class);

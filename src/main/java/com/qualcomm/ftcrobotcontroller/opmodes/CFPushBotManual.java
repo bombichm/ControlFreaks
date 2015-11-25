@@ -42,6 +42,8 @@ public class CFPushBotManual extends CFPushBotTelemetry{
      *
      * The system calls this member repeatedly while the OpMode is running.
      */
+    boolean isMovingArm = false;
+    float stickdeadzone = .1f;
     @Override public void loop ()
 
     {
@@ -93,58 +95,64 @@ public class CFPushBotManual extends CFPushBotTelemetry{
         // class, but the positions aren't applied until this method ends.
         //
 
-        if (gamepad2.dpad_right || (gamepad1.dpad_right && bothControllersEnabled) )
+        if (gamepad2.dpad_right )
         {
             //arm_wrist_moveRight(gamepad2.left_bumper);
-            arm_shoulder_moveUp((gamepad2.left_bumper || (gamepad1.left_bumper && bothControllersEnabled)));
+            arm_shoulder_moveUp(!gamepad2.left_bumper);
         }
-        else if (gamepad2.dpad_left || (gamepad1.dpad_left && bothControllersEnabled))
+        else if (gamepad2.dpad_left )
         {
 
-            arm_shoulder_moveDown(gamepad2.left_bumper || (gamepad1.left_bumper && bothControllersEnabled) );
+            arm_shoulder_moveDown(!gamepad2.left_bumper);
         }
 
 
-        if (gamepad2.dpad_up || ( gamepad1.dpad_up && bothControllersEnabled))
+        if (gamepad2.dpad_up )
         {
 
-            arm_elbow_moveUp(gamepad2.left_bumper || (gamepad1.left_bumper && bothControllersEnabled));
+            arm_elbow_moveUp(!gamepad2.left_bumper);
 
         }
-        else if (gamepad2.dpad_down || (gamepad1.dpad_down && bothControllersEnabled))
+        else if (gamepad2.dpad_down )
         {
-            arm_elbow_moveDown(gamepad2.left_bumper || (gamepad1.left_bumper && bothControllersEnabled));
+            arm_elbow_moveDown(!gamepad2.left_bumper);
         }
-        if (gamepad2.b || (gamepad1.b && bothControllersEnabled))
+
+        if (gamepad2.b || gamepad2.left_stick_x > stickdeadzone )
         {
             //move RPABase Servo in the up direction in left bumper down move fast
-            rpabase_moveUp(gamepad2.left_bumper || (gamepad1.left_bumper && bothControllersEnabled));
+            rpabase_moveUp(!gamepad2.left_bumper);
+            isMovingArm = true;
         }
-        else if (gamepad2.x || (gamepad1.x && bothControllersEnabled))
+        else if (gamepad2.x || gamepad2.left_stick_x < (0 - stickdeadzone) )
         {
+            isMovingArm = true;
             //move RPABase Servo in the up direction in left bumper down move fast
-            rpabase_moveDown(gamepad2.left_bumper || (gamepad1.left_bumper && bothControllersEnabled));
+            rpabase_moveDown(!gamepad2.left_bumper );
+        }else if(isMovingArm && !gamepad2.x && !gamepad2.b && gamepad2.left_stick_x > (0 - stickdeadzone) && gamepad2.left_stick_x < stickdeadzone ){
+            m_rpabase_position(a_rpabase_position_actual());
+            isMovingArm = false;
         }
 
-        if (gamepad2.y || (gamepad1.y && bothControllersEnabled))
+        if (gamepad2.y )
         {
-            rpaarm_moveUp(gamepad2.left_bumper || (gamepad1.left_bumper && bothControllersEnabled));
+            rpaarm_moveUp(!gamepad2.left_bumper);
         }
-        else if (gamepad2.a || (gamepad1.a && bothControllersEnabled))
+        else if (gamepad2.a )
         {
             //move RPABase Servo in the up direction in left bumper down move fast
-            rpaarm_moveDown(gamepad2.left_bumper || (gamepad1.left_bumper && bothControllersEnabled));
+            rpaarm_moveDown(!gamepad2.left_bumper);
         }else{
             m_rpa_arm_power(0.0f);
         }
 
-        if (gamepad2.left_trigger > ArmWristTrigger_Threshold_Fast || (bothControllersEnabled && gamepad1.left_trigger > ArmWristTrigger_Threshold_Fast) ){
+        if (gamepad2.left_trigger > ArmWristTrigger_Threshold_Fast ){
             arm_wrist_moveLeft(true);
-        }else if(gamepad2.left_trigger > ArmWristTrigger_Threshold || (bothControllersEnabled && gamepad1.left_trigger > ArmWristTrigger_Threshold) ){
+        }else if(gamepad2.left_trigger > ArmWristTrigger_Threshold  ){
             arm_wrist_moveLeft(false);
-        }else if (gamepad2.right_trigger > ArmWristTrigger_Threshold_Fast || (bothControllersEnabled && gamepad1.right_trigger > ArmWristTrigger_Threshold_Fast) ){
+        }else if (gamepad2.right_trigger > ArmWristTrigger_Threshold_Fast ){
             arm_wrist_moveRight(true);
-        }else if(gamepad2.right_trigger > ArmWristTrigger_Threshold || (bothControllersEnabled && gamepad1.right_trigger > ArmWristTrigger_Threshold) ){
+        }else if(gamepad2.right_trigger > ArmWristTrigger_Threshold ){
             arm_wrist_moveRight(false);
         }
 
