@@ -47,26 +47,31 @@ public class CFPushBotHardware extends OpMode {
     //new treads
     private static final float v_turn_ticks_per_degree = 22.6f;
 
-    private static final double v_turn_motorspeed = .8d;
-    private static final double v_turn_motorspeed_slow = .3d;
+    private static final double v_turn_motorspeed = .5d;
+    private static final double v_turn_motorspeed_slow = .2d;
     private static final int v_turn_degrees_heading_drift_error = 5;
 
     //old treads
     //private static final double driveInches_ticksPerInch = 182.35;
 
     //new Treads
-    private static final double driveInches_ticksPerInch = 205.35;
+    private static final double v_drive_inches_ticksPerInch = 200.35;
+    //This is the value used to stop before reaching target to account for delay in stop command being processed
+    private static final int v_drive_inches_ticksStop = 100;
 
-    private static final double driveInches_ticksSlowDown1 = 300;
-    private static final double driveInches_ticksSlowDown2 = 150;
-    private static final float v_drive_power_slowdown1 = .5f;
-    private static final float v_drive_power_slowdown2 = .25f;
+    //ticks before target to slow to slowdown 1 speed hapens before slowdown 2
+    private static final int v_drive_inches_ticksSlowDown1 = 500;
+    //ticks before target to slow to slowdown 2 speed
+    //private static final double v_drive_inches_ticksSlowDown2 = 1000;
+    private static final float v_drive_power_slowdown1 = .30f;
+    //private static final float v_drive_power_slowdown2 = .30f;
+
     //Global Vars to the class
     private static final double ServoErrorResultPosition = -0.0000000001;
     //RPA Base Varables
     private Servo v_servo_rpa_base;
     private static final double RPABaseServo_Delta = 0.0005;
-    private static final double RPABaseServo_Delta_Fast = 0.04;
+    private static final double RPABaseServo_Delta_Fast = 0.001;
     private double RPABaseServo_MinPosition = 0.01;  //Need to unhook gear int so it goes to zero then rehook servo gear
     private double RPABaseServo_ClimbPosition = 0.65;
     private double RPABaseServo_MaxPosition = 0.70;
@@ -352,10 +357,22 @@ public class CFPushBotHardware extends OpMode {
             v_motor_right_drive = null;
         }
         try {
-            run_using_encoders();
-            sleep(50);
+            int counter = 0;
             reset_drive_encoders();
-            sleep(50);
+            while (counter < 10 && have_drive_encoders_reset() == false){
+                counter++;
+                sleep(100);
+                debugLogException("init", "waiting on  rest_drive_encoders() complete r:" + v_motor_right_drive.getMode() + ",l:" + v_motor_left_drive.getMode(), null);
+
+            }
+            run_using_encoders();
+//             counter = 0;
+//            while (counter < 10 && v_motor_right_drive.getMode() != DcMotorController.RunMode.RUN_WITHOUT_ENCODERS && v_motor_left_drive.getMode() != DcMotorController.RunMode.RUN_USING_ENCODERS ){
+//                counter++;
+//                sleep(100);
+//                debugLogException("init", "waiting on  run_using_encoders() complete r:" + v_motor_right_drive.getMode() + ",l:" + v_motor_left_drive.getMode(), null);
+//            }
+
             debugLogException("init", "run_using_encoders() and rest_drive_encoders() complete", null);
         }catch (Exception p_exeception)
         {
@@ -947,14 +964,17 @@ public class CFPushBotHardware extends OpMode {
         run_using_right_drive_encoder ();
 
     } // run_using_encoders
+/*
 
     //--------------------------------------------------------------------------
     //
     // run_without_left_drive_encoder
     //
-    /**
+    */
+/**
      * Set the left drive wheel encoder to run, if the mode is appropriate.
-     */
+     *//*
+
     public void run_without_left_drive_encoder ()
 
     {
@@ -970,6 +990,7 @@ public class CFPushBotHardware extends OpMode {
         }
 
     } // run_without_left_drive_encoder
+*/
 
     public boolean sound_play_dtmf(int tone, int duration){
         if (v_tone_generator != null) {
@@ -980,13 +1001,13 @@ public class CFPushBotHardware extends OpMode {
         }
     }
 
-    //--------------------------------------------------------------------------
+    /*//--------------------------------------------------------------------------
     //
     // run_without_right_drive_encoder
     //
-    /**
+    *//**
      * Set the right drive wheel encoder to run, if the mode is appropriate.
-     */
+     *//*
     public void run_without_right_drive_encoder ()
 
     {
@@ -1007,9 +1028,9 @@ public class CFPushBotHardware extends OpMode {
     //
     // run_without_drive_encoders
     //
-    /**
+    *//**
      * Set both drive wheel encoders to run, if the mode is appropriate.
-     */
+     *//*
     public void run_without_drive_encoders ()
 
     {
@@ -1020,7 +1041,7 @@ public class CFPushBotHardware extends OpMode {
         run_without_right_drive_encoder ();
 
     } // run_without_drive_encoders
-
+*/
     //--------------------------------------------------------------------------
     //
     // reset_left_drive_encoder
@@ -1120,7 +1141,7 @@ public class CFPushBotHardware extends OpMode {
             return v_motor_left_drive.getMode();
         }
 
-        return DcMotorController.RunMode.RUN_WITHOUT_ENCODERS;
+        return DcMotorController.RunMode.RUN_TO_POSITION;
 
     } // a_left_drive_mode
 
@@ -1136,7 +1157,7 @@ public class CFPushBotHardware extends OpMode {
             return v_motor_right_drive.getMode();
         }
 
-        return DcMotorController.RunMode.RUN_WITHOUT_ENCODERS;
+        return DcMotorController.RunMode.RUN_TO_POSITION;
 
     } // a_right_drive_mode
 
@@ -1441,14 +1462,20 @@ public class CFPushBotHardware extends OpMode {
 
     } // have_drive_encoders_reset
 
+    private long v_drive_inches_ticks_target_right_slowdown;
+    private long v_drive_inches_ticks_target_left_slowdown;
+    private long v_drive_inches_ticks_target_right_stop;
+    private long v_drive_inches_ticks_target_left_stop;
     private long v_drive_inches_ticks_target_right;
     private long v_drive_inches_ticks_target_left;
     private double v_drive_inches_power;
     private boolean v_drive_inches_useGyro;
     private int v_drive_inches_state;
     private int v_drive_inches_heading;
+    private boolean v_drive_slowdown1_already_set = false;
+    private static final float v_drive_inches_power_gyro_correction = 0.1f;
+    private static final int v_drive_inches_power_gyro_correction_max_times = 6;
 
-    private static final float v_drive_inches_power_gyro_correction = 0.2f;
     public void drive_inches(double power,float inches, boolean useGyro){
         try {
 
@@ -1464,22 +1491,30 @@ public class CFPushBotHardware extends OpMode {
             v_drive_inches_power = power;
             if (power >= 0 ){
                 //we are going forward
-                v_drive_inches_ticks_target_right = v_motor_right_drive.getCurrentPosition() +  Math.round(inches * driveInches_ticksPerInch);
-                v_drive_inches_ticks_target_left = v_motor_left_drive.getCurrentPosition() +  Math.round(inches * driveInches_ticksPerInch);
+                v_drive_inches_ticks_target_right = v_motor_right_drive.getCurrentPosition() +  Math.round(inches * v_drive_inches_ticksPerInch);
+                v_drive_inches_ticks_target_right_slowdown = v_drive_inches_ticks_target_right - v_drive_inches_ticksSlowDown1;
+                v_drive_inches_ticks_target_right_stop = v_drive_inches_ticks_target_right - v_drive_inches_ticksStop;
+                v_drive_inches_ticks_target_left = v_motor_left_drive.getCurrentPosition() +  Math.round(inches * v_drive_inches_ticksPerInch);
+                v_drive_inches_ticks_target_left_slowdown = v_drive_inches_ticks_target_left - v_drive_inches_ticksSlowDown1;
+                v_drive_inches_ticks_target_left_stop = v_drive_inches_ticks_target_left - v_drive_inches_ticksStop;
             }else{
                 //we are going backward
-                v_drive_inches_ticks_target_right = v_motor_right_drive.getCurrentPosition() -  Math.round(inches * driveInches_ticksPerInch);
-                v_drive_inches_ticks_target_left = v_motor_left_drive.getCurrentPosition() -  Math.round(inches * driveInches_ticksPerInch);
+                v_drive_inches_ticks_target_right = v_motor_right_drive.getCurrentPosition() -  Math.round(inches * v_drive_inches_ticksPerInch);
+                v_drive_inches_ticks_target_right_slowdown = v_drive_inches_ticks_target_right + v_drive_inches_ticksSlowDown1;
+                v_drive_inches_ticks_target_right_stop = v_drive_inches_ticks_target_right + v_drive_inches_ticksStop;
+                v_drive_inches_ticks_target_left = v_motor_left_drive.getCurrentPosition() -  Math.round(inches * v_drive_inches_ticksPerInch);
+                v_drive_inches_ticks_target_left_slowdown = v_drive_inches_ticks_target_left + v_drive_inches_ticksSlowDown1;
+                v_drive_inches_ticks_target_left_stop = v_drive_inches_ticks_target_left + v_drive_inches_ticksStop;
 
             }
 
             v_drive_inches_useGyro = useGyro;
             v_drive_inches_state = 0;
-            //
-            // Start the drive wheel motors at full power.
-            //
-            //debugLogException("drive_inches", "Target " + v_drive_inches_ticks, null);
-            setSecondMessage("drive_inches_complete: drive complete tl:" + v_drive_inches_ticks_target_left + ", tr:" + v_drive_inches_ticks_target_right
+            v_drive_slowdown1_already_set = false;
+            setSecondMessage("drive_inches: p: " + v_drive_inches_power
+                    + ",tl:" + v_drive_inches_ticks_target_left + ",tr:" + v_drive_inches_ticks_target_right
+                    + ",tlsl:" + v_drive_inches_ticks_target_left_slowdown + ",trsl:" + v_drive_inches_ticks_target_right_slowdown
+                    + ",tlst:" + v_drive_inches_ticks_target_left_stop + ",trst:" + v_drive_inches_ticks_target_right_stop
                     + ",l:" + a_left_encoder_count() + ",r:" + a_right_encoder_count() );
 
         }catch (Exception p_exeception)
@@ -1514,6 +1549,9 @@ public class CFPushBotHardware extends OpMode {
             return true;
         }
 
+        int v_drive_inches_ticks_left = v_motor_left_drive.getCurrentPosition();
+        int v_drive_inches_ticks_right = v_motor_right_drive.getCurrentPosition();
+
         switch(v_drive_inches_state){
 
             case 0:
@@ -1522,8 +1560,13 @@ public class CFPushBotHardware extends OpMode {
                 }
                 //add a delay to handle any stupid issues with the ftc dc motor controller timming
                 sleep(2);
-                set_drive_power(v_drive_inches_power,v_drive_inches_power);
-                setSecondMessage("drive_inches_complete: set the drive power , H:" + v_drive_inches_heading);
+                set_drive_power(v_drive_inches_power, v_drive_inches_power);
+                setSecondMessage("drive_inches_complete: set the drive power "
+                     +  " p: " + v_drive_inches_power
+                        + ",tl:" + v_drive_inches_ticks_target_left + ",tr:" + v_drive_inches_ticks_target_right
+                        + ",tlsl:" + v_drive_inches_ticks_target_left_slowdown + ",trsl:" + v_drive_inches_ticks_target_right_slowdown
+                        + ",tlst:" + v_drive_inches_ticks_target_left_stop + ",trst:" + v_drive_inches_ticks_target_right_stop
+                    + ",l:" + v_drive_inches_ticks_left + ",r:" + v_drive_inches_ticks_right);
                 v_drive_inches_state++;
                 break;
             case 1:
@@ -1533,52 +1576,74 @@ public class CFPushBotHardware extends OpMode {
                 // If they haven't, then the op-mode remains in this state (i.e this
                 // block will be executed the next time this method is called).
                 //
-                if ((v_drive_inches_power >= 0 &&  v_motor_left_drive.getCurrentPosition() >= v_drive_inches_ticks_target_left &&  v_motor_right_drive.getCurrentPosition() >= v_drive_inches_ticks_target_right )
+                if (
+
+                        (v_drive_inches_power >= 0.0d &&  (v_drive_inches_ticks_left >= v_drive_inches_ticks_target_left_stop &&  v_drive_inches_ticks_right >= v_drive_inches_ticks_target_right_stop ))
                 ||
-                        (v_drive_inches_power < 0 &&  v_motor_left_drive.getCurrentPosition() <= v_drive_inches_ticks_target_left &&  v_motor_right_drive.getCurrentPosition() <= v_drive_inches_ticks_target_right )
+                        (v_drive_inches_power < 00.0d &&  (v_drive_inches_ticks_left <= v_drive_inches_ticks_target_left_stop &&  v_drive_inches_ticks_right <= v_drive_inches_ticks_target_right_stop ))
                 )
                 {
                     //
                     // Stop the motors.
                     //
-                    set_drive_power (0.0f, 0.0f);
+                    set_drive_power(0.0f, 0.0f);
                     //
-                    // Reset the encoders to ensure they are at a known good value.
-                    //
-                    //reset_drive_encoders();
-                    //
-                    // Transition to the next state when this method is called
-                    // again.
-                    //
-                    setSecondMessage("drive_inches_complete: drive complete tl:" + v_drive_inches_ticks_target_left + ", tr:" + v_drive_inches_ticks_target_right
-                            + ",l:" + a_left_encoder_count() + ",r:" + a_right_encoder_count() );
+                    sleep(50);
+                    setSecondMessage("drive_inches_complete: drive complete "
+                            +  " p: " + v_drive_inches_power
+                            + ",tl:" + v_drive_inches_ticks_target_left + ",tr:" + v_drive_inches_ticks_target_right
+                            + ",tlsl:" + v_drive_inches_ticks_target_left_slowdown + ",trsl:" + v_drive_inches_ticks_target_right_slowdown
+                            + ",tlst:" + v_drive_inches_ticks_target_left_stop + ",trst:" + v_drive_inches_ticks_target_right_stop
+                            + ",l:" + v_drive_inches_ticks_left + ",r:" + v_drive_inches_ticks_right );
                     v_drive_inches_state++;
                     return true;
-                }
-                /*else if (have_drive_encoders_reached (v_drive_inches_ticks - driveInches_ticksSlowDown2, v_drive_inches_ticks - driveInches_ticksSlowDown2))
+                /*}
+                else if (
+                            (v_drive_inches_power >= 0 &&  (v_drive_inches_ticks_left >= (v_drive_inches_ticks_target_left - v_drive_inches_ticksSlowDown2)  ||  v_drive_inches_ticks_right >= (v_drive_inches_ticks_target_right -  v_drive_inches_ticksSlowDown2) ))
+                            ||
+                            (v_drive_inches_power < 0 &&  (v_drive_inches_ticks_left <= (v_drive_inches_ticks_target_left + v_drive_inches_ticksSlowDown2) ||  v_drive_inches_ticks_right <= (v_drive_inches_ticks_target_right + v_drive_inches_ticksSlowDown2) ))
+                        )
                 {
                     //
                     // slow the motors to slowdown 2
                     //
                     if(v_drive_inches_power > v_drive_power_slowdown2) {
                         set_drive_power(v_drive_power_slowdown2, v_drive_power_slowdown2);
+                        v_drive_inches_power = v_drive_power_slowdown2;
+                        setSecondMessage("drive_inches_complete: slowdown 2 "
+                                +  " p: " + v_drive_inches_power + ",tl:" + v_drive_inches_ticks_target_left + ",tr:" + v_drive_inches_ticks_target_right
+                                + ",l:" + v_drive_inches_ticks_left + ",r:" + v_drive_inches_ticks_right);
+                    }*/
 
-                        setSecondMessage("drive_inches_complete: slowdown 2 t:" + v_drive_inches_ticks
-                                + ",l:" + a_left_encoder_count() + ",r:" + a_right_encoder_count());
-                    }
-
-                }else if (have_drive_encoders_reached (v_drive_inches_ticks - driveInches_ticksSlowDown1, v_drive_inches_ticks - driveInches_ticksSlowDown1))
+                }else if ( v_drive_slowdown1_already_set == false &&
+                            (v_drive_inches_power >= 0.0d &&  (v_drive_inches_ticks_left >= v_drive_inches_ticks_target_left_slowdown  ||  v_drive_inches_ticks_right >= v_drive_inches_ticks_target_right_slowdown ))
+                            ||
+                            (v_drive_inches_power < 0.0d &&  (v_drive_inches_ticks_left <= v_drive_inches_ticks_target_left_slowdown ||  v_drive_inches_ticks_right <= v_drive_inches_ticks_target_right_slowdown ))
+                        )
                 {
 
                     //
                     // slow the motors to slowdown 1
                     //
-                    if(v_drive_inches_power > v_drive_power_slowdown1) {
-                        setSecondMessage("drive_inches_complete: slow down 1 t:" + v_drive_inches_ticks
-                                + ",l:" + a_left_encoder_count() + ",r:" + a_right_encoder_count());
-                        set_drive_power(v_drive_power_slowdown1, v_drive_power_slowdown1);
+                    if((v_drive_inches_power > 0.0d && v_drive_inches_power > v_drive_power_slowdown1)
+                        || (v_drive_inches_power < 00.0d && v_drive_inches_power < (0- v_drive_power_slowdown1))
+                        ) {
+                        if(v_drive_inches_power > 0.0d){
+                            set_drive_power(v_drive_power_slowdown1, v_drive_power_slowdown1);
+                        }else{
+                            set_drive_power(0-v_drive_power_slowdown1, 0-v_drive_power_slowdown1);
+                        }
+                        v_drive_slowdown1_already_set = true;
+                        v_drive_inches_power = v_drive_power_slowdown1;
+                        setSecondMessage("drive_inches_complete: slow down 1 "
+                                +  " p: " + v_drive_inches_power
+                                + ",tl:" + v_drive_inches_ticks_target_left + ",tr:" + v_drive_inches_ticks_target_right
+                                + ",tlsl:" + v_drive_inches_ticks_target_left_slowdown + ",trsl:" + v_drive_inches_ticks_target_right_slowdown
+                                + ",tlst:" + v_drive_inches_ticks_target_left_stop + ",trst:" + v_drive_inches_ticks_target_right_stop
+                                + ",l:" + v_drive_inches_ticks_left + ",r:" + v_drive_inches_ticks_right
+                        );
                     }
-                }*/
+                }
                 else if(v_drive_inches_useGyro){
                     //the logic here is to try to hold a gyro heading by slowing a track down a touch v_drive_inches_power_gyro_correction
                     //the issue is our gyro is slow to refresh so may need to only do this a couple of loops then turn off
@@ -1592,28 +1657,39 @@ public class CFPushBotHardware extends OpMode {
                     }
                     headingDifference = Math.abs(currentHeading-v_drive_inches_heading);
                     //hard limit of no more then 3 times the correction
-                    if (headingDifference > 3){
-                        headingDifference = 3;
+                    if (headingDifference > v_drive_inches_power_gyro_correction_max_times){
+                        headingDifference = v_drive_inches_power_gyro_correction_max_times;
                     }
                     float powerCorrectAmount = v_drive_inches_power_gyro_correction * headingDifference;
-                    if (v_drive_inches_heading > currentHeading){
+                    if (v_drive_inches_power < 0.0d){
+                        powerCorrectAmount = 0 - powerCorrectAmount;
+                    }
+                    if ((v_drive_inches_heading > currentHeading && v_drive_inches_power > 0) || (v_drive_inches_heading < currentHeading && v_drive_inches_power < 0) ){
                         set_drive_power(v_drive_inches_power, v_drive_inches_power - powerCorrectAmount );
-                    }else if (v_drive_inches_heading < currentHeading){
+                    }else if ((v_drive_inches_heading < currentHeading && v_drive_inches_power > 0) || (v_drive_inches_heading > currentHeading && v_drive_inches_power < 0)){
                         set_drive_power(v_drive_inches_power - powerCorrectAmount, v_drive_inches_power );
                     }else {
                         set_drive_power(v_drive_inches_power, v_drive_inches_power );
                     }
                     if(v_loop_ticks_slow) {
-                        setSecondMessage("drive_inches_complete: gyro H:" + currentHeading + ", TH:" + v_drive_inches_heading
-                                + ", tl:" + v_drive_inches_ticks_target_left
-                                + ", tr:" + v_drive_inches_ticks_target_right
-                                + ",l:" + a_left_encoder_count() + ",r:" + a_right_encoder_count() + ",lp:" + v_motor_left_drive.getPower() + ",rp:" + v_motor_right_drive.getPower());
+                        setSecondMessage("drive_inches_complete: gyro ch:" + currentHeading + ", th:" + v_drive_inches_heading
+                                +  " p: " + v_drive_inches_power
+                                + ",tl:" + v_drive_inches_ticks_target_left + ",tr:" + v_drive_inches_ticks_target_right
+                                + ",tlsl:" + v_drive_inches_ticks_target_left_slowdown + ",trsl:" + v_drive_inches_ticks_target_right_slowdown
+                                + ",tlst:" + v_drive_inches_ticks_target_left_stop + ",trst:" + v_drive_inches_ticks_target_right_stop
+                                + ",l:" + v_drive_inches_ticks_left + ",r:" + v_drive_inches_ticks_right
+                                + ",lp:" + v_motor_left_drive.getPower() + ",rp:" + v_motor_right_drive.getPower());
                     }
                 }else{
                     if(v_loop_ticks_slow) {
-                        setSecondMessage("drive_inches_complete: tl:" + v_drive_inches_ticks_target_left
-                                + ", tr:" + v_drive_inches_ticks_target_right
-                                + ", l:" + a_left_encoder_count() + ", r:" + a_right_encoder_count());
+                        setSecondMessage("drive_inches_complete: "
+                            +  " p: " + v_drive_inches_power
+                            + ",tl:" + v_drive_inches_ticks_target_left + ",tr:" + v_drive_inches_ticks_target_right
+                            + ",tlsl:" + v_drive_inches_ticks_target_left_slowdown + ",trsl:" + v_drive_inches_ticks_target_right_slowdown
+                            + ",tlst:" + v_drive_inches_ticks_target_left_stop + ",trst:" + v_drive_inches_ticks_target_right_stop
+                            + ",l:" + v_drive_inches_ticks_left + ",r:" + v_drive_inches_ticks_right
+                            + ",lp:" + v_motor_left_drive.getPower() + ",rp:" + v_motor_right_drive.getPower()
+                        );
                     }
                 }
             break;
@@ -1636,8 +1712,15 @@ public class CFPushBotHardware extends OpMode {
     private long v_turn_degrees_ticks_target_left;
 
     private int v_turn_degrees_heading_target;
+    private int v_turn_degrees_heading_target_slow;
+    private int v_turn_degrees_heading_target_stop;
+    private boolean v_turn_degrees_heading_target_360round;
+    private boolean v_turn_degrees_heading_start_error_360round;
+    private boolean v_turn_degrees_heading_target_slow_360round;
+    private boolean v_turn_degrees_heading_target_stop_360round;
     private int v_turn_degrees_heading_start;
-    private static final int v_turn_degrees_heading_overshoot = 30;
+    private static final int v_turn_degrees_heading_overshoot_slowdown = 30;
+    private static final int v_turn_degrees_heading_overshoot_stop = 5;
     private int v_turn_degrees_heading_start_error;
     private boolean v_turn_degrees_usingGyro;
     private boolean v_turn_degrees_iscwturn;
@@ -1685,27 +1768,91 @@ public class CFPushBotHardware extends OpMode {
                 v_turn_degrees_heading_start_error = v_turn_degrees_heading_start - v_turn_degrees_heading_drift_error;
                 if (v_turn_degrees_heading_start_error < 0){
                     v_turn_degrees_heading_start_error = 360 + v_turn_degrees_heading_start_error;
+                    v_turn_degrees_heading_start_error_360round = true;
+                }else{
+                    v_turn_degrees_heading_start_error_360round = false;
                 }
                 //clockwise turn to the right so gyro will count up
-                v_turn_degrees_heading_target = v_turn_degrees_heading_start + (degrees - v_turn_degrees_heading_overshoot);
-                //add above could be greater then
+                v_turn_degrees_heading_target = v_turn_degrees_heading_start + degrees;
+                //add above could be greater then 360 so correct
                 if (v_turn_degrees_heading_target >= 360){
                     v_turn_degrees_heading_target =  v_turn_degrees_heading_target - 360;
+                    v_turn_degrees_heading_target_360round = true;
+                }else{
+                    v_turn_degrees_heading_target_360round = false;
                 }
+
+                //set our slowdown target
+                v_turn_degrees_heading_target_slow = v_turn_degrees_heading_start + (degrees - v_turn_degrees_heading_overshoot_slowdown);
+                //add above could be greater then 360 so correct
+                if (v_turn_degrees_heading_target_slow >= 360){
+                    v_turn_degrees_heading_target_slow =  v_turn_degrees_heading_target_slow - 360;
+                    v_turn_degrees_heading_target_slow_360round = true;
+                }else{
+                    v_turn_degrees_heading_target_slow_360round = false;
+                }
+
+                //set our stop target
+
+                v_turn_degrees_heading_target_stop = v_turn_degrees_heading_start + (degrees - v_turn_degrees_heading_overshoot_stop);
+                //add above could be greater then 360 so correct
+                if (v_turn_degrees_heading_target_stop >= 360){
+                    v_turn_degrees_heading_target_stop =  v_turn_degrees_heading_target_stop - 360;
+                    v_turn_degrees_heading_target_stop_360round = true;
+                }else{
+                    v_turn_degrees_heading_target_stop_360round = false;
+                }
+
             } else {
                 v_turn_degrees_heading_start_error = v_turn_degrees_heading_start + v_turn_degrees_heading_drift_error;
                 if (v_turn_degrees_heading_start_error >= 360){
                     v_turn_degrees_heading_start_error =  v_turn_degrees_heading_start_error - 360;
+                    v_turn_degrees_heading_start_error_360round = true;
+                }else{
+                    v_turn_degrees_heading_start_error_360round = false;
                 }
-                //clockwise turn to the left so gyro will count down
-                v_turn_degrees_heading_target = v_turn_degrees_heading_start + (degrees +  v_turn_degrees_heading_overshoot);
-                //degrees is a negitive so add above could be a negitive number
+                //clockwise turn to the left so gyro will count down degrees is a negative so we just add below which will subtract
+                v_turn_degrees_heading_target = v_turn_degrees_heading_start + degrees;
+                //degrees is a negitive so add above could be greater then 360
                 if (v_turn_degrees_heading_target < 0){
                     v_turn_degrees_heading_target = 360 + v_turn_degrees_heading_target;
+                    v_turn_degrees_heading_target_360round = true;
+                }else{
+                    v_turn_degrees_heading_target_360round = false;
+                }
+
+                //set our slow down target
+                v_turn_degrees_heading_target_slow = v_turn_degrees_heading_start + (degrees + v_turn_degrees_heading_overshoot_slowdown);
+                //degrees is a negitive so add above could be greater then 360
+                if (v_turn_degrees_heading_target_slow < 0){
+                    v_turn_degrees_heading_target_slow = 360 + v_turn_degrees_heading_target_slow;
+                    v_turn_degrees_heading_target_slow_360round = true;
+                }else{
+                    v_turn_degrees_heading_target_slow_360round = false;
+                }
+
+                //set our stop target
+                v_turn_degrees_heading_target_stop = v_turn_degrees_heading_start + (degrees + v_turn_degrees_heading_overshoot_stop);
+                //degrees is a negitive so add above could be greater then 360
+                if (v_turn_degrees_heading_target_stop < 0){
+                    v_turn_degrees_heading_target_stop = 360 + v_turn_degrees_heading_target_stop;
+                    v_turn_degrees_heading_target_stop_360round = true;
+                }else{
+                    v_turn_degrees_heading_target_stop_360round = false;
                 }
 
             }
-            setSecondMessage("turn_degrees:  h:" + v_turn_degrees_heading_start + ", d:" + degrees  + ",ht:" + v_turn_degrees_heading_target );
+            setSecondMessage("turn_degrees: d:" + degrees
+                            + ",ch:" + v_turn_degrees_heading_start
+                            + ",ht:" + v_turn_degrees_heading_target
+                            + ",htsl:" + v_turn_degrees_heading_target_slow
+                            + ",htst:" + v_turn_degrees_heading_target_stop
+                            + ",hte:" + v_turn_degrees_heading_start_error
+                            + ",htr:" + v_turn_degrees_heading_target_360round
+                            + ",htslr:" + v_turn_degrees_heading_target_slow_360round
+                            + ",htstr:" + v_turn_degrees_heading_target_stop_360round
+                            + ",hte:" + v_turn_degrees_heading_start_error_360round
+            );
 
         }else {
             int ticks = Math.round(Math.abs(degrees) * v_turn_ticks_per_degree);
@@ -1745,18 +1892,18 @@ public class CFPushBotHardware extends OpMode {
                         if (v_turn_degrees_isSlowTurn) {
                             //have an issue where motors not turning on at same time so need to call directly
                             //turning right so turn on left motor first
-                            //v_motor_left_drive.setPower(v_turn_motorspeed_slow);
-                            //v_motor_right_drive.setPower(0 - v_turn_motorspeed_slow);
-                            set_drive_power(v_turn_motorspeed_slow, 0-v_turn_motorspeed_slow);
+                            v_motor_left_drive.setPower(v_turn_motorspeed_slow);
+                            v_motor_right_drive.setPower(0 - v_turn_motorspeed_slow);
+                            //set_drive_power(v_turn_motorspeed_slow, 0-v_turn_motorspeed_slow);
                             sleep(2);
                             setSecondMessage("turn_complete: set slow turn cw r:" + v_motor_right_drive.getPower() + "l:" + v_motor_left_drive.getPower());
 
 
                         }else {
                             //turning right so turn on left motor first
-                            //v_motor_left_drive.setPower(v_turn_motorspeed);
-                            //v_motor_right_drive.setPower(0 - v_turn_motorspeed);
-                            set_drive_power(v_turn_motorspeed, 0- v_turn_motorspeed);
+                            v_motor_left_drive.setPower(v_turn_motorspeed);
+                            v_motor_right_drive.setPower(0 - v_turn_motorspeed);
+                            //set_drive_power(v_turn_motorspeed, 0- v_turn_motorspeed);
                             sleep(2);
                             setSecondMessage("turn_complete: set fast turn cw r:" + v_motor_right_drive.getPower() + "l:" + v_motor_left_drive.getPower());
 
@@ -1766,15 +1913,15 @@ public class CFPushBotHardware extends OpMode {
                     } else {
                         if (v_turn_degrees_isSlowTurn) {
                             //turning left so turn on right motor first
-                            //v_motor_right_drive.setPower(v_turn_motorspeed_slow);
-                            //v_motor_left_drive.setPower(0 - v_turn_motorspeed_slow);
-                            set_drive_power(0-v_turn_motorspeed_slow,  v_turn_motorspeed_slow);
+                            v_motor_right_drive.setPower(v_turn_motorspeed_slow);
+                            v_motor_left_drive.setPower(0 - v_turn_motorspeed_slow);
+                            //set_drive_power(0-v_turn_motorspeed_slow,  v_turn_motorspeed_slow);
                             sleep(2);
                             setSecondMessage("turn_complete: set slow turn ccw r:" + v_motor_right_drive.getPower() + "l:" + v_motor_left_drive.getPower());
                         }else {
                             //turning left so turn on right motor first
-                            //v_motor_right_drive.setPower(v_turn_motorspeed);
-                            //v_motor_left_drive.setPower(0 - v_turn_motorspeed);
+                            v_motor_right_drive.setPower(v_turn_motorspeed);
+                            v_motor_left_drive.setPower(0 - v_turn_motorspeed);
                             set_drive_power(0-v_turn_motorspeed, v_turn_motorspeed);
                             sleep(2);
                             setSecondMessage("turn_complete: set fast turn ccw r:" + v_motor_right_drive.getPower() + "l:" + v_motor_left_drive.getPower() );
@@ -1793,11 +1940,35 @@ public class CFPushBotHardware extends OpMode {
                         if(v_turn_degrees_iscwturn){
                             //if we are turning clockwise then we stop >= then our target
 
-                            if(currentHeading >= v_turn_degrees_heading_target && currentHeading < v_turn_degrees_heading_start_error)
-                                   /* && (
-                                        ( v_turn_degrees_heading_start_error >  v_turn_degrees_heading_target && currentHeading < v_turn_degrees_heading_start_error)
-                                        || (v_turn_degrees_heading_start_error <  v_turn_degrees_heading_target && currentHeading > v_turn_degrees_heading_start_error) )
-                                    )*/
+                            if(
+                                        (
+                                                (v_turn_degrees_heading_target_360round == false &&
+                                            currentHeading >= v_turn_degrees_heading_target
+                                                )
+                                                        ||
+                                                (v_turn_degrees_heading_target_360round == true &&
+                                                        currentHeading >= v_turn_degrees_heading_target &&
+                                                        currentHeading < v_turn_degrees_heading_start_error)
+                                        )
+                                            &&(
+                                                ( v_turn_degrees_heading_target_360round == true
+                                                        && v_turn_degrees_heading_start_error_360round == true &&
+                                                    currentHeading < v_turn_degrees_heading_start_error
+                                                 ) ||
+                                                ( v_turn_degrees_heading_target_360round == false && v_turn_degrees_heading_start_error_360round == false &&
+                                                        currentHeading > v_turn_degrees_heading_start_error
+                                                ) ||
+                                                ( v_turn_degrees_heading_target_360round == true && v_turn_degrees_heading_start_error_360round == false &&
+                                                        currentHeading > v_turn_degrees_heading_start_error
+                                                )
+                                                ||
+                                                ( v_turn_degrees_heading_target_360round == false && v_turn_degrees_heading_start_error_360round == true &&
+                                                        currentHeading < v_turn_degrees_heading_start_error
+                                                )
+                                            )
+
+                                    )
+
                             {
                                 //turning right so stop right first then left
                                 v_motor_right_drive.setPower(0.0d);
@@ -1806,15 +1977,95 @@ public class CFPushBotHardware extends OpMode {
                                 //v_motor_left_drive.setPowerFloat();
                                 //set_drive_power(0.0f, 0.0f);
                                 v_turn_degrees_state++;
-                                setSecondMessage("turn_complete: done clock wise H:" + currentHeading + ":T"  + v_turn_degrees_heading_target);
+                                setSecondMessage("turn_complete: done cw hc:" + currentHeading
+                                        + ",ht:" + v_turn_degrees_heading_target
+                                        + ",htsl:" + v_turn_degrees_heading_target_slow
+                                        + ",htst:" + v_turn_degrees_heading_target_stop
+                                        + ",hte:" + v_turn_degrees_heading_start_error
+                                        + ",htr:" + v_turn_degrees_heading_target_360round
+                                        + ",htslr:" + v_turn_degrees_heading_target_slow_360round
+                                        + ",htstr:" + v_turn_degrees_heading_target_stop_360round
+                                        + ",hte:" + v_turn_degrees_heading_start_error_360round);
                                 return true;
                             }
+                            //else are we within our slowdown offset of the target then
+                            else if(
+                                    (
+                                            (v_turn_degrees_heading_target_360round == false &&
+                                                    currentHeading >= v_turn_degrees_heading_target
+                                            )
+                                                    ||
+                                                    (v_turn_degrees_heading_target_360round == true &&
+                                                            currentHeading >= v_turn_degrees_heading_target &&
+                                                            currentHeading < v_turn_degrees_heading_start_error)
+                                    )
+                                            &&(
+                                            ( v_turn_degrees_heading_target_360round == true
+                                                    && v_turn_degrees_heading_start_error_360round == true &&
+                                                    currentHeading < v_turn_degrees_heading_start_error
+                                            ) ||
+                                                    ( v_turn_degrees_heading_target_360round == false && v_turn_degrees_heading_start_error_360round == false &&
+                                                            currentHeading > v_turn_degrees_heading_start_error
+                                                    ) ||
+                                                    ( v_turn_degrees_heading_target_360round == true && v_turn_degrees_heading_start_error_360round == false &&
+                                                            currentHeading < v_turn_degrees_heading_start_error
+                                                    )
+                                                    ||
+                                                    ( v_turn_degrees_heading_target_360round == false && v_turn_degrees_heading_start_error_360round == true &&
+                                                            currentHeading < v_turn_degrees_heading_start_error
+                                                    )
+                                    )
+
+                                    )
+
+                            {
+                                //turning right so stop right first then left
+                                v_motor_right_drive.setPower(0.0d);
+                                v_motor_left_drive.setPower(0.0d);
+                                //v_motor_right_drive.setPowerFloat();
+                                //v_motor_left_drive.setPowerFloat();
+                                //set_drive_power(0.0f, 0.0f);
+                                v_turn_degrees_state++;
+                                setSecondMessage("turn_complete: done cw hc:" + currentHeading
+                                        + ",ht:" + v_turn_degrees_heading_target
+                                        + ",htsl:" + v_turn_degrees_heading_target_slow
+                                        + ",htst:" + v_turn_degrees_heading_target_stop
+                                        + ",hte:" + v_turn_degrees_heading_start_error
+                                        + ",htr:" + v_turn_degrees_heading_target_360round
+                                        + ",htslr:" + v_turn_degrees_heading_target_slow_360round
+                                        + ",htstr:" + v_turn_degrees_heading_target_stop_360round
+                                        + ",hte:" + v_turn_degrees_heading_start_error_360round);
+                                return true;
+                            }
+
+
                         }else{
                             //we are turning counterclockwise so we stop <= our target heading
-                            if(currentHeading <= v_turn_degrees_heading_target && currentHeading > v_turn_degrees_heading_start_error
-    //                                && (
-    //                                ( v_turn_degrees_heading_start_error <  v_turn_degrees_heading_target && currentHeading > v_turn_degrees_heading_start_error)
-    //                                        || (v_turn_degrees_heading_start_error >  v_turn_degrees_heading_target && currentHeading < v_turn_degrees_heading_start_error) )
+                            if(
+                                    (
+
+                                            (v_turn_degrees_heading_target_360round == false &&
+                                                    currentHeading <= v_turn_degrees_heading_target)
+                                                    ||
+                                                    (v_turn_degrees_heading_target_360round == true &&
+                                                            currentHeading <= v_turn_degrees_heading_target &&
+                                                            currentHeading > v_turn_degrees_heading_start_error)
+                                    )
+                                    && ( //the following prevents early motor stop due to drift of gyro or error on start of turn the wrong way
+                                        ( v_turn_degrees_heading_target_360round == true && v_turn_degrees_heading_start_error_360round == true &&
+                                                currentHeading > v_turn_degrees_heading_start_error
+                                        ) ||
+                                        ( v_turn_degrees_heading_start_error_360round == false && v_turn_degrees_heading_start_error_360round == false
+                                                && currentHeading < v_turn_degrees_heading_start_error
+                                        )||
+                                        ( v_turn_degrees_heading_target_360round == true && v_turn_degrees_heading_start_error_360round == false &&
+                                                currentHeading > v_turn_degrees_heading_start_error
+                                        )
+                                        ||
+                                        ( v_turn_degrees_heading_target_360round == false && v_turn_degrees_heading_start_error_360round == true &&
+                                                currentHeading > v_turn_degrees_heading_start_error
+                                        )
+                                    )
                                     ){
                                 //turning left so stop left first then right
                                 v_motor_left_drive.setPower(0.0d);
@@ -1823,12 +2074,30 @@ public class CFPushBotHardware extends OpMode {
                                 //v_motor_right_drive.setPowerFloat();
                                 //set_drive_power(0.0f, 0.0f);
                                 v_turn_degrees_state++;
-                                setSecondMessage("turn_complete: done counter clock wise H:" + currentHeading + ":T"  + v_turn_degrees_heading_target);
+                                setSecondMessage("turn_complete: done ccw "
+                                        + "hc:" + currentHeading
+                                        + ",ht:" + v_turn_degrees_heading_target
+                                        + ",htsl:" + v_turn_degrees_heading_target_slow
+                                        + ",htst:" + v_turn_degrees_heading_target_stop
+                                        + ",hte:" + v_turn_degrees_heading_start_error
+                                        + ",htr:" + v_turn_degrees_heading_target_360round
+                                        + ",htslr:" + v_turn_degrees_heading_target_slow_360round
+                                        + ",htstr:" + v_turn_degrees_heading_target_stop_360round
+                                        + ",hte:" + v_turn_degrees_heading_start_error_360round);
                                 return true;
                             }
                         }
                         if (is_slow_tick()){
-                            setSecondMessage("turn_complete: Waiting on heading: H:" + currentHeading + ",T:"  + v_turn_degrees_heading_target + ",HSE:" + v_turn_degrees_heading_start_error );
+                            setSecondMessage("turn_complete: Waiting on heading "
+                                    + " hc:" + currentHeading
+                                    + ",ht:" + v_turn_degrees_heading_target
+                                    + ",htsl:" + v_turn_degrees_heading_target_slow
+                                    + ",htst:" + v_turn_degrees_heading_target_stop
+                                    + ",hte:" + v_turn_degrees_heading_start_error
+                                    + ",htr:" + v_turn_degrees_heading_target_360round
+                                    + ",htslr:" + v_turn_degrees_heading_target_slow_360round
+                                    + ",htstr:" + v_turn_degrees_heading_target_stop_360round
+                                    + ",hte:" + v_turn_degrees_heading_start_error_360round);
                         }
 
 
@@ -2063,6 +2332,20 @@ public class CFPushBotHardware extends OpMode {
 
         return l_return;*/
         return l_rpa_base_position;
+    } // a_rpabase_position
+
+    double a_rpabase_position_actual ()
+    {
+        //there is a bug where the getPosition() does return correctly so use an internal
+        double l_return = 0.0;
+
+        if (v_servo_rpa_base != null)
+        {
+            l_return = v_servo_rpa_base.getPosition ();
+        }
+
+        return l_return;
+        //return l_rpa_base_position;
     } // a_rpabase_position
 
     //--------------------------------------------------------------------------
