@@ -32,6 +32,7 @@ public class AdafruitLEDBackpack7Seg {
             0x79, /* E */
             0x71, /* F */
     };
+    private boolean v_ledseg_enabled = false;
     public AdafruitLEDBackpack7Seg (HardwareMap hardwareMap, String deviceName, byte RealI2CAddress) throws Exception
     {
         try{
@@ -76,12 +77,19 @@ public class AdafruitLEDBackpack7Seg {
             if (v_ledseg != null) {
                 v_ledseg.write(0x21, 0);
                 v_ledseg.write(0x81, 0);
-                /*v_ledseg.beginWrite(0x00);
-                v_ledseg.write(numbertable[0]);
-                v_ledseg.write(numbertable[0]);
-                v_ledseg.write(numbertable[0]);
-                v_ledseg.write(numbertable[0]);
-                v_ledseg.endWrite();*/
+                v_ledseg.beginWrite(0x00);
+                v_ledseg.write(numbertable[1]);
+                v_ledseg.write(0x00);
+                v_ledseg.write(numbertable[2]);
+                v_ledseg.write(0x00);
+                v_ledseg.write(0x40);
+                v_ledseg.write(0x00);
+                v_ledseg.write(numbertable[3]);
+                v_ledseg.write(0x00);
+                v_ledseg.write(numbertable[4]);
+                v_ledseg.write(0x00);
+                v_ledseg.endWrite();
+                v_ledseg_enabled = true;
             }
         }catch (Exception p_exeception)
         {
@@ -109,15 +117,133 @@ public class AdafruitLEDBackpack7Seg {
         }
     }
 
-    public boolean writeDigits(int number){
-        v_ledseg.beginWrite(0x00);
-        v_ledseg.write(numbertable[4]);
-        v_ledseg.write(0x00);
-        v_ledseg.write(numbertable[3]);
-        v_ledseg.write(numbertable[2]);
-        v_ledseg.write(numbertable[1]);
-        v_ledseg.endWrite();
-        return true;
+    private byte getDigitValue(String digit){
+       if (digit.equals("1")){
+           return numbertable[1];
+       }else if (digit.equals("2")){
+           return numbertable[2];
+       }else if (digit.equals("3")){
+           return numbertable[3];
+       }else if (digit.equals("4")){
+           return numbertable[4];
+       }else if (digit.equals("5")){
+           return numbertable[5];
+       }else if (digit.equals("6")){
+           return numbertable[6];
+       }else if (digit.equals("7")){
+           return numbertable[7];
+       }else if (digit.equals("8")){
+           return numbertable[8];
+       }else if (digit.equals("9")){
+           return numbertable[9];
+       }else if (digit.toLowerCase().equals("a")){
+           return numbertable[10];
+       }else if (digit.toLowerCase().equals("b")){
+           return numbertable[11];
+       }else if (digit.toLowerCase().equals("c")){
+           return numbertable[12];
+       }else if (digit.toLowerCase().equals("d")){
+           return numbertable[13];
+       }else if (digit.toLowerCase().equals("e")){
+           return numbertable[14];
+       }else{
+           return numbertable[0];
+       }
+    }
+
+    public boolean writeDigits(String number, boolean displayColon){
+       try{
+            if(v_ledseg != null) {
+
+                String digits = number;
+                if (digits.length() < 4 ) {
+                    digits = "0000".substring(digits.length()) + digits;
+                }
+                v_ledseg.beginWrite(0x00);
+                for (int i = 0; i < 4; i++){
+                    if (i == 2) {
+                        if (displayColon) {
+                            v_ledseg.write(0x2);
+                        }else {
+                            v_ledseg.write(0x00);
+                        }
+                        v_ledseg.write(0x00);
+                    }
+                    String digit = String.valueOf(digits.charAt(i));
+                    byte bvalue = getDigitValue(digit);
+                    debugLogException("7seg write d:" + digit + ", v:" + Integer.toHexString(bvalue),null);
+                    //v_ledseg.write(bvalue & 0xFF);
+                    //v_ledseg.write(bvalue >> 8);
+                    v_ledseg.write(bvalue);
+                    v_ledseg.write(0x00);
+
+                }
+
+                v_ledseg.endWrite();
+                return true;
+            }else{
+                return false;
+            }
+        }catch (Exception p_exeception)
+        {
+            debugLogException("Error Init", p_exeception);
+            return false;
+        }
+
+    }
+    int v_test_start = 0;
+    public boolean writetest(){
+        try{
+            if(v_ledseg != null) {
+                v_ledseg.beginWrite(0x00);
+                v_ledseg.write(numbertable[v_test_start]);
+                v_ledseg.write(0x00);
+                v_ledseg.write(numbertable[v_test_start + 1]);
+                v_ledseg.write(0x00);
+                v_ledseg.write(0x40);
+                v_ledseg.write(0x00);
+                v_ledseg.write(numbertable[v_test_start + 2]);
+                v_ledseg.write(0x00);
+                v_ledseg.write(numbertable[v_test_start + 3]);
+                v_ledseg.write(0x00);
+                v_ledseg.endWrite();
+                v_test_start++;
+                if (v_test_start > 9){
+                    v_test_start = 0;
+                }
+                return true;
+            }else{
+                return false;
+            }
+        }catch (Exception p_exeception)
+        {
+            debugLogException("Error Init", p_exeception);
+            return false;
+        }
+
+    }
+
+    public boolean isEnabled(){
+        return v_ledseg_enabled;
+    }
+    public boolean enabled(boolean enable){
+        try{
+            if (v_ledseg_enabled != enable) {
+                v_ledseg_enabled = enable;
+                if (enable == true) {
+                    //writeDigits("0000",true);
+                    v_ledseg.write(0x81, 0);
+                } else {
+                    //writeDigits("    ", false);
+                    v_ledseg.write(0x80, 0);
+                }
+            }
+            return true;
+        }catch (Exception p_exeception)
+        {
+            debugLogException("Error Init", p_exeception);
+            return false;
+        }
     }
 
     public void stop() {

@@ -53,7 +53,7 @@ public class CFPushBotAuto extends CFPushBotTelemetry {
         //
         // Call the PushBotHardware (super/base class) start method.
         //
-        super.start ();
+        super.start();
 
 
     } // start
@@ -106,6 +106,12 @@ public class CFPushBotAuto extends CFPushBotTelemetry {
                 } else{
                     v_turn_degrees = 90;
                     v_drive_inches = 12;
+                }
+                if(gamepad1.x){
+                    v_state=9;
+                }
+                if(gamepad1.y){
+                    v_state=10;
                 }
                 if (gamepad1.dpad_up) {
                     //drive forward no gyro 12 or 48 inches
@@ -201,9 +207,27 @@ public class CFPushBotAuto extends CFPushBotTelemetry {
                     v_state=0;
                 }
                 break;
+            case 9:
+                sound_play_dtmf(ToneGenerator.TONE_DTMF_3, 500);
+                if (led7seg_is_enabled()){
+                    led7seg_enabled(false);
+                }else{
+
+                    led7seg_timer_start(30);
+                    sleep(10);
+                    led7seg_enabled(true);
+                }
 
 
-
+                sleep(500);
+                v_state=0;
+                break;
+            case 10:
+                sound_play_dtmf(ToneGenerator.TONE_DTMF_3, 500);
+                led7seg_test();
+                sleep(500);
+                v_state=0;
+                break;
             default:
                 //
                 // The autonomous actions have been accomplished (i.e. the state has

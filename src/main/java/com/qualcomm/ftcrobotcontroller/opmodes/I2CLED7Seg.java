@@ -75,7 +75,7 @@ public class I2CLED7Seg extends OpMode {
 
             try {
                 v_ledseg = new AdafruitLEDBackpack7Seg(hardwareMap, "ledseg");
-                v_ledseg.writeDigits(0);
+                v_ledseg.writeDigits("    ",false);
             } catch (Exception p_exeception) {
                 debugLogException("03", "led7seg", "missing", p_exeception);
             }

@@ -1104,8 +1104,8 @@ public class CFPushBotHardware extends OpMode {
         //
         // Reset the motor encoders on the drive wheels.
         //
-        reset_left_drive_encoder ();
-        reset_right_drive_encoder ();
+        reset_left_drive_encoder();
+        reset_right_drive_encoder();
 
     } // reset_drive_encoders
 
@@ -1535,12 +1535,45 @@ public class CFPushBotHardware extends OpMode {
     }
 
     /**
+     * Inits the led 7 segment counter to start a count down in seconds
+     * @return
+     */
+
+    public boolean led7seg_test(){
+        if (v_ledseg != null){
+
+            v_ledseg.writetest();
+            return true;
+        }
+        return false;
+    }
+
+    /**
      * starts led 7 segment counter to to count down in seconds
      * @param seconds
      * @return
      */
-
+    int v_led7seg_timer_seconds = 0;
+    boolean v_led7seg_timer_running = false;
     public boolean led7seg_timer_start(int seconds){
+        if (v_ledseg != null){
+            String digits = Integer.toString(seconds);
+            v_ledseg.writeDigits(digits, true);
+            return true;
+        }
+        return false;
+    }
+
+    public boolean led7seg_is_enabled(){
+        if (v_ledseg != null){
+            return v_ledseg.isEnabled();
+        }
+        return false;
+    }
+    public boolean led7seg_enabled(boolean enabled){
+        if (v_ledseg != null){
+            return v_ledseg.enabled(enabled);
+        }
         return false;
     }
 
