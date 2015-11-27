@@ -1557,8 +1557,8 @@ public class CFPushBotHardware extends OpMode {
     boolean v_led7seg_timer_running = false;
     public boolean led7seg_timer_start(int seconds){
         if (v_ledseg != null){
-            String digits = Integer.toString(seconds);
-            v_ledseg.writeDigits(digits, true);
+
+            v_ledseg.startTimer(seconds);
             return true;
         }
         return false;

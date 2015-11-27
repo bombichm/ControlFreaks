@@ -6,6 +6,8 @@ import android.util.Log;
 import com.qualcomm.ftccommon.DbgLog;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 
+import java.util.Calendar;
+
 /**
  * Created by adevries on 11/16/2015.
  */
@@ -14,6 +16,13 @@ public class AdafruitLEDBackpack7Seg {
     private String v_deviceName = "Not Set";
     private byte I2CAddress = 0x70;
     private Wire v_ledseg;
+    private static final byte HT16K33_BLINK_CMD = (byte) 0x80;
+    private static final byte HT16K33_BLINK_DISPLAYON = 0x01;
+    private static final byte HT16K33_BLINK_OFF = 0;
+    private static final byte HT16K33_BLINK_2HZ  = 1;
+    private static final byte HT16K33_BLINK_1HZ = 2;
+    private static final byte HT16K33_BLINK_HALFHZ = 3;
+    private static final byte HT16K33_CMD_BRIGHTNESS = (byte) 0xE0;
     private final static byte numbertable[] = {
             0x3F, /* 0 */
             0x06, /* 1 */
@@ -32,6 +41,12 @@ public class AdafruitLEDBackpack7Seg {
             0x79, /* E */
             0x71, /* F */
     };
+    public enum blinkRate{
+        noblink,
+        slow,
+        medium,
+        fast
+    }
     private boolean v_ledseg_enabled = false;
     public AdafruitLEDBackpack7Seg (HardwareMap hardwareMap, String deviceName, byte RealI2CAddress) throws Exception
     {
@@ -101,15 +116,86 @@ public class AdafruitLEDBackpack7Seg {
      * put this in your loop so its called over and over in the loop
      */
     public void loop(){
+        if (v_timer_mode == true){
+            long enddateSecs = v_timer_enddate.getTimeInMillis()/1000;
+            long nowSecs =  Calendar.getInstance().getTimeInMillis() / 1000;
+            int currentSeconds = (int) (enddateSecs - nowSecs);
+            
+            if (v_timer_seconds != currentSeconds){
+                debugLogException("loop(): cs:" + currentSeconds + ",ns:" + nowSecs + ",eds:" + enddateSecs,null);
+                v_timer_seconds = currentSeconds;
+                writeDigits(Integer.toString( v_timer_seconds),true);
+                if (v_timer_seconds == 0 ){
+                    set_blink_rate(blinkRate.noblink);
+                    v_timer_mode = false;
+                }else if(v_timer_seconds <=10){
+                    set_blink_rate(blinkRate.fast);
+                }
+            }
+        }
 
     }
 
-    private boolean v_timer_mode = false;
+    //private boolean v_timer_mode = false;
 
-    private int v_seconds = 0;
+    //private int v_seconds = 0;
+    public boolean set_blink_rate(blinkRate rate){
+        if(v_ledseg!=null) {
+
+            byte byte_blinkRate;
+            switch (rate) {
+                case medium:
+                    byte_blinkRate = HT16K33_BLINK_1HZ;
+                    break;
+                case slow:
+                    byte_blinkRate = HT16K33_BLINK_HALFHZ;
+                    break;
+                case fast:
+                    byte_blinkRate = HT16K33_BLINK_2HZ;
+                    break;
+                default:
+                    byte_blinkRate = HT16K33_BLINK_OFF;
+                    break;
+            }
+
+            v_ledseg.beginWrite(0x81 | (byte_blinkRate << 1));
+            v_ledseg.write(0x00);
+            v_ledseg.endWrite();
+            return true;
+        }else{
+            return false;
+        }
+    }
+
+    public boolean set_brightness(byte level) {
+        if (level > 15) level = 15;
+        if (v_ledseg != null) {
+            v_ledseg.beginWrite(HT16K33_CMD_BRIGHTNESS | level);
+            v_ledseg.write(0x00);
+            v_ledseg.endWrite();
+            return true;
+        }else{
+            return false;
+        }
+
+
+    }
+
+
+
+    private boolean v_timer_mode = false;
+    //private Calendar v_timer_startdate;
+    private Calendar v_timer_enddate;
+    private int v_timer_seconds = 0;
     public boolean startTimer(int seconds){
         if (v_timer_mode == false) {
-            v_seconds = seconds;
+            v_timer_seconds = seconds;
+            //v_timer_startdate = Calendar.getInstance();
+            v_timer_enddate = Calendar.getInstance();
+            v_timer_enddate.add(Calendar.SECOND, seconds);
+            debugLogException("startTimer():" + v_timer_enddate.toString(), null);
+            writeDigits(Integer.toString(seconds), true);
+            v_timer_mode = true;
             return true;
         }else{
             debugLogException("timer already running call stopTimer() or wait for it to finish", null);
@@ -171,7 +257,7 @@ public class AdafruitLEDBackpack7Seg {
                     }
                     String digit = String.valueOf(digits.charAt(i));
                     byte bvalue = getDigitValue(digit);
-                    debugLogException("7seg write d:" + digit + ", v:" + Integer.toHexString(bvalue),null);
+                    //debugLogException("7seg write d:" + digit + ", v:" + Integer.toHexString(bvalue),null);
                     //v_ledseg.write(bvalue & 0xFF);
                     //v_ledseg.write(bvalue >> 8);
                     v_ledseg.write(bvalue);
@@ -208,7 +294,7 @@ public class AdafruitLEDBackpack7Seg {
                 v_ledseg.write(0x00);
                 v_ledseg.endWrite();
                 v_test_start++;
-                if (v_test_start > 9){
+                if (v_test_start > 11){
                     v_test_start = 0;
                 }
                 return true;
