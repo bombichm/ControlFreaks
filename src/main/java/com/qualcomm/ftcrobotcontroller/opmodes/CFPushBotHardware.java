@@ -73,7 +73,7 @@ public class CFPushBotHardware extends OpMode {
     private static final double RPABaseServo_Delta = 0.0005;
     private static final double RPABaseServo_Delta_Fast = 0.001;
     private double RPABaseServo_MinPosition = 0.01;  //Need to unhook gear int so it goes to zero then rehook servo gear
-    private double RPABaseServo_ClimbPosition = 0.65;
+    private double RPABaseServo_ClimbPosition = 0.69;
     private double RPABaseServo_MaxPosition = 0.70;
     //private double RPABaseServo_MaxPosition_Delta = 0.60;
     private double l_rpa_base_position = 0.163D;  //init RPA Base Position and to control RPA Base position as servo.getPosition seems to be flaky
@@ -90,7 +90,7 @@ public class CFPushBotHardware extends OpMode {
 
     //wench motor
     private DcMotor v_motor_wench;
-    private static final double v_motor_wench_Speed = 0.3;
+    public static final double v_motor_wench_Speed = 0.3;
     // v_servo_arm_shoulder
     private Servo v_servo_arm_shoulder;
     private static final double ArmShoulderServo_Delta = 0.0008;
@@ -771,13 +771,13 @@ public class CFPushBotHardware extends OpMode {
         if(v_ledseg != null){
             v_ledseg.loop();
         }
-        if(v_rpabase_moveToClimb == true){
+        /*if(v_rpabase_moveToClimb == true){
             if (rpa_arm_extended() == false){
                 rpaarm_moveUp(true);
             }else{
                 v_rpabase_moveToClimb = false;
             }
-        }
+        }*/
         if(v_loop_ticks_slow){
             // get the heading info.
             // the Modern Robotics' gyro sensor keeps
@@ -2286,6 +2286,38 @@ public class CFPushBotHardware extends OpMode {
     } // rpaarm_moveUp
 
 
+
+    //pull wench
+    boolean wench_moveUp ()
+    {
+        m_wench_power(v_motor_wench_Speed);
+        return true;
+
+    } // rpaarm_moveUp
+    //--------------------------------------------------------------------------
+    //
+    // m_rpa_arm_power
+    //
+    /**
+     * Access the rpa arm motor's power level.
+     */
+    void m_wench_power (double p_level)
+    {
+        if (v_motor_wench != null)
+        {
+            if(p_level > 0){
+                v_motor_wench.setPower(p_level);
+            }
+            else{
+                v_motor_wench.setPower(0);
+            }
+        }
+
+    } // m_left_arm_power
+
+
+
+
     //--------------------------------------------------------------------------
     //
     // rpaarm_moveDown
@@ -2363,7 +2395,7 @@ public class CFPushBotHardware extends OpMode {
     {
         //move the wrist out of the way
         v_rpabase_moveToClimb = true;
-        m_arm_wrist_position(ArmWristServo_MinPosition);
+        //m_arm_wrist_position(ArmWristServo_MinPosition);
         return m_rpabase_position(RPABaseServo_ClimbPosition);
     } // rpabase_moveDown
 
