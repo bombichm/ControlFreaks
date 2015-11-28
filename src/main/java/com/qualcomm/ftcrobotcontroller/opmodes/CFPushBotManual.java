@@ -44,6 +44,7 @@ public class CFPushBotManual extends CFPushBotTelemetry{
      */
     boolean isMovingArm = false;
     float stickdeadzone = .1f;
+    boolean isFirstTimeButtonPress = true;
     @Override public void loop ()
 
     {
@@ -74,6 +75,10 @@ public class CFPushBotManual extends CFPushBotTelemetry{
 
         set_drive_power (l_left_drive_power, l_right_drive_power);
 
+        if (isFirstTimeButtonPress && (gamepad1.left_stick_y < 0 || gamepad1.left_stick_y > 0 || gamepad1.right_stick_y < 0 || gamepad1.right_stick_y > 0 )){
+            manualModeButtonPress();
+            isFirstTimeButtonPress = false;
+        }
         //
         // Manage the arm motor.
         //
@@ -99,19 +104,17 @@ public class CFPushBotManual extends CFPushBotTelemetry{
         {
             //arm_wrist_moveRight(gamepad2.left_bumper);
             arm_shoulder_moveUp(!gamepad2.left_bumper);
+
         }
         else if (gamepad2.dpad_left )
         {
-
             arm_shoulder_moveDown(!gamepad2.left_bumper);
         }
 
 
         if (gamepad2.dpad_up )
         {
-
             arm_elbow_moveUp(!gamepad2.left_bumper);
-
         }
         else if (gamepad2.dpad_down )
         {
@@ -147,6 +150,7 @@ public class CFPushBotManual extends CFPushBotTelemetry{
         }
 
         if (gamepad2.left_trigger > ArmWristTrigger_Threshold_Fast ){
+
             arm_wrist_moveLeft(true);
         }else if(gamepad2.left_trigger > ArmWristTrigger_Threshold  ){
             arm_wrist_moveLeft(false);
@@ -157,7 +161,7 @@ public class CFPushBotManual extends CFPushBotTelemetry{
         }
 
         if(gamepad1.right_trigger > FlipRightServo_MinPosition){
-            m_flip_right_position(FlipRightServo_MaxPosition - gamepad1.right_trigger );
+            m_flip_right_position(FlipRightServo_MaxPosition - gamepad1.right_trigger);
         }else {
             m_flip_right_position(FlipRightServo_MaxPosition);
         }

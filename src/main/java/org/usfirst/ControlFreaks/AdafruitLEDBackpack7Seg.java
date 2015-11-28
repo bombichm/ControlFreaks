@@ -93,15 +93,15 @@ public class AdafruitLEDBackpack7Seg {
                 v_ledseg.write(0x21, 0);
                 v_ledseg.write(0x81, 0);
                 v_ledseg.beginWrite(0x00);
-                v_ledseg.write(numbertable[1]);
+                v_ledseg.write(numbertable[0]);
                 v_ledseg.write(0x00);
-                v_ledseg.write(numbertable[2]);
+                v_ledseg.write(numbertable[0]);
                 v_ledseg.write(0x00);
-                v_ledseg.write(0x40);
+                v_ledseg.write(0x2);
                 v_ledseg.write(0x00);
-                v_ledseg.write(numbertable[3]);
+                v_ledseg.write(numbertable[0]);
                 v_ledseg.write(0x00);
-                v_ledseg.write(numbertable[4]);
+                v_ledseg.write(numbertable[0]);
                 v_ledseg.write(0x00);
                 v_ledseg.endWrite();
                 v_ledseg_enabled = true;
@@ -120,11 +120,11 @@ public class AdafruitLEDBackpack7Seg {
             long enddateSecs = v_timer_enddate.getTimeInMillis()/1000;
             long nowSecs =  Calendar.getInstance().getTimeInMillis() / 1000;
             int currentSeconds = (int) (enddateSecs - nowSecs);
-            
+
             if (v_timer_seconds != currentSeconds){
-                debugLogException("loop(): cs:" + currentSeconds + ",ns:" + nowSecs + ",eds:" + enddateSecs,null);
+                //debugLogException("loop(): cs:" + currentSeconds + ",ns:" + nowSecs + ",eds:" + enddateSecs,null);
                 v_timer_seconds = currentSeconds;
-                writeDigits(Integer.toString( v_timer_seconds),true);
+                writeDigits(secondsToMinutesSeconds(v_timer_seconds),true);
                 if (v_timer_seconds == 0 ){
                     set_blink_rate(blinkRate.noblink);
                     v_timer_mode = false;
@@ -181,7 +181,15 @@ public class AdafruitLEDBackpack7Seg {
 
     }
 
-
+    private String secondsToMinutesSeconds(int seconds){
+        int mins = (int) Math.floor((seconds / 60));
+        int secs = seconds % 60;
+        String retval = Integer.toString(secs);
+        if (retval.length() < 2){
+            retval = "0" + retval;
+        }
+        return Integer.toString(mins) + retval ;
+    }
 
     private boolean v_timer_mode = false;
     //private Calendar v_timer_startdate;
@@ -194,7 +202,7 @@ public class AdafruitLEDBackpack7Seg {
             v_timer_enddate = Calendar.getInstance();
             v_timer_enddate.add(Calendar.SECOND, seconds);
             debugLogException("startTimer():" + v_timer_enddate.toString(), null);
-            writeDigits(Integer.toString(seconds), true);
+            writeDigits(secondsToMinutesSeconds(seconds), true);
             v_timer_mode = true;
             return true;
         }else{
@@ -286,7 +294,7 @@ public class AdafruitLEDBackpack7Seg {
                 v_ledseg.write(0x00);
                 v_ledseg.write(numbertable[v_test_start + 1]);
                 v_ledseg.write(0x00);
-                v_ledseg.write(0x40);
+                v_ledseg.write(0x2);
                 v_ledseg.write(0x00);
                 v_ledseg.write(numbertable[v_test_start + 2]);
                 v_ledseg.write(0x00);

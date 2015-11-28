@@ -88,7 +88,9 @@ public class CFPushBotHardware extends OpMode {
     private static final String RPAArmMotor_Retract_TouchSensorName = "rpa_retract";
     private static final String RPAArmMotor_Extend_TouchSensorName = "rpa_extend";
 
-
+    //wench motor
+    private DcMotor v_motor_wench;
+    private static final double v_motor_wench_Speed = 0.3;
     // v_servo_arm_shoulder
     private Servo v_servo_arm_shoulder;
     private static final double ArmShoulderServo_Delta = 0.0008;
@@ -536,6 +538,16 @@ public class CFPushBotHardware extends OpMode {
             v_servo_rpa_base = null;
         }
 
+        try
+        {
+            v_motor_wench = hardwareMap.dcMotor.get ("wench");
+          //  v_motor_wench.setDirection(DcMotor.Direction.REVERSE);
+        }
+        catch (Exception p_exeception)
+        {
+            debugLogException("wench","missing",p_exeception);
+            v_motor_wench = null;
+        }
         /*try
         {
             // get a reference to our ColorSensor object.
@@ -1532,6 +1544,16 @@ public class CFPushBotHardware extends OpMode {
      */
     public boolean led7seg_timer_init(int seconds){
         return false;
+    }
+
+    private boolean isFirstButtonPress = true;
+
+    public boolean manualModeButtonPress(){
+        if (isFirstButtonPress){
+            isFirstButtonPress = false;
+            v_ledseg.startTimer(120);
+        }
+        return true;
     }
 
     /**
