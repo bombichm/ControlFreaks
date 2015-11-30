@@ -16,6 +16,7 @@ public class CFPushBotManual extends CFPushBotTelemetry{
      */
 
     private static boolean bothControllersEnabled = false;
+    private byte v_neopixels_mode = 0;
     public CFPushBotManual ()
 
     {
@@ -138,10 +139,10 @@ public class CFPushBotManual extends CFPushBotTelemetry{
         }
         if (gamepad1.y )
         {
-            m_wench_power(v_motor_wench_Speed);
+            m_winch_power(v_motor_winch_Speed);
         }
         else{
-            m_wench_power(0);
+            m_winch_power(0.0f);
         }
 
         if (gamepad2.y )
@@ -181,6 +182,19 @@ public class CFPushBotManual extends CFPushBotTelemetry{
         }
         if(gamepad1.y && gamepad1.b){
             rpabase_moveToClimb();
+        }
+
+        if(gamepad1.dpad_up){
+            if(loopCounter() % 100 == 0){
+                v_neopixels_mode++;
+                neopixels_set_mode(v_neopixels_mode);
+            }
+        }
+        if(gamepad1.dpad_down){
+            if(loopCounter() % 100 == 0){
+                v_neopixels_mode--;
+                neopixels_set_mode(v_neopixels_mode);
+            }
         }
         //
         // Send telemetry data to the driver station.

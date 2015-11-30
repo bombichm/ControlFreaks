@@ -31,6 +31,7 @@ package com.qualcomm.ftcrobotcontroller.opmodes;
         import com.qualcomm.robotcore.hardware.ColorSensor;
 
         import org.usfirst.ControlFreaks.AdafruitLEDBackpack7Seg;
+        import org.usfirst.ControlFreaks.ArduinoI2CNeopixels;
 
         import java.util.concurrent.locks.Lock;
 
@@ -88,9 +89,9 @@ public class CFPushBotHardware extends OpMode {
     private static final String RPAArmMotor_Retract_TouchSensorName = "rpa_retract";
     private static final String RPAArmMotor_Extend_TouchSensorName = "rpa_extend";
 
-    //wench motor
-    private DcMotor v_motor_wench;
-    public static final double v_motor_wench_Speed = 0.3;
+    //winch motor
+    private DcMotor v_motor_winch;
+    public static final double v_motor_winch_Speed = 0.5;
     // v_servo_arm_shoulder
     private Servo v_servo_arm_shoulder;
     private static final double ArmShoulderServo_Delta = 0.0008;
@@ -188,14 +189,16 @@ public class CFPushBotHardware extends OpMode {
 // from a list of predefined tone types
 
 
-    private LED v_led_heartbeat;
-    private boolean v_led_heartbeat_enabled = true;
-    private  static final int v_led_heartbeat_tickPerToggle = 20;
+//    private LED v_led_heartbeat;
+//    private boolean v_led_heartbeat_enabled = true;
+//    private  static final int v_led_heartbeat_tickPerToggle = 20;
     //private int v_led_heartbeat_ticks = 0;
 
     private DeviceInterfaceModule v_dim;
 
     private AdafruitLEDBackpack7Seg v_ledseg;
+
+    private ArduinoI2CNeopixels v_neopixels;
     //--------------------------------------------------------------------------
     //
     // v_motor_left_drive
@@ -540,13 +543,13 @@ public class CFPushBotHardware extends OpMode {
 
         try
         {
-            v_motor_wench = hardwareMap.dcMotor.get ("wench");
-          //  v_motor_wench.setDirection(DcMotor.Direction.REVERSE);
+            v_motor_winch = hardwareMap.dcMotor.get ("winch");
+          //  v_motor_winch.setDirection(DcMotor.Direction.REVERSE);
         }
         catch (Exception p_exeception)
         {
-            debugLogException("wench","missing",p_exeception);
-            v_motor_wench = null;
+            debugLogException("winch","missing",p_exeception);
+            v_motor_winch = null;
         }
         /*try
         {
@@ -608,6 +611,14 @@ public class CFPushBotHardware extends OpMode {
             debugLogException("ledseg", "missing", p_exeception);
             v_ledseg = null;
 
+        }
+
+        try{
+            v_neopixels = new ArduinoI2CNeopixels(hardwareMap, "neopixels");
+        }catch (Exception p_exeception)
+        {
+            debugLogException("neopixels", "missing", p_exeception);
+            v_neopixels = null;
         }
 
         //update our telmentry after init so we know if we are missing anything
@@ -767,7 +778,7 @@ public class CFPushBotHardware extends OpMode {
         }else{
             v_loop_ticks_slow = false;
         }
-        heartbeat_tick();
+        //heartbeat_tick();
         if(v_ledseg != null){
             v_ledseg.loop();
         }
@@ -800,9 +811,9 @@ public class CFPushBotHardware extends OpMode {
     }
 
     public void hardware_stop(){
-        if(v_led_heartbeat !=null){
+        /*if(v_led_heartbeat !=null){
             v_led_heartbeat.enable(false);
-        }
+        }*/
         if(v_ledseg != null){
             v_ledseg.stop();
         }
@@ -1173,6 +1184,33 @@ public class CFPushBotHardware extends OpMode {
 
     } // a_right_drive_mode
 
+
+    public boolean neopixels_set_rgb(byte red, byte green, byte blue){
+        if (v_neopixels != null){
+            v_neopixels.set_rgb(red, green, blue);
+            return true;
+        }else{
+            return false;
+        }
+    }
+
+    public boolean neopixels_set_brightness(byte brightness){
+        if (v_neopixels != null){
+            v_neopixels.set_brightness(brightness);
+            return true;
+        }else{
+            return false;
+        }
+    }
+
+    public boolean neopixels_set_mode(byte mode){
+        if (v_neopixels != null){
+            v_neopixels.set_brightness(mode);
+            return true;
+        }else{
+            return false;
+        }
+    }
 
     //--------------------------------------------------------------------------
     //
@@ -2287,33 +2325,35 @@ public class CFPushBotHardware extends OpMode {
 
 
 
-    //pull wench
-    boolean wench_moveUp ()
+    //pull winch
+    boolean winch_moveUp ()
     {
-        m_wench_power(v_motor_wench_Speed);
+        m_winch_power(v_motor_winch_Speed);
         return true;
 
     } // rpaarm_moveUp
     //--------------------------------------------------------------------------
     //
-    // m_rpa_arm_power
+    // m_winch_power
     //
     /**
-     * Access the rpa arm motor's power level.
+     * Access the winch motor's power level.
      */
-    void m_wench_power (double p_level)
+    void m_winch_power (double p_level)
     {
-        if (v_motor_wench != null)
+        if (v_motor_winch != null)
         {
             if(p_level > 0){
-                v_motor_wench.setPower(p_level);
+                //move the rpa base arm down at same time so not to fight the winch with the servo
+                rpabase_moveDown(true);
+                v_motor_winch.setPower(p_level);
             }
             else{
-                v_motor_wench.setPower(0);
+                v_motor_winch.setPower(0);
             }
         }
 
-    } // m_left_arm_power
+    } // m_winch_power
 
 
 
@@ -2823,7 +2863,7 @@ public class CFPushBotHardware extends OpMode {
     /**
      * ticks the heartbeat which should happen every time though our loop
      * the heartbeat is wired to the Device Interface Module and is used to make sure our loop is still running
-     */
+     *//*
 
     public void heartbeat_tick(){
         try {
@@ -2856,7 +2896,7 @@ public class CFPushBotHardware extends OpMode {
             return false;
         }
 
-    }
+    }*/
 
     /**
      * Turn on the red led located in the Device Interface Module
