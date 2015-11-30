@@ -78,7 +78,7 @@ public class CFPushBotAuto_Blue4_ClimbHome_Long extends CFPushBotTelemetry {
                 //
                 // drive Forward 68 inches
                 //
-                led7seg_timer_init(30);
+                led7seg_timer_start(30);
                 drive_inches(.7f,72, true);
                 v_state++;
                 break;
@@ -115,8 +115,9 @@ public class CFPushBotAuto_Blue4_ClimbHome_Long extends CFPushBotTelemetry {
                 // drive Forward 12 inches
                 //
                 rpabase_moveToClimb();
-                drive_inches(.7f,85, true);
-
+                //middle of moutain 85
+                //drive_inches(.7f,85, true);
+                drive_inches(.7f,108, true);
                 //set_drive_power(1.0d, 1.0d);
                 v_state++;
                 break;
