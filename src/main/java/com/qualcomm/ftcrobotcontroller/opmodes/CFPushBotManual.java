@@ -188,13 +188,25 @@ public class CFPushBotManual extends CFPushBotTelemetry{
             if(loopCounter() % 100 == 0){
                 v_neopixels_mode++;
                 neopixels_set_mode(v_neopixels_mode);
+                set_second_message("neopixel mode:" + v_neopixels_mode);
             }
         }
         if(gamepad1.dpad_down){
             if(loopCounter() % 100 == 0){
                 v_neopixels_mode--;
                 neopixels_set_mode(v_neopixels_mode);
+                set_second_message("neopixel mode:" + v_neopixels_mode);
             }
+        }
+        if(gamepad1.dpad_left){
+            neopixels_set_rgb((byte)0xFF, (byte)0x00, (byte)0x00);
+            set_second_message("neopixel color:red");
+
+        }
+        if(gamepad1.dpad_right){
+            neopixels_set_rgb((byte)0x00, (byte)0x00, (byte)0xFF);
+            set_second_message("neopixel color:blue");
+
         }
         //
         // Send telemetry data to the driver station.

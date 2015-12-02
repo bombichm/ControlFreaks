@@ -14,6 +14,11 @@ public class ArduinoI2CNeopixels {
     private byte I2CAddress = 0x26;
     private Wire v_neopixels;
 
+    private byte v_mode = 0;
+    private byte v_red = 0x00;
+    private byte v_green = 0x00;
+    private byte v_blue = (byte)0xFF;
+    private byte v_brightness = (byte)0xFF;
     private boolean v_neopixels_enabled = false;
     public ArduinoI2CNeopixels(HardwareMap hardwareMap, String deviceName, byte RealI2CAddress) throws Exception
     {
@@ -57,12 +62,13 @@ public class ArduinoI2CNeopixels {
     private void init() throws Exception{
         try{
             if (v_neopixels != null) {
-                v_neopixels.write(0x00);
-                v_neopixels.write(0x00); //mode All lights off
-                v_neopixels.write(0x00); // red
-                v_neopixels.write(0x00); // green
-                v_neopixels.write(0xFF); // blue
-                v_neopixels.write(0xFF); // brightness
+                v_neopixels.beginWrite(0x00);
+                //v_neopixels.write(0x00);
+                v_neopixels.write(v_mode); //mode All lights off
+                v_neopixels.write(v_red); // red
+                v_neopixels.write(v_green); // green
+                v_neopixels.write(v_blue); // blue
+                v_neopixels.write(v_brightness); // brightness
                 v_neopixels.endWrite();
                 v_neopixels_enabled = true;
             }
@@ -75,9 +81,11 @@ public class ArduinoI2CNeopixels {
 
 
     public boolean set_brightness(byte level) {
+        v_brightness = level;
         if (v_neopixels != null) {
-            v_neopixels.write(0x04); // brightness reg is at 4
-            v_neopixels.write(level); // brightness
+
+            v_neopixels.beginWrite(0x04); // brightness reg is at 4
+            v_neopixels.write(v_brightness); // brightness
             v_neopixels.endWrite();
             return true;
         }else{
@@ -86,26 +94,38 @@ public class ArduinoI2CNeopixels {
     }
 
     public boolean set_rgb(byte red, byte green, byte blue) {
-        if (v_neopixels != null) {
-            v_neopixels.write(0x01); // red reg is at 1
-            v_neopixels.write(red); // red
-            v_neopixels.write(green); // green
-            v_neopixels.write(blue); // blue
-            v_neopixels.endWrite();
-            return true;
-        }else{
+        if (v_red == red && v_green == green && v_blue == blue){
             return false;
+        }else{
+            v_red = red;
+            v_green = green;
+            v_blue = blue;
+            if (v_neopixels != null) {
+
+                v_neopixels.beginWrite(0x01); // red reg is at 1
+                v_neopixels.write(v_red); // red
+                v_neopixels.write(v_green); // green
+                v_neopixels.write(v_blue); // blue
+                v_neopixels.endWrite();
+                return true;
+            }else{
+                return false;
+            }
         }
     }
 
     public boolean set_mode(byte mode) {
-        if (v_neopixels != null) {
-            v_neopixels.write(0x00); // mode reg is at 0
-            v_neopixels.write(mode); // red
-            v_neopixels.endWrite();
-            return true;
-        }else{
+        if (v_mode == mode){
             return false;
+        }else {
+            if (v_neopixels != null) {
+                v_neopixels.beginWrite(0x00); // mode reg is at 0
+                v_neopixels.write(mode); // red
+                v_neopixels.endWrite();
+                return true;
+            } else {
+                return false;
+            }
         }
     }
 

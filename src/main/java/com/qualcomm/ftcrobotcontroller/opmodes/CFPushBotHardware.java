@@ -204,7 +204,8 @@ public class CFPushBotHardware extends OpMode {
 
     // I2C wouldn't work with Modern Robotic Controller for some reason moved to
     // digital pins to send color and mode
-    // private ArduinoI2CNeopixels v_neopixels;
+    private static final boolean v_neopixels_use_i2c = true;
+    private ArduinoI2CNeopixels v_neopixels;
     private static final int v_neopixel_modechange_pin = 7;
     private static final int v_neopixel_blue_pin = 6;
     private static final int v_neopixel_green_pin = 5;
@@ -626,19 +627,23 @@ public class CFPushBotHardware extends OpMode {
         }
 
         try{
-            //v_neopixels = new ArduinoI2CNeopixels(hardwareMap, "neopixels");
-            v_dim.setDigitalChannelMode(v_neopixel_modechange_pin, DigitalChannelController.Mode.OUTPUT);
-            v_dim.setDigitalChannelMode(v_neopixel_red_pin, DigitalChannelController.Mode.OUTPUT);
-            v_dim.setDigitalChannelMode(v_neopixel_green_pin, DigitalChannelController.Mode.OUTPUT);
-            v_dim.setDigitalChannelMode(v_neopixel_blue_pin, DigitalChannelController.Mode.OUTPUT);
-            v_dim.setDigitalChannelState(v_neopixel_modechange_pin, v_neopixel_modechange_pin_state);
-            v_dim.setDigitalChannelState(v_neopixel_red_pin, true);
-            v_dim.setDigitalChannelState(v_neopixel_green_pin, true);
-            v_dim.setDigitalChannelState(v_neopixel_blue_pin, false);
+            if (v_neopixels_use_i2c) {
+                v_neopixels = new ArduinoI2CNeopixels(hardwareMap, "neopixels");
+                debugLogException("neopixels", "inited", null);
+            }else {
+                v_dim.setDigitalChannelMode(v_neopixel_modechange_pin, DigitalChannelController.Mode.OUTPUT);
+                v_dim.setDigitalChannelMode(v_neopixel_red_pin, DigitalChannelController.Mode.OUTPUT);
+                v_dim.setDigitalChannelMode(v_neopixel_green_pin, DigitalChannelController.Mode.OUTPUT);
+                v_dim.setDigitalChannelMode(v_neopixel_blue_pin, DigitalChannelController.Mode.OUTPUT);
+                v_dim.setDigitalChannelState(v_neopixel_modechange_pin, v_neopixel_modechange_pin_state);
+                v_dim.setDigitalChannelState(v_neopixel_red_pin, true);
+                v_dim.setDigitalChannelState(v_neopixel_green_pin, true);
+                v_dim.setDigitalChannelState(v_neopixel_blue_pin, false);
+            }
         }catch (Exception p_exeception)
         {
             debugLogException("neopixels", "missing", p_exeception);
-            //v_neopixels = null;
+            v_neopixels = null;
         }
 
         //update our telmentry after init so we know if we are missing anything
@@ -660,6 +665,118 @@ public class CFPushBotHardware extends OpMode {
         return v_warning_generated;
 
     } // a_warning_generated
+
+    public boolean play_jingle_bells(){
+        //Connect the Core Interface Device or Dim
+        if (v_tone_generator != null) {
+            v_tone_generator.startTone(ToneGenerator.TONE_DTMF_3, 250);
+            sleep(300);
+            v_tone_generator.startTone(ToneGenerator.TONE_DTMF_3, 250);
+            sleep(300);
+            v_tone_generator.startTone(ToneGenerator.TONE_DTMF_3, 250);
+            sleep(500);
+            v_tone_generator.startTone(ToneGenerator.TONE_DTMF_3, 250);
+            sleep(300);
+            v_tone_generator.startTone(ToneGenerator.TONE_DTMF_3, 250);
+            sleep(300);
+            v_tone_generator.startTone(ToneGenerator.TONE_DTMF_3, 250);
+            sleep(500);
+            v_tone_generator.startTone(ToneGenerator.TONE_DTMF_3, 250);
+            sleep(300);
+            v_tone_generator.startTone(ToneGenerator.TONE_DTMF_9, 250);
+            sleep(300);
+            v_tone_generator.startTone(ToneGenerator.TONE_DTMF_1, 250);
+            sleep(300);
+            v_tone_generator.startTone(ToneGenerator.TONE_DTMF_2, 250);
+            sleep(300);
+            v_tone_generator.startTone(ToneGenerator.TONE_DTMF_3, 250);
+            sleep(500);
+            v_tone_generator.startTone(ToneGenerator.TONE_DTMF_6, 250);
+            sleep(300);
+            v_tone_generator.startTone(ToneGenerator.TONE_DTMF_6, 250);
+            sleep(300);
+            v_tone_generator.startTone(ToneGenerator.TONE_DTMF_6, 250);
+            sleep(500);
+            v_tone_generator.startTone(ToneGenerator.TONE_DTMF_6, 250);
+            sleep(300);
+            v_tone_generator.startTone(ToneGenerator.TONE_DTMF_6, 250);
+            sleep(300);
+            v_tone_generator.startTone(ToneGenerator.TONE_DTMF_3, 250);
+            sleep(300);
+            v_tone_generator.startTone(ToneGenerator.TONE_DTMF_3, 250);
+            sleep(500);
+            v_tone_generator.startTone(ToneGenerator.TONE_DTMF_3, 250);
+            sleep(300);
+            v_tone_generator.startTone(ToneGenerator.TONE_DTMF_3, 250);
+            sleep(300);
+            v_tone_generator.startTone(ToneGenerator.TONE_DTMF_3, 250);
+            sleep(300);
+            v_tone_generator.startTone(ToneGenerator.TONE_DTMF_2, 250);
+            sleep(300);
+            v_tone_generator.startTone(ToneGenerator.TONE_DTMF_2, 250);
+            sleep(300);
+            v_tone_generator.startTone(ToneGenerator.TONE_DTMF_3, 250);
+            sleep(300);
+            v_tone_generator.startTone(ToneGenerator.TONE_DTMF_2, 250);
+            sleep(500);
+            v_tone_generator.startTone(ToneGenerator.TONE_DTMF_9, 250);
+            sleep(500);
+            v_tone_generator.startTone(ToneGenerator.TONE_DTMF_3, 250);
+            sleep(300);
+            v_tone_generator.startTone(ToneGenerator.TONE_DTMF_3, 250);
+            sleep(300);
+            v_tone_generator.startTone(ToneGenerator.TONE_DTMF_3, 250);
+            sleep(500);
+            v_tone_generator.startTone(ToneGenerator.TONE_DTMF_3, 250);
+            sleep(300);
+            v_tone_generator.startTone(ToneGenerator.TONE_DTMF_3, 250);
+            sleep(300);
+            v_tone_generator.startTone(ToneGenerator.TONE_DTMF_3, 250);
+            sleep(500);
+            v_tone_generator.startTone(ToneGenerator.TONE_DTMF_3, 250);
+            sleep(300);
+            v_tone_generator.startTone(ToneGenerator.TONE_DTMF_9, 250);
+            sleep(300);
+            v_tone_generator.startTone(ToneGenerator.TONE_DTMF_1, 250);
+            sleep(300);
+            v_tone_generator.startTone(ToneGenerator.TONE_DTMF_2, 250);
+            sleep(300);
+            v_tone_generator.startTone(ToneGenerator.TONE_DTMF_3, 250);
+            sleep(500);
+            v_tone_generator.startTone(ToneGenerator.TONE_DTMF_6, 250);
+            sleep(300);
+            v_tone_generator.startTone(ToneGenerator.TONE_DTMF_6, 250);
+            sleep(300);
+            v_tone_generator.startTone(ToneGenerator.TONE_DTMF_6, 250);
+            sleep(500);
+            v_tone_generator.startTone(ToneGenerator.TONE_DTMF_6, 250);
+            sleep(300);
+            v_tone_generator.startTone(ToneGenerator.TONE_DTMF_6, 250);
+            sleep(300);
+            v_tone_generator.startTone(ToneGenerator.TONE_DTMF_3, 250);
+            sleep(300);
+            v_tone_generator.startTone(ToneGenerator.TONE_DTMF_3, 250);
+            sleep(300);
+            v_tone_generator.startTone(ToneGenerator.TONE_DTMF_3, 250);
+            sleep(300);
+            v_tone_generator.startTone(ToneGenerator.TONE_DTMF_3, 250);
+            sleep(300);
+            v_tone_generator.startTone(ToneGenerator.TONE_DTMF_9, 250);
+            sleep(300);
+            v_tone_generator.startTone(ToneGenerator.TONE_DTMF_9, 250);
+            sleep(300);
+            v_tone_generator.startTone(ToneGenerator.TONE_DTMF_6, 250);
+            sleep(300);
+            v_tone_generator.startTone(ToneGenerator.TONE_DTMF_2, 250);
+            sleep(300);
+            v_tone_generator.startTone(ToneGenerator.TONE_DTMF_1, 250);
+            return true;
+        }else{
+            return false;
+        }
+    }
+
+
 
     /**
      * Used to retrive the total loop count
@@ -1220,23 +1337,26 @@ public class CFPushBotHardware extends OpMode {
     public boolean neopixels_set_rgb(byte red, byte green, byte blue){
         //I2c didn't work seemed to bring down whole bus on modern Robotics controller will work on it later
         // so we use digital io for now
-        //if (v_neopixels != null){
+
         if (v_dim != null){
-            //v_neopixels.set_rgb(red, green, blue);
-            if (red > 0){
-                v_dim.setDigitalChannelState(v_neopixel_red_pin, false);
-            }else{
-                v_dim.setDigitalChannelState(v_neopixel_red_pin, true);
-            }
-            if (green > 0){
-                v_dim.setDigitalChannelState(v_neopixel_green_pin, false);
-            }else{
-                v_dim.setDigitalChannelState(v_neopixel_green_pin, true);
-            }
-            if (blue > 0){
-                v_dim.setDigitalChannelState(v_neopixel_blue_pin, false);
-            }else{
-                v_dim.setDigitalChannelState(v_neopixel_blue_pin, true);
+            if (v_neopixels_use_i2c && v_neopixels != null ) {
+                v_neopixels.set_rgb(red, green, blue);
+            }else {
+                if (red > 0) {
+                    v_dim.setDigitalChannelState(v_neopixel_red_pin, false);
+                } else {
+                    v_dim.setDigitalChannelState(v_neopixel_red_pin, true);
+                }
+                if (green > 0) {
+                    v_dim.setDigitalChannelState(v_neopixel_green_pin, false);
+                } else {
+                    v_dim.setDigitalChannelState(v_neopixel_green_pin, true);
+                }
+                if (blue > 0) {
+                    v_dim.setDigitalChannelState(v_neopixel_blue_pin, false);
+                } else {
+                    v_dim.setDigitalChannelState(v_neopixel_blue_pin, true);
+                }
             }
             return true;
         }else{
@@ -1245,25 +1365,24 @@ public class CFPushBotHardware extends OpMode {
     }
 
     public boolean neopixels_set_brightness(byte brightness){
-        //if (v_neopixels != null){
-        //v_neopixels.set_brightness(brightness);
-        //return true;
-        //}else{
-        return false;
-        //}
+        if (v_neopixels != null){
+            v_neopixels.set_brightness(brightness);
+            return true;
+            }else{
+                return false;
+        }
     }
 
     boolean v_neopixel_modechange_pin_state = false;
     public boolean neopixels_set_mode(byte mode){
-        //if (v_neopixels != null){
-        //    v_neopixels.set_mode(mode);
-        //    return true;
-        //}else{
-        //    return false;
-        //}
+
         if (v_dim != null){
-            v_neopixel_modechange_pin_state = !v_neopixel_modechange_pin_state;
-            v_dim.setDigitalChannelState(v_neopixel_modechange_pin, v_neopixel_modechange_pin_state);
+            if (v_neopixels_use_i2c && v_neopixels != null){
+                 v_neopixels.set_mode(mode);
+            }else{
+                v_neopixel_modechange_pin_state = !v_neopixel_modechange_pin_state;
+                v_dim.setDigitalChannelState(v_neopixel_modechange_pin, v_neopixel_modechange_pin_state);
+            }
             return true;
         }else{
             return false;
