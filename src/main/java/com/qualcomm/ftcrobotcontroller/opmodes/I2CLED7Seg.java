@@ -1,5 +1,8 @@
 package com.qualcomm.ftcrobotcontroller.opmodes;
 
+import android.media.AudioManager;
+import android.media.ToneGenerator;
+
 import com.qualcomm.ftccommon.DbgLog;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.hardware.DeviceInterfaceModule;
@@ -37,7 +40,7 @@ public class I2CLED7Seg extends OpMode {
         // All via self-construction.
 
     } // PushBotHardware
-
+    ToneGenerator v_tone_generator;
     @Override
     public void init() {
 
@@ -47,66 +50,147 @@ public class I2CLED7Seg extends OpMode {
 
         try {
             //Connect the Core Interface Device or Dim
+            v_tone_generator = new ToneGenerator(AudioManager.STREAM_RING, ToneGenerator.MAX_VOLUME);
 
-            try {
+            v_tone_generator.startTone(ToneGenerator.TONE_DTMF_3, 250);
+            sleep(300);
+            v_tone_generator.startTone(ToneGenerator.TONE_DTMF_3, 250);
+            sleep(300);
+            v_tone_generator.startTone(ToneGenerator.TONE_DTMF_3, 250);
+            sleep(500);
+            v_tone_generator.startTone(ToneGenerator.TONE_DTMF_3, 250);
+            sleep(300);
+            v_tone_generator.startTone(ToneGenerator.TONE_DTMF_3, 250);
+            sleep(300);
+            v_tone_generator.startTone(ToneGenerator.TONE_DTMF_3, 250);
+            sleep(500);
+            v_tone_generator.startTone(ToneGenerator.TONE_DTMF_3, 250);
+            sleep(300);
+            v_tone_generator.startTone(ToneGenerator.TONE_DTMF_9, 250);
+            sleep(300);
+            v_tone_generator.startTone(ToneGenerator.TONE_DTMF_1, 250);
+            sleep(300);
+            v_tone_generator.startTone(ToneGenerator.TONE_DTMF_2, 250);
+            sleep(300);
+            v_tone_generator.startTone(ToneGenerator.TONE_DTMF_3, 250);
+            sleep(500);
+            v_tone_generator.startTone(ToneGenerator.TONE_DTMF_6, 250);
+            sleep(300);
+            v_tone_generator.startTone(ToneGenerator.TONE_DTMF_6, 250);
+            sleep(300);
+            v_tone_generator.startTone(ToneGenerator.TONE_DTMF_6, 250);
+            sleep(500);
+            v_tone_generator.startTone(ToneGenerator.TONE_DTMF_6, 250);
+            sleep(300);
+            v_tone_generator.startTone(ToneGenerator.TONE_DTMF_6, 250);
+            sleep(300);
+            v_tone_generator.startTone(ToneGenerator.TONE_DTMF_3, 250);
+            sleep(300);
+            v_tone_generator.startTone(ToneGenerator.TONE_DTMF_3, 250);
+            sleep(500);
+            v_tone_generator.startTone(ToneGenerator.TONE_DTMF_3, 250);
+            sleep(300);
+            v_tone_generator.startTone(ToneGenerator.TONE_DTMF_3, 250);
+            sleep(300);
+            v_tone_generator.startTone(ToneGenerator.TONE_DTMF_3, 250);
+            sleep(300);
+            v_tone_generator.startTone(ToneGenerator.TONE_DTMF_2, 250);
+            sleep(300);
+            v_tone_generator.startTone(ToneGenerator.TONE_DTMF_2, 250);
+            sleep(300);
+            v_tone_generator.startTone(ToneGenerator.TONE_DTMF_3, 250);
+            sleep(300);
+            v_tone_generator.startTone(ToneGenerator.TONE_DTMF_2, 250);
+            sleep(500);
+            v_tone_generator.startTone(ToneGenerator.TONE_DTMF_9, 250);
+            sleep(500);
+            v_tone_generator.startTone(ToneGenerator.TONE_DTMF_3, 250);
+            sleep(300);
+            v_tone_generator.startTone(ToneGenerator.TONE_DTMF_3, 250);
+            sleep(300);
+            v_tone_generator.startTone(ToneGenerator.TONE_DTMF_3, 250);
+            sleep(500);
+            v_tone_generator.startTone(ToneGenerator.TONE_DTMF_3, 250);
+            sleep(300);
+            v_tone_generator.startTone(ToneGenerator.TONE_DTMF_3, 250);
+            sleep(300);
+            v_tone_generator.startTone(ToneGenerator.TONE_DTMF_3, 250);
+            sleep(500);
+            v_tone_generator.startTone(ToneGenerator.TONE_DTMF_3, 250);
+            sleep(300);
+            v_tone_generator.startTone(ToneGenerator.TONE_DTMF_9, 250);
+            sleep(300);
+            v_tone_generator.startTone(ToneGenerator.TONE_DTMF_1, 250);
+            sleep(300);
+            v_tone_generator.startTone(ToneGenerator.TONE_DTMF_2, 250);
+            sleep(300);
+            v_tone_generator.startTone(ToneGenerator.TONE_DTMF_3, 250);
+            sleep(500);
+            v_tone_generator.startTone(ToneGenerator.TONE_DTMF_6, 250);
+            sleep(300);
+            v_tone_generator.startTone(ToneGenerator.TONE_DTMF_6, 250);
+            sleep(300);
+            v_tone_generator.startTone(ToneGenerator.TONE_DTMF_6, 250);
+            sleep(500);
+            v_tone_generator.startTone(ToneGenerator.TONE_DTMF_6, 250);
+            sleep(300);
+            v_tone_generator.startTone(ToneGenerator.TONE_DTMF_6, 250);
+            sleep(300);
+            v_tone_generator.startTone(ToneGenerator.TONE_DTMF_3, 250);
+            sleep(300);
+            v_tone_generator.startTone(ToneGenerator.TONE_DTMF_3, 250);
+            sleep(300);
+            v_tone_generator.startTone(ToneGenerator.TONE_DTMF_3, 250);
+            sleep(300);
+            v_tone_generator.startTone(ToneGenerator.TONE_DTMF_3, 250);
+            sleep(300);
+            v_tone_generator.startTone(ToneGenerator.TONE_DTMF_9, 250);
+            sleep(300);
+            v_tone_generator.startTone(ToneGenerator.TONE_DTMF_9, 250);
+            sleep(300);
+            v_tone_generator.startTone(ToneGenerator.TONE_DTMF_6, 250);
+            sleep(300);
+            v_tone_generator.startTone(ToneGenerator.TONE_DTMF_2, 250);
+            sleep(300);
+            v_tone_generator.startTone(ToneGenerator.TONE_DTMF_1, 250);
+            /*sleep(600);
+            v_tone_generator.startTone(ToneGenerator.TONE_DTMF_0, 666);
+            sleep(600);
+            v_tone_generator.startTone(ToneGenerator.TONE_DTMF_0, 6633);
+            sleep(600);
+            v_tone_generator.startTone(ToneGenerator.TONE_DTMF_0, 3332232);
+            v_tone_generator.wait(100);
+            v_tone_generator.startTone(ToneGenerator.TONE_DTMF_9, 9);
+            sleep(600);
+            v_tone_generator.startTone(ToneGenerator.TONE_DTMF_0, 333);
+            v_tone_generator.startTone(ToneGenerator.TONE_DTMF_0, 333);
+            sleep(600);
+            v_tone_generator.startTone(ToneGenerator.TONE_DTMF_0, 39123);
+            sleep(600);
+            v_tone_generator.startTone(ToneGenerator.TONE_DTMF_0, 666);
+            sleep(600);
+            v_tone_generator.startTone(ToneGenerator.TONE_DTMF_0, 6633);*/
 
-                // set up the hardware devices we are going to use
-                v_dim = hardwareMap.deviceInterfaceModule.get("dim");
-                v_dim.setLED(0, true);
-                v_dim.setLED(1, true);
-
-            } catch (Exception p_exeception) {
-                debugLogException("00", "dim", "missing", p_exeception);
-
-                v_dim = null;
-            }
-
-            try {
-
-                // set up the hardware devices we are going to use
-                v_heartbeat = hardwareMap.led.get("heartbeat");
-                v_heartbeat.enable(true);
-
-            } catch (Exception p_exeception) {
-                debugLogException("01", "heartbeat", "missing", p_exeception);
-
-                v_heartbeat = null;
-            }
-
-            try {
-                v_ledseg = new AdafruitLEDBackpack7Seg(hardwareMap, "ledseg");
-                v_ledseg.writeDigits("    ",false);
-            } catch (Exception p_exeception) {
-                debugLogException("03", "led7seg", "missing", p_exeception);
-            }
         } catch (Exception p_exeception) {
             debugLogException("03", "led7seg", "missing", p_exeception);
         }
     }
 
+    public void sleep(long time){
+        try {
+            Thread.sleep(time);
+        }catch(Exception ex){
+
+        }
+    }
     boolean ranloop = false;
     @Override
     public void loop() {
-        v_ledseg.loop();
+        try {
+            Thread.sleep(1000);
+        }catch(Exception ex){
 
-        if (ranloop == false){
-            //
-            //Connect the Core Interface Device or Dim
-            try {
-
-                // set up the hardware devices we are going to use
-                v_dim = hardwareMap.deviceInterfaceModule.get("dim");
-                v_dim.setLED(1,true);
-
-            }catch (Exception p_exeception)
-            {
-                debugLogException("00","dim","missing",p_exeception);
-
-                v_dim = null;
-            }
         }
-            ranloop=true;
-            //hardwareMap.wait(100);
 
     }
     @Override
