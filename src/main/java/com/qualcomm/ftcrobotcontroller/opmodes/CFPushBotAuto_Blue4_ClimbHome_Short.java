@@ -61,6 +61,7 @@ public class CFPushBotAuto_Blue4_ClimbHome_Short extends CFPushBotTelemetry {
      *
      * The system calls this member repeatedly while the OpMode is running.
      */
+    long  v_rpa_move_delay;
     @Override public void loop ()
 
     {
@@ -69,6 +70,11 @@ public class CFPushBotAuto_Blue4_ClimbHome_Short extends CFPushBotTelemetry {
         //
         // State: Initialize (i.e. state_0).
         //
+        if (led7seg_timer_complete()== true){
+            set_second_message("timer complete stop");
+            set_drive_power(0f,0f);
+            v_state = 100;
+        }
         switch (v_state)
         {
             //
@@ -78,8 +84,8 @@ public class CFPushBotAuto_Blue4_ClimbHome_Short extends CFPushBotTelemetry {
                 //
                 // drive Forward 24 inches
                 //
-                led7seg_timer_init(30);
-                drive_inches(1.0f,30, true);
+                led7seg_timer_start(30);
+                drive_inches(.7f,30, true);
                 v_state++;
                 break;
             case 1:
@@ -95,7 +101,7 @@ public class CFPushBotAuto_Blue4_ClimbHome_Short extends CFPushBotTelemetry {
 
             case 2:
                 // positive is right turn
-                turn_degrees(45, false, true);
+                turn_degrees(45, true, true);
                 set_second_message("turn 45 degrees to the right");
                 v_state++;
                 break;
@@ -114,7 +120,7 @@ public class CFPushBotAuto_Blue4_ClimbHome_Short extends CFPushBotTelemetry {
                 //
                 // drive Forward 12 inches
                 //
-                drive_inches(1.0f,30, true);
+                drive_inches(.7f,30, true);
 
                 //set_drive_power(1.0d, 1.0d);
                 v_state++;
@@ -129,7 +135,7 @@ public class CFPushBotAuto_Blue4_ClimbHome_Short extends CFPushBotTelemetry {
                 break;
             case 6:
                 // positive is right turn
-                turn_degrees(88, false, true);
+                turn_degrees(88, true, true);
                 set_second_message("turn 90 degrees to the right");
                 v_state++;
                 break;
@@ -148,12 +154,30 @@ public class CFPushBotAuto_Blue4_ClimbHome_Short extends CFPushBotTelemetry {
                 //
                 // drive Forward 12 inches
                 //
-                drive_inches(1.0f,24, true);
-
+                //drive_inches(.7f,10, true);
+                rpabase_moveToClimb();
+                v_rpa_move_delay = 250 + loopCounter();
                 //set_drive_power(1.0d, 1.0d);
                 v_state++;
                 break;
             case 9:
+                //
+                // Transition to the next state when this method is called again.
+                if (v_rpa_move_delay < loopCounter()) {
+                    //
+                    v_state++;
+                }
+                break;
+            case 10:
+                //
+                // drive Forward 12 inches
+                //
+                drive_inches(.7f,60, true);
+
+                //set_drive_power(1.0d, 1.0d);
+                v_state++;
+                break;
+            case 11:
                 //
                 // Transition to the next state when this method is called again.
                 if (drive_inches_complete()) {

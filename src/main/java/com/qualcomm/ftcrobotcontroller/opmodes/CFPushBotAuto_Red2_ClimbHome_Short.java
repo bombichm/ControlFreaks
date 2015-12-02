@@ -69,6 +69,10 @@ public class CFPushBotAuto_Red2_ClimbHome_Short extends CFPushBotTelemetry {
         //
         // State: Initialize (i.e. state_0).
         //
+        if (led7seg_timer_complete()== true){
+            set_second_message("timer complete stop");
+            v_state = 100;
+        }
         switch (v_state)
         {
             //
@@ -78,8 +82,8 @@ public class CFPushBotAuto_Red2_ClimbHome_Short extends CFPushBotTelemetry {
                 //
                 // drive Forward 24 inches
                 //
-                led7seg_timer_init(30);
-                drive_inches(1.0f,4, true);
+                led7seg_timer_start(30);
+                drive_inches(.7f,4, true);
                 v_state++;
                 break;
             case 1:
@@ -95,7 +99,7 @@ public class CFPushBotAuto_Red2_ClimbHome_Short extends CFPushBotTelemetry {
 
             case 2:
                 // positive is right turn
-                turn_degrees(-45, false, false);
+                turn_degrees(-45, true, true);
                 set_second_message("turn 45 degrees to the left");
                 v_state++;
                 break;
@@ -114,7 +118,7 @@ public class CFPushBotAuto_Red2_ClimbHome_Short extends CFPushBotTelemetry {
                 //
                 // drive Forward 12 inches
                 //
-                drive_inches(1.0f,85, true);
+                drive_inches(0.7f,85, true);
 
                 //set_drive_power(1.0d, 1.0d);
                 v_state++;
@@ -129,7 +133,7 @@ public class CFPushBotAuto_Red2_ClimbHome_Short extends CFPushBotTelemetry {
                 break;
             case 6:
                 // positive is right turn
-                turn_degrees(-88, false, false);
+                turn_degrees(-88, true, true);
                 set_second_message("turn 88 degrees to the left");
                 v_state++;
                 break;
@@ -148,7 +152,7 @@ public class CFPushBotAuto_Red2_ClimbHome_Short extends CFPushBotTelemetry {
                 //
                 // drive Forward 12 inches
                 //
-                drive_inches(1.0f,32, true);
+                drive_inches(0.7f,32, true);
 
                 //set_drive_power(1.0d, 1.0d);
                 v_state++;

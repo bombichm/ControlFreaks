@@ -4,38 +4,41 @@ package com.qualcomm.ftcrobotcontroller.opmodes;
  * Created by adevries on 11/6/2015.
  */
 
-        import android.graphics.Color;
-        import android.media.AudioManager;
-        import android.media.ToneGenerator;
+import android.graphics.Color;
+import android.media.AudioManager;
+import android.media.ToneGenerator;
 
-        import com.qualcomm.ftccommon.DbgLog;
-        import com.qualcomm.hardware.ModernRoboticsI2cGyro;
-        import com.qualcomm.robotcore.eventloop.opmode.OpMode;
-        import com.qualcomm.robotcore.hardware.DcMotor;
-        import com.qualcomm.robotcore.hardware.DcMotorController;
-        import com.qualcomm.robotcore.hardware.DigitalChannelController;
-        import com.qualcomm.robotcore.hardware.GyroSensor;
-        import com.qualcomm.robotcore.hardware.I2cDevice;
-        import com.qualcomm.robotcore.hardware.LED;
-        import com.qualcomm.robotcore.hardware.LightSensor;
-        import com.qualcomm.robotcore.hardware.OpticalDistanceSensor;
-        import com.qualcomm.robotcore.hardware.Servo;
-        import com.qualcomm.robotcore.hardware.TouchSensor;
-        import com.qualcomm.robotcore.hardware.UltrasonicSensor;
-        import com.qualcomm.robotcore.util.Range;
-        import com.qualcomm.robotcore.hardware.DeviceInterfaceModule;
-        import com.qualcomm.robotcore.hardware.IrSeekerSensor;
-        import com.qualcomm.robotcore.util.RobotLog;
-        import com.qualcomm.robotcore.util.TypeConversion;
+import com.qualcomm.ftccommon.DbgLog;
+import com.qualcomm.hardware.ModernRoboticsI2cGyro;
+import com.qualcomm.robotcore.eventloop.opmode.OpMode;
+import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.hardware.DcMotorController;
+import com.qualcomm.robotcore.hardware.DigitalChannelController;
+import com.qualcomm.robotcore.hardware.GyroSensor;
+import com.qualcomm.robotcore.hardware.I2cDevice;
+import com.qualcomm.robotcore.hardware.LED;
+import com.qualcomm.robotcore.hardware.LightSensor;
+import com.qualcomm.robotcore.hardware.OpticalDistanceSensor;
+import com.qualcomm.robotcore.hardware.Servo;
+import com.qualcomm.robotcore.hardware.TouchSensor;
+import com.qualcomm.robotcore.hardware.UltrasonicSensor;
+import com.qualcomm.robotcore.util.Range;
+import com.qualcomm.robotcore.hardware.DeviceInterfaceModule;
+import com.qualcomm.robotcore.hardware.IrSeekerSensor;
+import com.qualcomm.robotcore.util.RobotLog;
+import com.qualcomm.robotcore.util.TypeConversion;
 //import com.qualcomm.ftcrobotcontroller.opmodes.ColorSensorDriver;
-        import com.qualcomm.robotcore.hardware.ColorSensor;
+import com.qualcomm.robotcore.hardware.ColorSensor;
 
-        import org.usfirst.ControlFreaks.AdafruitLEDBackpack7Seg;
-        import org.usfirst.ControlFreaks.ArduinoI2CNeopixels;
+import org.usfirst.ControlFreaks.AdafruitLEDBackpack7Seg;
+import org.usfirst.ControlFreaks.ArduinoI2CNeopixels;
 
-        import java.util.concurrent.locks.Lock;
+import java.util.Calendar;
+import java.util.concurrent.locks.Lock;
 
 public class CFPushBotHardware extends OpMode {
+
+    public boolean v_debug = true;  //set this to false to prevent writing to log makes loop lots shorter
 
     //We Increment the v_loop_ticks each time through our loop
     private long v_loop_ticks = 0;
@@ -74,8 +77,9 @@ public class CFPushBotHardware extends OpMode {
     private static final double RPABaseServo_Delta = 0.0005;
     private static final double RPABaseServo_Delta_Fast = 0.001;
     private double RPABaseServo_MinPosition = 0.01;  //Need to unhook gear int so it goes to zero then rehook servo gear
-    private double RPABaseServo_ClimbPosition = 0.69;
-    private double RPABaseServo_MaxPosition = 0.70;
+    private double RPABaseServo_ClimbPosition = 0.72;
+    public double RPABaseServo_DumpPosition = 0.67;
+    private double RPABaseServo_MaxPosition = 0.73;
     //private double RPABaseServo_MaxPosition_Delta = 0.60;
     private double l_rpa_base_position = 0.163D;  //init RPA Base Position and to control RPA Base position as servo.getPosition seems to be flaky
 
@@ -134,8 +138,8 @@ public class CFPushBotHardware extends OpMode {
 
     // v_servo_flip_left
     private Servo v_servo_flip_left;
-   // private static final double FlipLeftServo_Delta = 0.005;
-   // private static final double FlipLeftServo_Delta_Fast = 0.05;
+    // private static final double FlipLeftServo_Delta = 0.005;
+    // private static final double FlipLeftServo_Delta_Fast = 0.05;
     public static final double FlipLeftServo_MinPosition = 0.05;
     public static final double FlipLeftServo_MaxPosition = 0.89;
     private double l_flip_left_position = 0.05D;  //init flip_right Position
@@ -154,7 +158,7 @@ public class CFPushBotHardware extends OpMode {
 
     //Adafruit RGB Sensor
     private ColorSensor v_sensor_color_i2c;
-    private static final int v_sensor_color_i2c_led_pin = 5;
+    private static final int v_sensor_color_i2c_led_pin = 1;
     // bEnabled represents the state of the LED.
     private boolean v_sensor_color_i2c_led_enabled = false;
     //red, green, blue, alpha
@@ -176,7 +180,7 @@ public class CFPushBotHardware extends OpMode {
     private int v_sensor_ultraLegecy_ticksPerRead = 20;
     private double v_sensor_ultraLegecy_distance;
 
-   //Modern Robotics gyro1
+    //Modern Robotics gyro1
     ModernRoboticsI2cGyro v_sensor_gyro_mr;
     GyroSensor v_sensor_gyro;
     //private int v_sensor_gyro_x, v_sensor_gyro_y, v_sensor_gyro_z = 0;
@@ -198,7 +202,15 @@ public class CFPushBotHardware extends OpMode {
 
     private AdafruitLEDBackpack7Seg v_ledseg;
 
-    private ArduinoI2CNeopixels v_neopixels;
+    // I2C wouldn't work with Modern Robotic Controller for some reason moved to
+    // digital pins to send color and mode
+    // private ArduinoI2CNeopixels v_neopixels;
+    private static final int v_neopixel_modechange_pin = 7;
+    private static final int v_neopixel_blue_pin = 6;
+    private static final int v_neopixel_green_pin = 5;
+    private static final int v_neopixel_red_pin = 4;
+
+
     //--------------------------------------------------------------------------
     //
     // v_motor_left_drive
@@ -298,7 +310,7 @@ public class CFPushBotHardware extends OpMode {
         //Connect the Core Interface Device or Dim
         try {
 
-                // set up the hardware devices we are going to use
+            // set up the hardware devices we are going to use
             v_dim = hardwareMap.deviceInterfaceModule.get("dim");
 
 
@@ -544,7 +556,7 @@ public class CFPushBotHardware extends OpMode {
         try
         {
             v_motor_winch = hardwareMap.dcMotor.get ("winch");
-          //  v_motor_winch.setDirection(DcMotor.Direction.REVERSE);
+            //  v_motor_winch.setDirection(DcMotor.Direction.REVERSE);
         }
         catch (Exception p_exeception)
         {
@@ -614,11 +626,19 @@ public class CFPushBotHardware extends OpMode {
         }
 
         try{
-            v_neopixels = new ArduinoI2CNeopixels(hardwareMap, "neopixels");
+            //v_neopixels = new ArduinoI2CNeopixels(hardwareMap, "neopixels");
+            v_dim.setDigitalChannelMode(v_neopixel_modechange_pin, DigitalChannelController.Mode.OUTPUT);
+            v_dim.setDigitalChannelMode(v_neopixel_red_pin, DigitalChannelController.Mode.OUTPUT);
+            v_dim.setDigitalChannelMode(v_neopixel_green_pin, DigitalChannelController.Mode.OUTPUT);
+            v_dim.setDigitalChannelMode(v_neopixel_blue_pin, DigitalChannelController.Mode.OUTPUT);
+            v_dim.setDigitalChannelState(v_neopixel_modechange_pin, v_neopixel_modechange_pin_state);
+            v_dim.setDigitalChannelState(v_neopixel_red_pin, true);
+            v_dim.setDigitalChannelState(v_neopixel_green_pin, true);
+            v_dim.setDigitalChannelState(v_neopixel_blue_pin, false);
         }catch (Exception p_exeception)
         {
             debugLogException("neopixels", "missing", p_exeception);
-            v_neopixels = null;
+            //v_neopixels = null;
         }
 
         //update our telmentry after init so we know if we are missing anything
@@ -660,8 +680,9 @@ public class CFPushBotHardware extends OpMode {
                 debugMessage = debugMessage + errMsg;
             }
         }
-
-        DbgLog.msg(debugMessage );
+        if (v_debug) {
+            DbgLog.msg(debugMessage);
+        }
     }
 
     //--------------------------------------------------------------------------
@@ -771,10 +792,18 @@ public class CFPushBotHardware extends OpMode {
     /** called each time through the loop needed to sync hardware and look for status changes
      *
      */
+    private Calendar v_loop_previous_timestamp;
+    private long v_slow_loop_milliseconds = 0;
     public void hardware_loop(){
+
         v_loop_ticks++;
         if(v_loop_ticks % v_loop_ticks_slow_count == 0 ){
             v_loop_ticks_slow = true;
+            if (v_loop_previous_timestamp != null){
+                v_slow_loop_milliseconds = Calendar.getInstance().getTimeInMillis() - v_loop_previous_timestamp.getTimeInMillis();
+            }
+            v_loop_previous_timestamp = Calendar.getInstance();
+
         }else{
             v_loop_ticks_slow = false;
         }
@@ -810,6 +839,9 @@ public class CFPushBotHardware extends OpMode {
 
     }
 
+    public long hardware_loop_slowtime_milliseconds(){
+        return v_slow_loop_milliseconds;
+    }
     public void hardware_stop(){
         /*if(v_led_heartbeat !=null){
             v_led_heartbeat.enable(false);
@@ -994,7 +1026,7 @@ public class CFPushBotHardware extends OpMode {
     // run_without_left_drive_encoder
     //
     */
-/**
+    /**
      * Set the left drive wheel encoder to run, if the mode is appropriate.
      *//*
 
@@ -1186,8 +1218,26 @@ public class CFPushBotHardware extends OpMode {
 
 
     public boolean neopixels_set_rgb(byte red, byte green, byte blue){
-        if (v_neopixels != null){
-            v_neopixels.set_rgb(red, green, blue);
+        //I2c didn't work seemed to bring down whole bus on modern Robotics controller will work on it later
+        // so we use digital io for now
+        //if (v_neopixels != null){
+        if (v_dim != null){
+            //v_neopixels.set_rgb(red, green, blue);
+            if (red > 0){
+                v_dim.setDigitalChannelState(v_neopixel_red_pin, false);
+            }else{
+                v_dim.setDigitalChannelState(v_neopixel_red_pin, true);
+            }
+            if (green > 0){
+                v_dim.setDigitalChannelState(v_neopixel_green_pin, false);
+            }else{
+                v_dim.setDigitalChannelState(v_neopixel_green_pin, true);
+            }
+            if (blue > 0){
+                v_dim.setDigitalChannelState(v_neopixel_blue_pin, false);
+            }else{
+                v_dim.setDigitalChannelState(v_neopixel_blue_pin, true);
+            }
             return true;
         }else{
             return false;
@@ -1195,17 +1245,25 @@ public class CFPushBotHardware extends OpMode {
     }
 
     public boolean neopixels_set_brightness(byte brightness){
-        if (v_neopixels != null){
-            v_neopixels.set_brightness(brightness);
-            return true;
-        }else{
-            return false;
-        }
+        //if (v_neopixels != null){
+        //v_neopixels.set_brightness(brightness);
+        //return true;
+        //}else{
+        return false;
+        //}
     }
 
+    boolean v_neopixel_modechange_pin_state = false;
     public boolean neopixels_set_mode(byte mode){
-        if (v_neopixels != null){
-            v_neopixels.set_brightness(mode);
+        //if (v_neopixels != null){
+        //    v_neopixels.set_mode(mode);
+        //    return true;
+        //}else{
+        //    return false;
+        //}
+        if (v_dim != null){
+            v_neopixel_modechange_pin_state = !v_neopixel_modechange_pin_state;
+            v_dim.setDigitalChannelState(v_neopixel_modechange_pin, v_neopixel_modechange_pin_state);
             return true;
         }else{
             return false;
@@ -1624,6 +1682,13 @@ public class CFPushBotHardware extends OpMode {
         return false;
     }
 
+    public boolean led7seg_timer_complete(){
+        if (v_ledseg != null) {
+            return v_ledseg.is_timer_complete();
+        }else{
+            return true;
+        }
+    }
     public boolean led7seg_is_enabled(){
         if (v_ledseg != null){
             return v_ledseg.isEnabled();
@@ -1655,11 +1720,11 @@ public class CFPushBotHardware extends OpMode {
                 sleep(2);
                 set_drive_power(v_drive_inches_power, v_drive_inches_power);
                 setSecondMessage("drive_inches_complete: set the drive power "
-                     +  " p: " + v_drive_inches_power
+                        +  " p: " + v_drive_inches_power
                         + ",tl:" + v_drive_inches_ticks_target_left + ",tr:" + v_drive_inches_ticks_target_right
                         + ",tlsl:" + v_drive_inches_ticks_target_left_slowdown + ",trsl:" + v_drive_inches_ticks_target_right_slowdown
                         + ",tlst:" + v_drive_inches_ticks_target_left_stop + ",trst:" + v_drive_inches_ticks_target_right_stop
-                    + ",l:" + v_drive_inches_ticks_left + ",r:" + v_drive_inches_ticks_right);
+                        + ",l:" + v_drive_inches_ticks_left + ",r:" + v_drive_inches_ticks_right);
                 v_drive_inches_state++;
                 break;
             case 1:
@@ -1672,9 +1737,9 @@ public class CFPushBotHardware extends OpMode {
                 if (
 
                         (v_drive_inches_power >= 0.0d &&  (v_drive_inches_ticks_left >= v_drive_inches_ticks_target_left_stop &&  v_drive_inches_ticks_right >= v_drive_inches_ticks_target_right_stop ))
-                ||
-                        (v_drive_inches_power < 00.0d &&  (v_drive_inches_ticks_left <= v_drive_inches_ticks_target_left_stop &&  v_drive_inches_ticks_right <= v_drive_inches_ticks_target_right_stop ))
-                )
+                                ||
+                                (v_drive_inches_power < 00.0d &&  (v_drive_inches_ticks_left <= v_drive_inches_ticks_target_left_stop &&  v_drive_inches_ticks_right <= v_drive_inches_ticks_target_right_stop ))
+                        )
                 {
                     //
                     // Stop the motors.
@@ -1709,9 +1774,9 @@ public class CFPushBotHardware extends OpMode {
                     }*/
 
                 }else if ( v_drive_slowdown1_already_set == false &&
-                            (v_drive_inches_power >= 0.0d &&  (v_drive_inches_ticks_left >= v_drive_inches_ticks_target_left_slowdown  ||  v_drive_inches_ticks_right >= v_drive_inches_ticks_target_right_slowdown ))
-                            ||
-                            (v_drive_inches_power < 0.0d &&  (v_drive_inches_ticks_left <= v_drive_inches_ticks_target_left_slowdown ||  v_drive_inches_ticks_right <= v_drive_inches_ticks_target_right_slowdown ))
+                        (v_drive_inches_power >= 0.0d &&  (v_drive_inches_ticks_left >= v_drive_inches_ticks_target_left_slowdown  ||  v_drive_inches_ticks_right >= v_drive_inches_ticks_target_right_slowdown ))
+                        ||
+                        (v_drive_inches_power < 0.0d &&  (v_drive_inches_ticks_left <= v_drive_inches_ticks_target_left_slowdown ||  v_drive_inches_ticks_right <= v_drive_inches_ticks_target_right_slowdown ))
                         )
                 {
 
@@ -1719,8 +1784,8 @@ public class CFPushBotHardware extends OpMode {
                     // slow the motors to slowdown 1
                     //
                     if((v_drive_inches_power > 0.0d && v_drive_inches_power > v_drive_power_slowdown1)
-                        || (v_drive_inches_power < 00.0d && v_drive_inches_power < (0- v_drive_power_slowdown1))
-                        ) {
+                            || (v_drive_inches_power < 00.0d && v_drive_inches_power < (0- v_drive_power_slowdown1))
+                            ) {
                         if(v_drive_inches_power > 0.0d){
                             set_drive_power(v_drive_power_slowdown1, v_drive_power_slowdown1);
                         }else{
@@ -1729,11 +1794,11 @@ public class CFPushBotHardware extends OpMode {
                         v_drive_slowdown1_already_set = true;
                         v_drive_inches_power = v_drive_power_slowdown1;
                         setSecondMessage("drive_inches_complete: slow down 1 "
-                                +  " p: " + v_drive_inches_power
-                                + ",tl:" + v_drive_inches_ticks_target_left + ",tr:" + v_drive_inches_ticks_target_right
-                                + ",tlsl:" + v_drive_inches_ticks_target_left_slowdown + ",trsl:" + v_drive_inches_ticks_target_right_slowdown
-                                + ",tlst:" + v_drive_inches_ticks_target_left_stop + ",trst:" + v_drive_inches_ticks_target_right_stop
-                                + ",l:" + v_drive_inches_ticks_left + ",r:" + v_drive_inches_ticks_right
+                                        +  " p: " + v_drive_inches_power
+                                        + ",tl:" + v_drive_inches_ticks_target_left + ",tr:" + v_drive_inches_ticks_target_right
+                                        + ",tlsl:" + v_drive_inches_ticks_target_left_slowdown + ",trsl:" + v_drive_inches_ticks_target_right_slowdown
+                                        + ",tlst:" + v_drive_inches_ticks_target_left_stop + ",trst:" + v_drive_inches_ticks_target_right_stop
+                                        + ",l:" + v_drive_inches_ticks_left + ",r:" + v_drive_inches_ticks_right
                         );
                     }
                 }
@@ -1776,16 +1841,16 @@ public class CFPushBotHardware extends OpMode {
                 }else{
                     if(v_loop_ticks_slow) {
                         setSecondMessage("drive_inches_complete: "
-                            +  " p: " + v_drive_inches_power
-                            + ",tl:" + v_drive_inches_ticks_target_left + ",tr:" + v_drive_inches_ticks_target_right
-                            + ",tlsl:" + v_drive_inches_ticks_target_left_slowdown + ",trsl:" + v_drive_inches_ticks_target_right_slowdown
-                            + ",tlst:" + v_drive_inches_ticks_target_left_stop + ",trst:" + v_drive_inches_ticks_target_right_stop
-                            + ",l:" + v_drive_inches_ticks_left + ",r:" + v_drive_inches_ticks_right
-                            + ",lp:" + v_motor_left_drive.getPower() + ",rp:" + v_motor_right_drive.getPower()
+                                        +  " p: " + v_drive_inches_power
+                                        + ",tl:" + v_drive_inches_ticks_target_left + ",tr:" + v_drive_inches_ticks_target_right
+                                        + ",tlsl:" + v_drive_inches_ticks_target_left_slowdown + ",trsl:" + v_drive_inches_ticks_target_right_slowdown
+                                        + ",tlst:" + v_drive_inches_ticks_target_left_stop + ",trst:" + v_drive_inches_ticks_target_right_stop
+                                        + ",l:" + v_drive_inches_ticks_left + ",r:" + v_drive_inches_ticks_right
+                                        + ",lp:" + v_motor_left_drive.getPower() + ",rp:" + v_motor_right_drive.getPower()
                         );
                     }
                 }
-            break;
+                break;
             default:
                 return true;
         }
@@ -2034,31 +2099,31 @@ public class CFPushBotHardware extends OpMode {
                             //if we are turning clockwise then we stop >= then our target
 
                             if(
-                                        (
-                                                (v_turn_degrees_heading_target_360round == false &&
-                                            currentHeading >= v_turn_degrees_heading_target
-                                                )
-                                                        ||
-                                                (v_turn_degrees_heading_target_360round == true &&
-                                                        currentHeading >= v_turn_degrees_heading_target &&
-                                                        currentHeading < v_turn_degrees_heading_start_error)
-                                        )
-                                            &&(
-                                                ( v_turn_degrees_heading_target_360round == true
-                                                        && v_turn_degrees_heading_start_error_360round == true &&
-                                                    currentHeading < v_turn_degrees_heading_start_error
-                                                 ) ||
-                                                ( v_turn_degrees_heading_target_360round == false && v_turn_degrees_heading_start_error_360round == false &&
-                                                        currentHeading > v_turn_degrees_heading_start_error
-                                                ) ||
-                                                ( v_turn_degrees_heading_target_360round == true && v_turn_degrees_heading_start_error_360round == false &&
-                                                        currentHeading > v_turn_degrees_heading_start_error
-                                                )
-                                                ||
-                                                ( v_turn_degrees_heading_target_360round == false && v_turn_degrees_heading_start_error_360round == true &&
-                                                        currentHeading < v_turn_degrees_heading_start_error
-                                                )
+                                    (
+                                            (v_turn_degrees_heading_target_360round == false &&
+                                                    currentHeading >= v_turn_degrees_heading_target
                                             )
+                                                    ||
+                                                    (v_turn_degrees_heading_target_360round == true &&
+                                                            currentHeading >= v_turn_degrees_heading_target &&
+                                                            currentHeading < v_turn_degrees_heading_start_error)
+                                    )
+                                            &&(
+                                            ( v_turn_degrees_heading_target_360round == true
+                                                    && v_turn_degrees_heading_start_error_360round == true &&
+                                                    currentHeading < v_turn_degrees_heading_start_error
+                                            ) ||
+                                                    ( v_turn_degrees_heading_target_360round == false && v_turn_degrees_heading_start_error_360round == false &&
+                                                            currentHeading > v_turn_degrees_heading_start_error
+                                                    ) ||
+                                                    ( v_turn_degrees_heading_target_360round == true && v_turn_degrees_heading_start_error_360round == false &&
+                                                            currentHeading > v_turn_degrees_heading_start_error
+                                                    )
+                                                    ||
+                                                    ( v_turn_degrees_heading_target_360round == false && v_turn_degrees_heading_start_error_360round == true &&
+                                                            currentHeading < v_turn_degrees_heading_start_error
+                                                    )
+                                    )
 
                                     )
 
@@ -2144,20 +2209,20 @@ public class CFPushBotHardware extends OpMode {
                                                             currentHeading <= v_turn_degrees_heading_target &&
                                                             currentHeading > v_turn_degrees_heading_start_error)
                                     )
-                                    && ( //the following prevents early motor stop due to drift of gyro or error on start of turn the wrong way
-                                        ( v_turn_degrees_heading_target_360round == true && v_turn_degrees_heading_start_error_360round == true &&
-                                                currentHeading > v_turn_degrees_heading_start_error
-                                        ) ||
-                                        ( v_turn_degrees_heading_start_error_360round == false && v_turn_degrees_heading_start_error_360round == false
-                                                && currentHeading < v_turn_degrees_heading_start_error
-                                        )||
-                                        ( v_turn_degrees_heading_target_360round == true && v_turn_degrees_heading_start_error_360round == false &&
-                                                currentHeading > v_turn_degrees_heading_start_error
-                                        )
-                                        ||
-                                        ( v_turn_degrees_heading_target_360round == false && v_turn_degrees_heading_start_error_360round == true &&
-                                                currentHeading > v_turn_degrees_heading_start_error
-                                        )
+                                            && ( //the following prevents early motor stop due to drift of gyro or error on start of turn the wrong way
+                                            ( v_turn_degrees_heading_target_360round == true && v_turn_degrees_heading_start_error_360round == true &&
+                                                    currentHeading > v_turn_degrees_heading_start_error
+                                            ) ||
+                                                    ( v_turn_degrees_heading_start_error_360round == false && v_turn_degrees_heading_start_error_360round == false
+                                                            && currentHeading < v_turn_degrees_heading_start_error
+                                                    )||
+                                                    ( v_turn_degrees_heading_target_360round == true && v_turn_degrees_heading_start_error_360round == false &&
+                                                            currentHeading > v_turn_degrees_heading_start_error
+                                                    )
+                                                    ||
+                                                    ( v_turn_degrees_heading_target_360round == false && v_turn_degrees_heading_start_error_360round == true &&
+                                                            currentHeading > v_turn_degrees_heading_start_error
+                                                    )
                                     )
                                     ){
                                 //turning left so stop left first then right
@@ -2205,7 +2270,7 @@ public class CFPushBotHardware extends OpMode {
                             return true;
                         }else {
                             //if (is_slow_tick()){
-                                setSecondMessage("turn_complete: Waiting on encoders lt:" + v_turn_degrees_ticks_target_left + " rt:" + v_turn_degrees_ticks_target_right + ", re:" + v_motor_right_drive.getCurrentPosition() + ", le:" + v_motor_left_drive.getCurrentPosition() + ", rp:" + v_motor_right_drive.getPower() + ", lp:" + v_motor_left_drive.getPower() );
+                            setSecondMessage("turn_complete: Waiting on encoders lt:" + v_turn_degrees_ticks_target_left + " rt:" + v_turn_degrees_ticks_target_right + ", re:" + v_motor_right_drive.getCurrentPosition() + ", le:" + v_motor_left_drive.getCurrentPosition() + ", rp:" + v_motor_right_drive.getPower() + ", lp:" + v_motor_left_drive.getPower() );
                             //}
                         }
                     }
@@ -2223,7 +2288,7 @@ public class CFPushBotHardware extends OpMode {
         }
     }
 
-   public boolean rpa_arm_retracted(){
+    public boolean rpa_arm_retracted(){
         if (v_sensor_touch_rpa_arm_extend != null) {
             return v_sensor_touch_rpa_arm_retract.isPressed();
         }else {
@@ -2271,12 +2336,12 @@ public class CFPushBotHardware extends OpMode {
         {
             if(p_level > 0){
                 //We are moving up
-               if (rpa_arm_extended()==false) {
-                   //The switch is not pressed so move up
-                   v_motor_rpa_arm.setPower(p_level);
-               }else {
-                   v_motor_rpa_arm.setPower(0);
-               }
+                if (rpa_arm_extended()==false) {
+                    //The switch is not pressed so move up
+                    v_motor_rpa_arm.setPower(p_level);
+                }else {
+                    v_motor_rpa_arm.setPower(0);
+                }
 
             }else if( p_level < 0) {
                 //we are moving down
@@ -2287,7 +2352,7 @@ public class CFPushBotHardware extends OpMode {
                     v_motor_rpa_arm.setPower(0);
                 }
             }
-           else{
+            else{
                 v_motor_rpa_arm.setPower(0);
             }
         }
@@ -2439,6 +2504,15 @@ public class CFPushBotHardware extends OpMode {
         return m_rpabase_position(RPABaseServo_ClimbPosition);
     } // rpabase_moveDown
 
+
+    private boolean v_rpabase_moveToDump = false;
+    public double rpabase_moveToDump ()
+    {
+        //move the wrist out of the way
+        v_rpabase_moveToDump = true;
+        //m_arm_wrist_position(ArmWristServo_MinPosition);
+        return m_rpabase_position(RPABaseServo_DumpPosition);
+    } // rpabase_moveDown
 
     //--------------------------------------------------------------------------
     //
@@ -2942,18 +3016,18 @@ public class CFPushBotHardware extends OpMode {
 
     public boolean redled_toggle () {
         try {
-        if (v_dim != null) {
-            boolean isEnabled = v_dim.getLEDState(1);
-            if (isEnabled) {
-                isEnabled = false;
-            } else {
-                isEnabled = true;
+            if (v_dim != null) {
+                boolean isEnabled = v_dim.getLEDState(1);
+                if (isEnabled) {
+                    isEnabled = false;
+                } else {
+                    isEnabled = true;
+                }
+                v_dim.setLED(1, isEnabled);
+                return isEnabled;
+            }else {
+                return false;
             }
-            v_dim.setLED(1, isEnabled);
-            return isEnabled;
-        }else {
-            return false;
-        }
         }catch (Exception p_exeception)
         {
             debugLogException("dim redled", "redled_toggle", p_exeception);
@@ -3024,7 +3098,7 @@ public class CFPushBotHardware extends OpMode {
         }
     }
 
-     //--------------------------------------------------------------------------
+    //--------------------------------------------------------------------------
     //
     // sensor_legecyColor_led
     //
@@ -3163,7 +3237,7 @@ public class CFPushBotHardware extends OpMode {
         try{
             // get the x info.
             if(v_sensor_gyro != null) {
-               return v_sensor_gyro.rawX();
+                return v_sensor_gyro.rawX();
             }else{
                 return 0;
             }
@@ -3275,7 +3349,7 @@ public class CFPushBotHardware extends OpMode {
                 v_sensor_colorLegecy_rgbValues[3] = v_sensor_colorLegecy.alpha();
                 // wait one cycle.
                 //waitOneFullHardwareCycle();
-               // v_sensor_color.enableLed(false);
+                // v_sensor_color.enableLed(false);
             }
             //Color.RGBToHSV(v_sensor_color.red(), v_sensor_color.green(), v_sensor_color.blue(), v_sensor_color_hsvValues);
             return v_sensor_colorLegecy_rgbValues;
@@ -3299,22 +3373,22 @@ public class CFPushBotHardware extends OpMode {
         }
     }
 
-public double sensor_ultraLegecy_distance(){
-    try{
-        if(v_sensor_ultraLegecy != null){
-            if ((v_loop_ticks % v_sensor_ultraLegecy_ticksPerRead) == 0) {
-               v_sensor_ultraLegecy_distance = v_sensor_ultraLegecy.getUltrasonicLevel();
+    public double sensor_ultraLegecy_distance(){
+        try{
+            if(v_sensor_ultraLegecy != null){
+                if ((v_loop_ticks % v_sensor_ultraLegecy_ticksPerRead) == 0) {
+                    v_sensor_ultraLegecy_distance = v_sensor_ultraLegecy.getUltrasonicLevel();
+                }
+                return v_sensor_ultraLegecy_distance;
+            }else{
+                return 9999.9999;
             }
-            return v_sensor_ultraLegecy_distance;
-        }else{
+        }catch (Exception p_exeception)
+        {
+            debugLogException("sensor_ultraLegecy", "sensor_ultraLegecy_distance", p_exeception);
             return 9999.9999;
         }
-    }catch (Exception p_exeception)
-    {
-        debugLogException("sensor_ultraLegecy", "sensor_ultraLegecy_distance", p_exeception);
-        return 9999.9999;
     }
-}
 
     //Lego Light Legecy Sensor Methods
 
@@ -3338,15 +3412,15 @@ public double sensor_ultraLegecy_distance(){
         return l_return;
 
     }
-public boolean sensor_lightLegecy_led(boolean enable){
-    if(v_sensor_lightLegecy != null) {
-        v_sensor_lightLegecy_enabled = enable;
-        v_sensor_lightLegecy.enableLed(enable);
-        return true;
-    }else{
-        return false;
+    public boolean sensor_lightLegecy_led(boolean enable){
+        if(v_sensor_lightLegecy != null) {
+            v_sensor_lightLegecy_enabled = enable;
+            v_sensor_lightLegecy.enableLed(enable);
+            return true;
+        }else{
+            return false;
+        }
     }
-}
 
     public boolean sensor_lightLegecy_led_status(){
         return v_sensor_lightLegecy_enabled;
@@ -3389,7 +3463,7 @@ public boolean sensor_lightLegecy_led(boolean enable){
 
     } // a_ods_white_tape_detected
 
-//Don't use these inless we are in linerOpMode
+    //Don't use these inless we are in linerOpMode
 //    public void waitOneFullHardwareCycle() throws InterruptedException {
 //        this.waitForNextHardwareCycle();
 //        Thread.sleep(1L);

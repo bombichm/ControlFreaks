@@ -47,6 +47,7 @@ public class AdafruitLEDBackpack7Seg {
         medium,
         fast
     }
+    private boolean v_timer_complete = false;
     private boolean v_ledseg_enabled = false;
     public AdafruitLEDBackpack7Seg (HardwareMap hardwareMap, String deviceName, byte RealI2CAddress) throws Exception
     {
@@ -112,6 +113,11 @@ public class AdafruitLEDBackpack7Seg {
             throw p_exeception;
         }
     }
+
+    public boolean is_timer_complete(){
+        return v_timer_complete;
+    }
+
     /**
      * put this in your loop so its called over and over in the loop
      */
@@ -128,6 +134,7 @@ public class AdafruitLEDBackpack7Seg {
                 if (v_timer_seconds == 0 ){
                     set_blink_rate(blinkRate.noblink);
                     v_timer_mode = false;
+                    v_timer_complete = true;
                 }else if(v_timer_seconds <=10){
                     set_blink_rate(blinkRate.fast);
                 }
@@ -197,6 +204,7 @@ public class AdafruitLEDBackpack7Seg {
     private int v_timer_seconds = 0;
     public boolean startTimer(int seconds){
         if (v_timer_mode == false) {
+            v_timer_complete = false;
             v_timer_seconds = seconds;
             //v_timer_startdate = Calendar.getInstance();
             v_timer_enddate = Calendar.getInstance();

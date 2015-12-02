@@ -1,9 +1,11 @@
 package com.qualcomm.ftcrobotcontroller.opmodes;
 
+import android.media.ToneGenerator;
+
 /**
  * Created by adevries on 11/6/2015.
  */
-public class CFPushBotAuto_Blue4_LightBar_Long extends CFPushBotTelemetry {
+public class CFPushBotAuto_Red2_ClimbVisitors extends CFPushBotTelemetry {
 
     //--------------------------------------------------------------------------
     //
@@ -14,7 +16,7 @@ public class CFPushBotAuto_Blue4_LightBar_Long extends CFPushBotTelemetry {
      *
      * The system calls this member when the class is instantiated.
      */
-    public CFPushBotAuto_Blue4_LightBar_Long()
+    public CFPushBotAuto_Red2_ClimbVisitors()
 
     {
         //
@@ -45,7 +47,7 @@ public class CFPushBotAuto_Blue4_LightBar_Long extends CFPushBotTelemetry {
         // Call the PushBotHardware (super/base class) start method.
         //
         super.start ();
-        blueled_on();
+        redled_on();
         led7seg_timer_init(30);
 
     } // start
@@ -62,7 +64,6 @@ public class CFPushBotAuto_Blue4_LightBar_Long extends CFPushBotTelemetry {
      * The system calls this member repeatedly while the OpMode is running.
      */
     long  v_rpa_move_delay;
-    boolean moveRpa = true;
     @Override public void loop ()
 
     {
@@ -85,180 +86,82 @@ public class CFPushBotAuto_Blue4_LightBar_Long extends CFPushBotTelemetry {
                 //
                 // drive Forward 24 inches
                 //
-                led7seg_timer_start(30);
-                //this is offset for articulating arm which we removed drive_inches(.7f,74.5f, true);
 
-                drive_inches(.7f,12, true);
+                led7seg_timer_start(30);
                 v_state++;
+
+
                 break;
             case 1:
+                if(loopCounter() > 1400) {
+                    v_state++;
+                }
+                break;
+            case 2:
+                //
+                // drive Forward 24 inches
+                //
+
+
+                // 28 inches
+                drive_inches(.7f,85, true);
+                v_state++;
+                break;
+            case 3:
 
                 //
                 // Transition to the next state when this method is called again.
-                if (moveRpa == true){
-                    m_rpabase_position(.45);
-                    moveRpa = false;
-                }
-
                 if (drive_inches_complete()) {
                     //
+                    sound_play_dtmf(ToneGenerator.TONE_DTMF_2,500);
                     v_state++;
                 }
 
                 break;
 
-            case 2:
+            case 4:
                 // positive is right turn
-
-                turn_degrees(30, true, true);
+                turn_degrees(45, true, true);
                 set_second_message("turn 45 degrees to the right");
                 v_state++;
                 break;
             //
             // Wait...
             //
-            case 3:
-                //keep checking if we have reached the distance we need to reach
-                if (turn_complete ())
-                {
-                    set_second_message("turn Complete");
-                    v_state++;
-                }
-                break;
-            case 4:
-
-                drive_inches(.7f,70, true);
-
-                //set_drive_power(1.0d, 1.0d);
-                v_state++;
-                break;
             case 5:
-                //
-                // Transition to the next state when this method is called again.
-                if (drive_inches_complete()) {
-                    //
-                    v_state++;
-                }
-                break;
-
-            case 6:
-                // positive is right turn
-
-                turn_degrees(60, true, true);
-                set_second_message("turn 60 degrees to the right");
-                v_state++;
-                break;
-            //
-            // Wait...
-            //
-            case 7:
                 //keep checking if we have reached the distance we need to reach
                 if (turn_complete ())
                 {
+                    sound_play_dtmf(ToneGenerator.TONE_DTMF_2,500);
                     set_second_message("turn Complete");
                     v_state++;
                 }
                 break;
-            case 8:
-                m_rpabase_position(RPABaseServo_DumpPosition - .1);
-                drive_inches(.7f,12, true);
+            case 6:
 
-                //set_drive_power(1.0d, 1.0d);
+                rpabase_moveToClimb();
+                v_rpa_move_delay = 250 + loopCounter();
                 v_state++;
                 break;
-            case 9:
+            case 7:
                 //
                 // Transition to the next state when this method is called again.
-                if (drive_inches_complete()) {
-                    //
-                    v_state++;
-                }
-                break;
-            case 10:
-                rpabase_moveToDump();
-                v_rpa_move_delay = 300 + loopCounter();
-                v_state++;
-                break;
-            case 11:
                 if (v_rpa_move_delay < loopCounter()) {
                     //
                     v_state++;
                 }
                 break;
-            case 12:
-                drive_inches(-.7f,14, true);
-
-                //set_drive_power(1.0d, 1.0d);
-                v_state++;
-                break;
-            case 13:
+            case 8:
                 //
-                // Transition to the next state when this method is called again.
-                if (drive_inches_complete()) {
-                    //
-                    v_state++;
-                }
-                break;
-            case 14:
-                // positive is right turn
-                turn_degrees(-45, true, true);
-                m_rpabase_position(.45);
-                set_second_message("turn 45 degrees to the right");
-                v_state++;
-                break;
-            //
-            // Wait...
-            //
-            case 15:
-                //keep checking if we have reached the distance we need to reach
-                if (turn_complete ())
-                {
-                    set_second_message("turn Complete");
-                    v_state++;
-                }
-                break;
-
-            case 16:
-
-                drive_inches(-.7f,32, true);
-
-                //set_drive_power(1.0d, 1.0d);
-                v_state++;
-                break;
-            case 17:
+                // drive Forward 12 inches
                 //
-                // Transition to the next state when this method is called again.
-                if (drive_inches_complete()) {
-                    //
-                    v_state++;
-                }
-                break;
 
-            case 18:
-                // positive is right turn
-                turn_degrees(90, true, true);
-                set_second_message("turn 90 degrees to the right");
-                v_state++;
-                break;
-            //
-            // Wait...
-            //
-            case 19:
-                //keep checking if we have reached the distance we need to reach
-                if (turn_complete ())
-                {
-                    set_second_message("turn Complete");
-                    v_state++;
-                }
-                break;
-            case 20:
-                rpabase_moveToClimb();
-                drive_inches(.7f,90, true);
-
+                //this drives to high spot 105 inches drive_inches(.7f,105, true);
+                drive_inches(.7f,70, true);
                 //set_drive_power(1.0d, 1.0d);
                 v_state++;
                 break;
-            case 21:
+            case 9:
                 //
                 // Transition to the next state when this method is called again.
                 if (drive_inches_complete()) {
@@ -271,6 +174,7 @@ public class CFPushBotAuto_Blue4_LightBar_Long extends CFPushBotTelemetry {
                 // The autonomous actions have been accomplished (i.e. the state has
                 // transitioned into its final state.
                 //
+                sleep(10);
                 break;
         }
 

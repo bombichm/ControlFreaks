@@ -69,6 +69,11 @@ public class CFPushBotAuto_Red4_ClimbHome_Short extends CFPushBotTelemetry {
         //
         // State: Initialize (i.e. state_0).
         //
+        if (led7seg_timer_complete()== true){
+            set_second_message("timer complete stop");
+            set_drive_power(0f,0f);
+            v_state = 100;
+        }
         switch (v_state)
         {
             //
@@ -78,8 +83,8 @@ public class CFPushBotAuto_Red4_ClimbHome_Short extends CFPushBotTelemetry {
                 //
                 // drive Forward 24 inches
                 //
-                led7seg_timer_init(30);
-                drive_inches(1.0f,30, true);
+                led7seg_timer_start(30);
+                drive_inches(.7f,30, true);
                 v_state++;
                 break;
             case 1:
@@ -95,7 +100,7 @@ public class CFPushBotAuto_Red4_ClimbHome_Short extends CFPushBotTelemetry {
 
             case 2:
                 // positive is right turn
-                turn_degrees(-45, false, true);
+                turn_degrees(-45, true, true);
                 set_second_message("turn 45 degrees to the left");
                 v_state++;
                 break;
