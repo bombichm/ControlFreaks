@@ -184,6 +184,9 @@ public class CFPushBotManual extends CFPushBotTelemetry{
             rpabase_moveToClimb();
         }
 
+        if(gamepad1.back){
+            play_jingle_bells();
+        }
         if(gamepad1.dpad_up){
             if(loopCounter() % 100 == 0){
                 v_neopixels_mode++;

@@ -72,6 +72,9 @@ import com.qualcomm.robotcore.wifi.WifiDirectAssistant;
 //import com.qualcomm.ftcrobotcontroller.CameraPreview;
 import com.qualcomm.ftcrobotcontroller.opmodes.OpModeCamera;
 import com.qualcomm.ftcrobotcontroller.opmodes.LinearOpModeCamera;
+
+import org.usfirst.ControlFreaks.AudioEffects;
+
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.Serializable;
@@ -107,6 +110,7 @@ public class FtcRobotControllerActivity extends Activity {
 
   protected FtcEventLoop eventLoop;
 
+  protected AudioEffects v_audio_effects;
   /////////////////////////////////////////////////////////
   // ADDED FOR CAMERA!!!
 
@@ -310,8 +314,14 @@ public class FtcRobotControllerActivity extends Activity {
         startActivityForResult(settingsIntent, LaunchActivityConstantsList.FTC_ROBOT_CONTROLLER_ACTIVITY_CONFIGURE_ROBOT);
         return true;
       case R.id.action_debug:
-         I2CLED7Seg myI2CLED = new I2CLED7Seg();
-        myI2CLED.init();
+        try {
+          if (v_audio_effects == null) {
+            v_audio_effects = new AudioEffects();
+          }
+          v_audio_effects.play_jingle_bells();
+        }catch (Exception ex){
+
+        }
         return true;
       case R.id.action_about:
         // The string to launch this activity must match what's in AndroidManifest of FtcCommon for this activity.

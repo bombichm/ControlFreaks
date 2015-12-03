@@ -32,6 +32,7 @@ import com.qualcomm.robotcore.hardware.ColorSensor;
 
 import org.usfirst.ControlFreaks.AdafruitLEDBackpack7Seg;
 import org.usfirst.ControlFreaks.ArduinoI2CNeopixels;
+import org.usfirst.ControlFreaks.AudioEffects;
 
 import java.util.Calendar;
 import java.util.concurrent.locks.Lock;
@@ -188,7 +189,7 @@ public class CFPushBotHardware extends OpMode {
 
     //Tone Generator to make noise
     ToneGenerator v_tone_generator;
-
+    AudioEffects v_audio_effects;
 // (tone type, tone duration in ms)
 // from a list of predefined tone types
 
@@ -418,6 +419,15 @@ public class CFPushBotHardware extends OpMode {
             debugLogException("toneGenerator", "missing", p_exeception);
 
             v_tone_generator = null;
+        }
+
+        try{
+            v_audio_effects = new AudioEffects();
+        }catch (Exception p_exeception)
+        {
+            debugLogException("AudioEffects", "missing", p_exeception);
+
+            v_audio_effects = null;
         }
         try
         {
@@ -668,108 +678,8 @@ public class CFPushBotHardware extends OpMode {
 
     public boolean play_jingle_bells(){
         //Connect the Core Interface Device or Dim
-        if (v_tone_generator != null) {
-            v_tone_generator.startTone(ToneGenerator.TONE_DTMF_3, 250);
-            sleep(300);
-            v_tone_generator.startTone(ToneGenerator.TONE_DTMF_3, 250);
-            sleep(300);
-            v_tone_generator.startTone(ToneGenerator.TONE_DTMF_3, 250);
-            sleep(500);
-            v_tone_generator.startTone(ToneGenerator.TONE_DTMF_3, 250);
-            sleep(300);
-            v_tone_generator.startTone(ToneGenerator.TONE_DTMF_3, 250);
-            sleep(300);
-            v_tone_generator.startTone(ToneGenerator.TONE_DTMF_3, 250);
-            sleep(500);
-            v_tone_generator.startTone(ToneGenerator.TONE_DTMF_3, 250);
-            sleep(300);
-            v_tone_generator.startTone(ToneGenerator.TONE_DTMF_9, 250);
-            sleep(300);
-            v_tone_generator.startTone(ToneGenerator.TONE_DTMF_1, 250);
-            sleep(300);
-            v_tone_generator.startTone(ToneGenerator.TONE_DTMF_2, 250);
-            sleep(300);
-            v_tone_generator.startTone(ToneGenerator.TONE_DTMF_3, 250);
-            sleep(500);
-            v_tone_generator.startTone(ToneGenerator.TONE_DTMF_6, 250);
-            sleep(300);
-            v_tone_generator.startTone(ToneGenerator.TONE_DTMF_6, 250);
-            sleep(300);
-            v_tone_generator.startTone(ToneGenerator.TONE_DTMF_6, 250);
-            sleep(500);
-            v_tone_generator.startTone(ToneGenerator.TONE_DTMF_6, 250);
-            sleep(300);
-            v_tone_generator.startTone(ToneGenerator.TONE_DTMF_6, 250);
-            sleep(300);
-            v_tone_generator.startTone(ToneGenerator.TONE_DTMF_3, 250);
-            sleep(300);
-            v_tone_generator.startTone(ToneGenerator.TONE_DTMF_3, 250);
-            sleep(500);
-            v_tone_generator.startTone(ToneGenerator.TONE_DTMF_3, 250);
-            sleep(300);
-            v_tone_generator.startTone(ToneGenerator.TONE_DTMF_3, 250);
-            sleep(300);
-            v_tone_generator.startTone(ToneGenerator.TONE_DTMF_3, 250);
-            sleep(300);
-            v_tone_generator.startTone(ToneGenerator.TONE_DTMF_2, 250);
-            sleep(300);
-            v_tone_generator.startTone(ToneGenerator.TONE_DTMF_2, 250);
-            sleep(300);
-            v_tone_generator.startTone(ToneGenerator.TONE_DTMF_3, 250);
-            sleep(300);
-            v_tone_generator.startTone(ToneGenerator.TONE_DTMF_2, 250);
-            sleep(500);
-            v_tone_generator.startTone(ToneGenerator.TONE_DTMF_9, 250);
-            sleep(500);
-            v_tone_generator.startTone(ToneGenerator.TONE_DTMF_3, 250);
-            sleep(300);
-            v_tone_generator.startTone(ToneGenerator.TONE_DTMF_3, 250);
-            sleep(300);
-            v_tone_generator.startTone(ToneGenerator.TONE_DTMF_3, 250);
-            sleep(500);
-            v_tone_generator.startTone(ToneGenerator.TONE_DTMF_3, 250);
-            sleep(300);
-            v_tone_generator.startTone(ToneGenerator.TONE_DTMF_3, 250);
-            sleep(300);
-            v_tone_generator.startTone(ToneGenerator.TONE_DTMF_3, 250);
-            sleep(500);
-            v_tone_generator.startTone(ToneGenerator.TONE_DTMF_3, 250);
-            sleep(300);
-            v_tone_generator.startTone(ToneGenerator.TONE_DTMF_9, 250);
-            sleep(300);
-            v_tone_generator.startTone(ToneGenerator.TONE_DTMF_1, 250);
-            sleep(300);
-            v_tone_generator.startTone(ToneGenerator.TONE_DTMF_2, 250);
-            sleep(300);
-            v_tone_generator.startTone(ToneGenerator.TONE_DTMF_3, 250);
-            sleep(500);
-            v_tone_generator.startTone(ToneGenerator.TONE_DTMF_6, 250);
-            sleep(300);
-            v_tone_generator.startTone(ToneGenerator.TONE_DTMF_6, 250);
-            sleep(300);
-            v_tone_generator.startTone(ToneGenerator.TONE_DTMF_6, 250);
-            sleep(500);
-            v_tone_generator.startTone(ToneGenerator.TONE_DTMF_6, 250);
-            sleep(300);
-            v_tone_generator.startTone(ToneGenerator.TONE_DTMF_6, 250);
-            sleep(300);
-            v_tone_generator.startTone(ToneGenerator.TONE_DTMF_3, 250);
-            sleep(300);
-            v_tone_generator.startTone(ToneGenerator.TONE_DTMF_3, 250);
-            sleep(300);
-            v_tone_generator.startTone(ToneGenerator.TONE_DTMF_3, 250);
-            sleep(300);
-            v_tone_generator.startTone(ToneGenerator.TONE_DTMF_3, 250);
-            sleep(300);
-            v_tone_generator.startTone(ToneGenerator.TONE_DTMF_9, 250);
-            sleep(300);
-            v_tone_generator.startTone(ToneGenerator.TONE_DTMF_9, 250);
-            sleep(300);
-            v_tone_generator.startTone(ToneGenerator.TONE_DTMF_6, 250);
-            sleep(300);
-            v_tone_generator.startTone(ToneGenerator.TONE_DTMF_2, 250);
-            sleep(300);
-            v_tone_generator.startTone(ToneGenerator.TONE_DTMF_1, 250);
+        if (v_audio_effects != null) {
+            v_audio_effects.play_jingle_bells();
             return true;
         }else{
             return false;
