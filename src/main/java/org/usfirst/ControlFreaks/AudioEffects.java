@@ -40,6 +40,8 @@ public class AudioEffects {
                     // Moves the current Thread into the background
                     android.os.Process.setThreadPriority(android.os.Process.THREAD_PRIORITY_BACKGROUND);
                     jingle_bells();
+                    jingle_bells();
+                    jingle_bells();
                     v_is_playing = false;
                 }
             });
@@ -51,7 +53,11 @@ public class AudioEffects {
     private void play_dtmf(int number, int length){
 
         if (v_tone_generator != null){
-            v_tone_generator.startTone(number, v_note_length * length);
+            if (length == 0){ v_tone_generator.startTone(number, v_note_length /2);
+
+            }else {
+                v_tone_generator.startTone(number, v_note_length * length);
+            }
             wait((v_note_length * length) + (int) Math.floor(v_note_length * .25D)) ;
         }
 
@@ -97,6 +103,7 @@ public class AudioEffects {
         play_dtmf(6, 1);
         play_dtmf(3, 1);
         play_dtmf(3, 1);
+        wait_notes(1);
         play_dtmf(3, 1);
         play_dtmf(3, 1);
 
@@ -104,24 +111,30 @@ public class AudioEffects {
         play_dtmf(2, 1);
         play_dtmf(3, 1);
         play_dtmf(2, 1);
+        wait_notes(1);
 
         play_dtmf(9, 2);
-        play_dtmf(3, 2);
+        wait_notes(1);
+        play_dtmf(3, 1);
 
         play_dtmf(3, 1);
         play_dtmf(3, 2);
+        wait_notes(1);
         play_dtmf(3, 1);
         play_dtmf(3, 1);
         play_dtmf(3, 1);
+        wait_notes(1);
         play_dtmf(3, 1);
         play_dtmf(9, 1);
         play_dtmf(1, 1);
         play_dtmf(2, 1);
         play_dtmf(3, 1);
+        wait_notes(1);
         play_dtmf(6, 1);
         play_dtmf(6, 1);
         play_dtmf(6, 1);
-        play_dtmf(6, 1);
+        play_dtmf(6, 0);
+        wait_notes(1);
         play_dtmf(6, 1);
         play_dtmf(3, 1);
         play_dtmf(3, 1);
@@ -132,6 +145,7 @@ public class AudioEffects {
         play_dtmf(6, 1);
         play_dtmf(2, 1);
         play_dtmf(1, 1);
+        wait_notes(1);
         return true;
     }
 
