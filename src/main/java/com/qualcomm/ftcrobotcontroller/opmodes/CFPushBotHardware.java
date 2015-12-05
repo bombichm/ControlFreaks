@@ -40,7 +40,7 @@ import java.util.concurrent.locks.Lock;
 
 public class CFPushBotHardware extends OpMode {
 
-    public boolean v_debug = false;  //set this to false to prevent writing to log makes loop lots shorter
+    public boolean v_debug = true;  //set this to false to prevent writing to log makes loop lots shorter
 
     //We Increment the v_loop_ticks each time through our loop
     private long v_loop_ticks = 0;
@@ -98,7 +98,7 @@ public class CFPushBotHardware extends OpMode {
     //winch motor
     private DcMotor v_motor_winch;
     public static final double v_motor_winch_Speed = 0.5;
-    // v_servo_arm_shoulder
+  /*  // v_servo_arm_shoulder
     private Servo v_servo_arm_shoulder;
     private static final double ArmShoulderServo_Delta = 0.0008;
     private static final double ArmShoulderServo_Delta_Fast = 0.002;
@@ -128,28 +128,28 @@ public class CFPushBotHardware extends OpMode {
     //Used in Manual mode to set min trigger pull for fast wrist action
 
     public static final double ArmWristTrigger_Threshold_Fast = 0.9;
+*/
 
-
-    // v_servo_flip_right
+  /*  // v_servo_flip_right
     private Servo v_servo_flip_right;
     //private static final double FlipRightServo_Delta = 0.005;
     //private static final double FlipRightServo_Delta_Fast = 0.05;
     public static final double FlipRightServo_MinPosition = 0.13;
     public static final double FlipRightServo_MaxPosition = 0.99;
     private double l_flip_right_position = 0.99D;  //init flip_right Position
-
-    // v_servo_flip_left
+*/
+  /*  // v_servo_flip_left
     private Servo v_servo_flip_left;
     // private static final double FlipLeftServo_Delta = 0.005;
     // private static final double FlipLeftServo_Delta_Fast = 0.05;
     public static final double FlipLeftServo_MinPosition = 0.05;
     public static final double FlipLeftServo_MaxPosition = 0.89;
     private double l_flip_left_position = 0.05D;  //init flip_right Position
-
+*/
 
 
     //Legecy Color Sensor
-    private ColorSensor v_sensor_colorLegecy;
+  /*  private ColorSensor v_sensor_colorLegecy;
     private final static String v_sensor_colorLegecy_name="color1";
     private boolean v_sensor_colorLegecy_led_enabled = false;
     // v_sensor_color_hsvValues is an array that will hold the hue, saturation, and value information.
@@ -157,8 +157,8 @@ public class CFPushBotHardware extends OpMode {
     // values is a reference to the v_sensor_color_hsvValues array.
     private final float v_sensor_colorLegecy_values[] = v_sensor_colorLegecy_hsvValues;
     private int v_sensor_colorLegecy_rgbValues[] = {0,0,0,0};
-
-    //Adafruit RGB Sensor
+*/
+  /*  //Adafruit RGB Sensor
     private ColorSensor v_sensor_color_i2c;
     private static final int v_sensor_color_i2c_led_pin = 1;
     // bEnabled represents the state of the LED.
@@ -167,13 +167,13 @@ public class CFPushBotHardware extends OpMode {
     private int v_sensor_color_i2c_rgbaValues[]= {0,0,0,0};
     //we read the values in the loop only if the sensor is enabled as they take resourses
     private boolean v_sensor_color_i2c_enabled = false;
-
+*/
     //Legecy OSD Sensor
     //private OpticalDistanceSensor v_sensor_odsLegecy;
     //private boolean v_sensor_odsLegecy_enabled = false;
 
     //Legecy Light Sensor
-    private LightSensor v_sensor_lightLegecy;
+   /* private LightSensor v_sensor_lightLegecy;
     private static final String v_sensor_lightLegecy_name = "light1";
     private boolean v_sensor_lightLegecy_enabled = false;
 
@@ -181,7 +181,7 @@ public class CFPushBotHardware extends OpMode {
     private UltrasonicSensor v_sensor_ultraLegecy;
     private int v_sensor_ultraLegecy_ticksPerRead = 20;
     private double v_sensor_ultraLegecy_distance;
-
+*/
     //Modern Robotics gyro1
     ModernRoboticsI2cGyro v_sensor_gyro_mr;
     GyroSensor v_sensor_gyro;
@@ -445,7 +445,7 @@ public class CFPushBotHardware extends OpMode {
             v_motor_rpa_arm = null;
         }
 
-        try{
+        /*try{
             if(v_dim != null) {
                 // set the digital channel to output mode.
                 // remember, the Adafruit sensor is actually two devices.
@@ -533,7 +533,7 @@ public class CFPushBotHardware extends OpMode {
         {
             debugLogException("flip_left", "missing", p_exeception);
             v_servo_flip_left = null;
-        }
+        }*/
 
         /*//
         // Connect the heartbeat led.
@@ -713,21 +713,22 @@ public class CFPushBotHardware extends OpMode {
         }
     }
 
-    private ElapsedTime v_wait_elapsedtime;
-    private boolean v_is_waiting;
-    private int v_wait_milliseconds;
-    public boolean wait(int milliseconds){
-        v_wait_elapsedtime = new ElapsedTime();
-        v_wait_milliseconds = milliseconds;
-        v_is_waiting = true;
+    private ElapsedTime v_timewait_elapsedtime;
+    private boolean v_is_timewaiting_complete;
+    private float v_timewait_seconds;
+
+    public boolean timewait(float seconds){
+        v_timewait_elapsedtime = new ElapsedTime();
+        v_timewait_seconds = seconds;
+        v_is_timewaiting_complete = false;
         return true;
     }
 
-    public boolean waitComplete(){
-        if (v_wait_elapsedtime.startTime() + v_wait_milliseconds < v_wait_elapsedtime.time() ){
-            v_is_waiting = false;
+    public boolean timewait_Complete(){
+        if ( v_timewait_elapsedtime.time() > v_timewait_seconds ){
+            v_is_timewaiting_complete = true;
         }
-        return v_is_waiting;
+        return v_is_timewaiting_complete;
     }
 
     //--------------------------------------------------------------------------
@@ -863,6 +864,7 @@ public class CFPushBotHardware extends OpMode {
                 v_rpabase_moveToClimb = false;
             }
         }*/
+
         if(v_loop_ticks_slow){
             // get the heading info.
             // the Modern Robotics' gyro sensor keeps
@@ -874,12 +876,12 @@ public class CFPushBotHardware extends OpMode {
 //                v_sensor_gyro_z = v_sensor_gyro.rawZ();
 //            }
             //the i2c color sensor uses a memory lock that is taxing so we only do this if we are using the color sensor and ever slow loop count
-            if(v_sensor_color_i2c_enabled == true){
+            /*if(v_sensor_color_i2c_enabled == true){
                 v_sensor_color_i2c_rgbaValues[0] = v_sensor_color_i2c.red();
                 v_sensor_color_i2c_rgbaValues[1] = v_sensor_color_i2c.green();
                 v_sensor_color_i2c_rgbaValues[2] = v_sensor_color_i2c.blue();
                 v_sensor_color_i2c_rgbaValues[3] = v_sensor_color_i2c.alpha();
-            }
+            }*/
         }
 
     }
@@ -2504,7 +2506,7 @@ public class CFPushBotHardware extends OpMode {
     {
         double l_temptarget;
         //move the wrist out of the way
-        m_arm_wrist_position(ArmWristServo_MinPosition);
+        //m_arm_wrist_position(ArmWristServo_MinPosition);
         if (fast) {
             l_temptarget = a_rpabase_position() + RPABaseServo_Delta_Fast;
         }else{
@@ -2525,7 +2527,7 @@ public class CFPushBotHardware extends OpMode {
     {
         double l_temptarget;
         //move the wrist out of the way
-        m_arm_wrist_position(ArmWristServo_MinPosition);
+        //m_arm_wrist_position(ArmWristServo_MinPosition);
         if (fast) {
             l_temptarget = a_rpabase_position() - RPABaseServo_Delta_Fast;
         }else{
@@ -2560,6 +2562,8 @@ public class CFPushBotHardware extends OpMode {
         //m_arm_wrist_position(ArmWristServo_MinPosition);
         return m_rpabase_position(RPABaseServo_DumpPosition);
     } // rpabase_moveDown
+
+
 
     //--------------------------------------------------------------------------
     //
@@ -2658,7 +2662,7 @@ public class CFPushBotHardware extends OpMode {
     /**
      * move the arm shoulder servo in the up Direction.
      */
-    double arm_shoulder_moveUp (boolean fast)
+    /*double arm_shoulder_moveUp (boolean fast)
     {
         double l_temptarget;
         if (fast) {
@@ -2668,7 +2672,7 @@ public class CFPushBotHardware extends OpMode {
         }
         return m_arm_shoulder_position(l_temptarget);
     } // arm_shoulder_moveUp
-
+*/
 
     //--------------------------------------------------------------------------
     //
@@ -2677,7 +2681,7 @@ public class CFPushBotHardware extends OpMode {
     /**
      * move the arm_shoulder servo in the down Direction.
      */
-    double arm_shoulder_moveDown (boolean fast)
+  /*  double arm_shoulder_moveDown (boolean fast)
     {
         double l_temptarget;
         if (fast) {
@@ -2688,7 +2692,7 @@ public class CFPushBotHardware extends OpMode {
         return m_arm_shoulder_position(l_temptarget);
     } // arm_shoulder_moveDown
 
-
+*/
     //--------------------------------------------------------------------------
     //
     // a_arm_shoulder_position
@@ -2696,21 +2700,25 @@ public class CFPushBotHardware extends OpMode {
     /**
      * Access the arm_shoulder position.
      */
-    double a_arm_shoulder_position ()
+  /*  double a_arm_shoulder_position ()
     {
 
         return l_arm_shoulder_position;
     } // a_arm_shoulder_position
 
-
+*/
     //--------------------------------------------------------------------------
     //
     // m_arm_shoulder_position
     //
+    //--------------------------------------------------------------------------
+
+    //
+    // arm_elbow_moveUp
     /**
      * Mutate the arm shoulder position.
      */
-    double m_arm_shoulder_position (double p_position)
+  /*  double m_arm_shoulder_position (double p_position)
     {
         //
         // Ensure the specific value is legal.
@@ -2735,15 +2743,30 @@ public class CFPushBotHardware extends OpMode {
 
 
     } // m_arm_shoulder_position
-
+  */  //
     //--------------------------------------------------------------------------
+
+
     //
-    // arm_elbow_moveUp
+    // arm_elbow_moveDown
     //
     /**
+     * move the arm_shoulder servo in the down Direction.
+     */
+    /*double arm_elbow_moveDown (boolean fast)
+    {
+        double l_temptarget;
+        if (fast) {
+            l_temptarget = a_arm_elbow_position() - ArmElbowServo_Delta_Fast;
+        }else{
+            l_temptarget = a_arm_elbow_position() - ArmElbowServo_Delta;
+        }
+        return m_arm_elbow_position(l_temptarget);
+    } // arm_elbow_moveDown
+    *//**
      * move the arm elbow servo in the up Direction.
      */
-    double arm_elbow_moveUp (boolean fast)
+    /*double arm_elbow_moveUp (boolean fast)
     {
         double l_temptarget;
         if (fast) {
@@ -2754,26 +2777,7 @@ public class CFPushBotHardware extends OpMode {
         return m_arm_elbow_position(l_temptarget);
     } // arm_elbow_moveUp
 
-
-    //--------------------------------------------------------------------------
-    //
-    // arm_elbow_moveDown
-    //
-    /**
-     * move the arm_shoulder servo in the down Direction.
-     */
-    double arm_elbow_moveDown (boolean fast)
-    {
-        double l_temptarget;
-        if (fast) {
-            l_temptarget = a_arm_elbow_position() - ArmElbowServo_Delta_Fast;
-        }else{
-            l_temptarget = a_arm_elbow_position() - ArmElbowServo_Delta;
-        }
-        return m_arm_elbow_position(l_temptarget);
-    } // arm_elbow_moveDown
-
-
+*/
     //--------------------------------------------------------------------------
     //
     // a_arm_elbow_position
@@ -2781,12 +2785,12 @@ public class CFPushBotHardware extends OpMode {
     /**
      * Access the arm_elbow position.
      */
-    double a_arm_elbow_position ()
+  /*  double a_arm_elbow_position ()
     {
 
         return l_arm_elbow_position;
     } // a_arm_elbow_position
-
+*/
 
     //--------------------------------------------------------------------------
     //
@@ -2795,7 +2799,7 @@ public class CFPushBotHardware extends OpMode {
     /**
      * Mutate the arm elbow position.
      */
-    double m_arm_elbow_position (double p_position)
+  /*  double m_arm_elbow_position (double p_position)
     {
 
         try {
@@ -2822,7 +2826,7 @@ public class CFPushBotHardware extends OpMode {
 
     } // m_arm_elbow_position
 
-
+*/
     //--------------------------------------------------------------------------
     //
     // arm_wrist_moveLeft
@@ -2830,7 +2834,7 @@ public class CFPushBotHardware extends OpMode {
     /**
      * move the arm wrist servo to the Left.
      */
-    double arm_wrist_moveLeft (boolean fast)
+  /*  double arm_wrist_moveLeft (boolean fast)
     {
         double l_temptarget;
         if (fast) {
@@ -2841,7 +2845,7 @@ public class CFPushBotHardware extends OpMode {
         return m_arm_wrist_position(l_temptarget);
     } // arm_wrist_moveLeft
 
-
+*/
     //--------------------------------------------------------------------------
     //
     // arm_wrist_moveRight
@@ -2849,7 +2853,7 @@ public class CFPushBotHardware extends OpMode {
     /**
      * move the arm_wrist servo to the Right.
      */
-    double arm_wrist_moveRight (boolean fast)
+  /*  double arm_wrist_moveRight (boolean fast)
     {
         double l_temptarget;
         if (fast) {
@@ -2860,7 +2864,7 @@ public class CFPushBotHardware extends OpMode {
         return m_arm_wrist_position(l_temptarget);
     } // arm_wrist_moveRight
 
-
+*/
     //--------------------------------------------------------------------------
     //
     // a_arm_elbow_position
@@ -2868,13 +2872,13 @@ public class CFPushBotHardware extends OpMode {
     /**
      * Access the arm_wrist position.
      */
-    double a_arm_wrist_position ()
+  /*  double a_arm_wrist_position ()
     {
 
         return l_arm_wrist_position;
     } // a_arm_wrist_position
 
-
+*/
     //--------------------------------------------------------------------------
     //
     // m_arm_wrist_position
@@ -2882,7 +2886,7 @@ public class CFPushBotHardware extends OpMode {
     /**
      * Mutate the arm wrist position.
      */
-    double m_arm_wrist_position (double p_position)
+  /*  double m_arm_wrist_position (double p_position)
     {
         //
         // Ensure the specific value is legal.
@@ -2908,12 +2912,12 @@ public class CFPushBotHardware extends OpMode {
 
     } // m_arm_elbow_position
 
-
+*/
 
     /**
      * Mutate the flip right position.
      */
-    double m_flip_right_position (double p_position)
+  /*  double m_flip_right_position (double p_position)
     {
         //
         // Ensure the specific value is legal.
@@ -2937,18 +2941,18 @@ public class CFPushBotHardware extends OpMode {
         }
     } // m_flip_right_position
 
-    /**
+  */  /**
      * Access the flip_right position.
      */
-    double a_flip_right_position ()
+    /*double a_flip_right_position ()
     {
         return l_flip_right_position;
     } // a_flip_right_position
-
+*/
     /**
      * Mutate the flip right position.
      */
-    double m_flip_left_position (double p_position)
+  /*  double m_flip_left_position (double p_position)
     {
         //
         // Ensure the specific value is legal.
@@ -2971,15 +2975,15 @@ public class CFPushBotHardware extends OpMode {
             return ServoErrorResultPosition;
         }
     } // m_flip_left_position
-
+*/
     /**
      * Access the flip_right position.
      */
-    double a_flip_left_position ()
+  /*  double a_flip_left_position ()
     {
         return l_flip_left_position;
     } // a_flip_left_position
-
+*/
 
     /**
      * ticks the heartbeat which should happen every time though our loop
@@ -3150,7 +3154,7 @@ public class CFPushBotHardware extends OpMode {
     // sensor_legecyColor_led
     //
 
-    private boolean sensor_colorLegecy_led (boolean enable)
+  /*  private boolean sensor_colorLegecy_led (boolean enable)
     {
         try {
             if (v_sensor_colorLegecy != null) {
@@ -3169,7 +3173,7 @@ public class CFPushBotHardware extends OpMode {
 
     } // sensor_legecyColor_led
 
-
+*/
     /**
      * reset the gyro heading to zero
      */
@@ -3194,7 +3198,7 @@ public class CFPushBotHardware extends OpMode {
      * Enable the Legecy Color Sensor
      * @return returns true is successfull returns false on error
      */
-    public boolean sensor_color_led(boolean enable){
+  /*  public boolean sensor_color_led(boolean enable){
         try{
             // convert the RGB values to HSV values.
             if(v_sensor_color_i2c !=null) {
@@ -3209,12 +3213,12 @@ public class CFPushBotHardware extends OpMode {
             return false;
         }
     }
-
+*/
     /**
      * Enable the Legecy Color Sensor
      * @return returns true is successfull returns false on error
      */
-    public boolean sensor_color_enable(boolean enable){
+  /*  public boolean sensor_color_enable(boolean enable){
         try{
             // convert the RGB values to HSV values.
             if(v_sensor_color_i2c !=null) {
@@ -3228,7 +3232,9 @@ public class CFPushBotHardware extends OpMode {
             debugLogException("sensor_color", "sensor_color_enable", p_exeception);
             return false;
         }
-    }
+    }*/
+/*
+
     public int[] sensor_color_get_rgba(){
         try{
             // we are now doing this in the hardware_loop and only if the sensor is enabled
@@ -3254,6 +3260,7 @@ public class CFPushBotHardware extends OpMode {
             return v_sensor_color_i2c_rgbaValues;
         }
     }
+*/
 
 
     /**
@@ -3347,6 +3354,7 @@ public class CFPushBotHardware extends OpMode {
      * Enable the Legecy Color Sensor
      * @return returns true is successfull returns false on error
      */
+/*
     public boolean sensor_colorLegecy_start(){
         try{
             // convert the RGB values to HSV values.
@@ -3362,10 +3370,47 @@ public class CFPushBotHardware extends OpMode {
             return false;
         }
     }
+*/
+    /*public int[] sensor_colorLegecy_getLast_rgba(){
+        try{
+            return v_sensor_colorLegecy_rgbValues;
+
+        }catch (Exception p_exeception)
+        {
+            debugLogException("sensor_colorLegecy", "sensor_colorLegecy_getLast_rgb", p_exeception);
+            return v_sensor_colorLegecy_rgbValues;
+        }
+    }
+
+
+    public double sensor_ultraLegecy_distance(){
+        try{
+            if(v_sensor_ultraLegecy != null){
+                if ((v_loop_ticks % v_sensor_ultraLegecy_ticksPerRead) == 0) {
+                    v_sensor_ultraLegecy_distance = v_sensor_ultraLegecy.getUltrasonicLevel();
+                }
+                return v_sensor_ultraLegecy_distance;
+            }else{
+                return 9999.9999;
+            }
+        }catch (Exception p_exeception)
+        {
+            debugLogException("sensor_ultraLegecy", "sensor_ultraLegecy_distance", p_exeception);
+            return 9999.9999;
+        }
+    }
+*/
+    //Lego Light Legecy Sensor Methods
+
+    //--------------------------------------------------------------------------
+
+    //
+    // a_ods_light_detected
     /**
      * Disables the Legecy Color Sensor
      * @return returns true is successfull returns false on error
      */
+/*
     public boolean sensor_colorLegecy_stop(){
         try{
             // convert the RGB values to HSV values.
@@ -3382,7 +3427,9 @@ public class CFPushBotHardware extends OpMode {
             return false;
         }
     }
+*/
 
+/*
     private int[] sensor_colorLegecy_read_rgba(){
         try{
             // convert the RGB values to HSV values.
@@ -3407,45 +3454,12 @@ public class CFPushBotHardware extends OpMode {
             return v_sensor_colorLegecy_rgbValues;
         }
     }
-
-
-    public int[] sensor_colorLegecy_getLast_rgba(){
-        try{
-            return v_sensor_colorLegecy_rgbValues;
-
-        }catch (Exception p_exeception)
-        {
-            debugLogException("sensor_colorLegecy", "sensor_colorLegecy_getLast_rgb", p_exeception);
-            return v_sensor_colorLegecy_rgbValues;
-        }
-    }
-
-    public double sensor_ultraLegecy_distance(){
-        try{
-            if(v_sensor_ultraLegecy != null){
-                if ((v_loop_ticks % v_sensor_ultraLegecy_ticksPerRead) == 0) {
-                    v_sensor_ultraLegecy_distance = v_sensor_ultraLegecy.getUltrasonicLevel();
-                }
-                return v_sensor_ultraLegecy_distance;
-            }else{
-                return 9999.9999;
-            }
-        }catch (Exception p_exeception)
-        {
-            debugLogException("sensor_ultraLegecy", "sensor_ultraLegecy_distance", p_exeception);
-            return 9999.9999;
-        }
-    }
-
-    //Lego Light Legecy Sensor Methods
-
-    //--------------------------------------------------------------------------
-    //
-    // a_ods_light_detected
+*/
     //
     /**
      * Access the amount of light detected by the Optical Distance Sensor.
      */
+/*
     public double sensor_lightLegecy_amountDetected ()
 
     {
@@ -3476,6 +3490,7 @@ public class CFPushBotHardware extends OpMode {
         return a_light_white_tape_detected();
     }
 
+*/
     //--------------------------------------------------------------------------
     //
     // a_light_white_tape_detected
@@ -3483,6 +3498,7 @@ public class CFPushBotHardware extends OpMode {
     /**
      * Access whether the Light Sensor is detecting white tape.
      */
+/*
     private boolean a_light_white_tape_detected ()
     {
 
@@ -3509,6 +3525,7 @@ public class CFPushBotHardware extends OpMode {
         return l_return;
 
     } // a_ods_white_tape_detected
+*/
 
     //Don't use these inless we are in linerOpMode
 //    public void waitOneFullHardwareCycle() throws InterruptedException {

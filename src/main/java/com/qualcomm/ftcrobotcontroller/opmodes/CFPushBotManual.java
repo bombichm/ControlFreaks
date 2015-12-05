@@ -101,7 +101,7 @@ public class CFPushBotManual extends CFPushBotTelemetry{
         // class, but the positions aren't applied until this method ends.
         //
 
-        if (gamepad2.dpad_right )
+        /*if (gamepad2.dpad_right )
         {
             //arm_wrist_moveRight(gamepad2.left_bumper);
             arm_shoulder_moveUp(!gamepad2.left_bumper);
@@ -120,7 +120,7 @@ public class CFPushBotManual extends CFPushBotTelemetry{
         else if (gamepad2.dpad_down )
         {
             arm_elbow_moveDown(!gamepad2.left_bumper);
-        }
+        }*/
 
         if (gamepad2.b || gamepad2.left_stick_x > stickdeadzone )
         {
@@ -157,7 +157,7 @@ public class CFPushBotManual extends CFPushBotTelemetry{
             m_rpa_arm_power(0.0f);
         }
 
-        if (gamepad2.left_trigger > ArmWristTrigger_Threshold_Fast ){
+        /*if (gamepad2.left_trigger > ArmWristTrigger_Threshold_Fast ){
 
             arm_wrist_moveLeft(true);
         }else if (gamepad2.left_trigger > ArmWristTrigger_Threshold  ){
@@ -179,12 +179,13 @@ public class CFPushBotManual extends CFPushBotTelemetry{
             m_flip_left_position(gamepad1.left_trigger);
         }else {
             m_flip_left_position(FlipLeftServo_MinPosition);
-        }
+        }*/
         if(gamepad1.y && gamepad1.b){
             rpabase_moveToClimb();
         }
 
-        if(gamepad1.back){
+        if(gamepad1.a && gamepad1.x){
+            neopixels_set_mode((byte)4);
             play_jingle_bells();
         }
         if(gamepad1.dpad_up){

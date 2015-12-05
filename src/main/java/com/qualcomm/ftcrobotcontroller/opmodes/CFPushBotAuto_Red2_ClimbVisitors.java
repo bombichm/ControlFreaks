@@ -88,12 +88,13 @@ public class CFPushBotAuto_Red2_ClimbVisitors extends CFPushBotTelemetry {
                 //
 
                 led7seg_timer_start(30);
+                timewait(9);
                 v_state++;
 
 
                 break;
             case 1:
-                if(loopCounter() > 1400) {
+                if(timewait_Complete()){
                     v_state++;
                 }
                 break;

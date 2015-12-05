@@ -93,11 +93,18 @@ public class CFPushBotAuto_Blue2_ClimbVisitors extends CFPushBotTelemetry {
 
                 break;
             case 1:
-                if(loopCounter() > 1400) {
+                /*if(loopCounter() > 1400) {
+                    v_state++;
+                }*/
+                timewait(9);
+                v_state++;
+                break;
+            case 2:
+                if(timewait_Complete()== true){
                     v_state++;
                 }
                 break;
-            case 2:
+            case 3:
                 //
                 // drive Forward 24 inches
                 //
@@ -107,7 +114,7 @@ public class CFPushBotAuto_Blue2_ClimbVisitors extends CFPushBotTelemetry {
                 drive_inches(.7f,85, true);
                 v_state++;
                 break;
-            case 3:
+            case 4:
 
                 //
                 // Transition to the next state when this method is called again.
@@ -119,7 +126,7 @@ public class CFPushBotAuto_Blue2_ClimbVisitors extends CFPushBotTelemetry {
 
                 break;
 
-            case 4:
+            case 5:
                 // positive is right turn
                 turn_degrees(-45, true, true);
                 set_second_message("turn 45 degrees to the left");
@@ -128,7 +135,7 @@ public class CFPushBotAuto_Blue2_ClimbVisitors extends CFPushBotTelemetry {
             //
             // Wait...
             //
-            case 5:
+            case 6:
                 //keep checking if we have reached the distance we need to reach
                 if (turn_complete ())
                 {
@@ -137,7 +144,7 @@ public class CFPushBotAuto_Blue2_ClimbVisitors extends CFPushBotTelemetry {
                     v_state++;
                 }
                 break;
-            case 6:
+            case 7:
                 //
                 // drive Forward 12 inches
                 //
@@ -147,7 +154,7 @@ public class CFPushBotAuto_Blue2_ClimbVisitors extends CFPushBotTelemetry {
                 //set_drive_power(1.0d, 1.0d);
                 v_state++;
                 break;
-            case 7:
+            case 8:
                 //
                 // Transition to the next state when this method is called again.
                 if (v_rpa_move_delay < loopCounter()) {
@@ -155,7 +162,7 @@ public class CFPushBotAuto_Blue2_ClimbVisitors extends CFPushBotTelemetry {
                     v_state++;
                 }
                 break;
-            case 8:
+            case 9:
                 //
                 // drive Forward 12 inches
                 //
@@ -165,7 +172,7 @@ public class CFPushBotAuto_Blue2_ClimbVisitors extends CFPushBotTelemetry {
                 //set_drive_power(1.0d, 1.0d);
                 v_state++;
                 break;
-            case 9:
+            case 10:
                 //
                 // Transition to the next state when this method is called again.
                 if (drive_inches_complete()) {

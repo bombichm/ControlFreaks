@@ -40,8 +40,8 @@ public class AudioEffects {
                     // Moves the current Thread into the background
                     android.os.Process.setThreadPriority(android.os.Process.THREAD_PRIORITY_BACKGROUND);
                     jingle_bells();
-                    jingle_bells();
-                    jingle_bells();
+                    //jingle_bells();
+                    //jingle_bells();
                     v_is_playing = false;
                 }
             });

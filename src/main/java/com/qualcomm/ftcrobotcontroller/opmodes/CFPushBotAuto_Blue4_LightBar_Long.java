@@ -182,16 +182,28 @@ public class CFPushBotAuto_Blue4_LightBar_Long extends CFPushBotTelemetry {
             case 11:
                 if (v_rpa_move_delay < loopCounter()) {
                     //
+                    ;
+                    v_rpa_move_delay = 50 + loopCounter();
+                    v_state++;
+                }
+
+                break;
+            case 12:
+
+                rpaarm_moveUp(true);
+                if (v_rpa_move_delay < loopCounter()) {
+                    //
+                    m_rpa_arm_power(0.0f);
                     v_state++;
                 }
                 break;
-            case 12:
+            case 13:
                 drive_inches(-.7f,14, true);
 
                 //set_drive_power(1.0d, 1.0d);
                 v_state++;
                 break;
-            case 13:
+            case 14:
                 //
                 // Transition to the next state when this method is called again.
                 if (drive_inches_complete()) {
@@ -199,7 +211,7 @@ public class CFPushBotAuto_Blue4_LightBar_Long extends CFPushBotTelemetry {
                     v_state++;
                 }
                 break;
-            case 14:
+            case 15:
                 // positive is right turn
                 turn_degrees(-45, true, true);
                 m_rpabase_position(.45);
@@ -209,7 +221,7 @@ public class CFPushBotAuto_Blue4_LightBar_Long extends CFPushBotTelemetry {
             //
             // Wait...
             //
-            case 15:
+            case 16:
                 //keep checking if we have reached the distance we need to reach
                 if (turn_complete ())
                 {
@@ -218,14 +230,14 @@ public class CFPushBotAuto_Blue4_LightBar_Long extends CFPushBotTelemetry {
                 }
                 break;
 
-            case 16:
+            case 17:
 
                 drive_inches(-.7f,32, true);
 
                 //set_drive_power(1.0d, 1.0d);
                 v_state++;
                 break;
-            case 17:
+            case 18:
                 //
                 // Transition to the next state when this method is called again.
                 if (drive_inches_complete()) {
@@ -234,7 +246,7 @@ public class CFPushBotAuto_Blue4_LightBar_Long extends CFPushBotTelemetry {
                 }
                 break;
 
-            case 18:
+            case 19:
                 // positive is right turn
                 turn_degrees(90, true, true);
                 set_second_message("turn 90 degrees to the right");
@@ -243,7 +255,7 @@ public class CFPushBotAuto_Blue4_LightBar_Long extends CFPushBotTelemetry {
             //
             // Wait...
             //
-            case 19:
+            case 20:
                 //keep checking if we have reached the distance we need to reach
                 if (turn_complete ())
                 {
@@ -251,14 +263,14 @@ public class CFPushBotAuto_Blue4_LightBar_Long extends CFPushBotTelemetry {
                     v_state++;
                 }
                 break;
-            case 20:
+            case 21:
                 rpabase_moveToClimb();
                 drive_inches(.7f,90, true);
 
                 //set_drive_power(1.0d, 1.0d);
                 v_state++;
                 break;
-            case 21:
+            case 22:
                 //
                 // Transition to the next state when this method is called again.
                 if (drive_inches_complete()) {

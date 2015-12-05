@@ -72,7 +72,15 @@ public class CFPushBotTelemetry extends CFPushBotHardware {
                                         + ", "
                                         + a_right_drive_mode()
                         );
+                                telemetry.addData
+                        ("05"
+                                , "RPA Base Position: " + a_rpabase_position()
+                        );
                 telemetry.addData
+                        ("06"
+                                , "RPA Arm Position: " + a_rpa_arm_power() + ":" + rpa_arm_extended() + ":" + rpa_arm_retracted()
+                        );
+                /*telemetry.addData
                         ("05"
                                 , "Arm Shoulder: " + a_arm_shoulder_position()
                         );
@@ -84,14 +92,7 @@ public class CFPushBotTelemetry extends CFPushBotHardware {
                         ("07"
                                 , "Arm Wrist: " + a_arm_wrist_position()
                         );
-                telemetry.addData
-                        ("08"
-                                , "RPA Base Position: " + a_rpabase_position()
-                        );
-                telemetry.addData
-                        ("09"
-                                , "RPA Arm Position: " + a_rpa_arm_power() + ":" + rpa_arm_extended() + ":" + rpa_arm_retracted()
-                        );
+
                 int[] v_color_rgba = sensor_color_get_rgba();
                 telemetry.addData(
                         "10", "Color RGBA: " + v_color_rgba[0]
@@ -108,7 +109,7 @@ public class CFPushBotTelemetry extends CFPushBotHardware {
                 );
                 telemetry.addData(
                         "13", "Light: tape:" + sensor_lightLegecy_white_tape_detected() + "," + sensor_lightLegecy_amountDetected()
-                );
+                );*/
             }
         }catch (Exception p_exeception)
         {
