@@ -22,6 +22,7 @@ import com.qualcomm.robotcore.hardware.OpticalDistanceSensor;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.hardware.TouchSensor;
 import com.qualcomm.robotcore.hardware.UltrasonicSensor;
+import com.qualcomm.robotcore.util.ElapsedTime;
 import com.qualcomm.robotcore.util.Range;
 import com.qualcomm.robotcore.hardware.DeviceInterfaceModule;
 import com.qualcomm.robotcore.hardware.IrSeekerSensor;
@@ -39,7 +40,7 @@ import java.util.concurrent.locks.Lock;
 
 public class CFPushBotHardware extends OpMode {
 
-    public boolean v_debug = true;  //set this to false to prevent writing to log makes loop lots shorter
+    public boolean v_debug = false;  //set this to false to prevent writing to log makes loop lots shorter
 
     //We Increment the v_loop_ticks each time through our loop
     private long v_loop_ticks = 0;
@@ -78,8 +79,8 @@ public class CFPushBotHardware extends OpMode {
     private static final double RPABaseServo_Delta = 0.0005;
     private static final double RPABaseServo_Delta_Fast = 0.001;
     private double RPABaseServo_MinPosition = 0.01;  //Need to unhook gear int so it goes to zero then rehook servo gear
-    private double RPABaseServo_ClimbPosition = 0.72;
-    public double RPABaseServo_DumpPosition = 0.67;
+    private double RPABaseServo_ClimbPosition = 0.69;
+    public double RPABaseServo_DumpPosition = 0.64;
     private double RPABaseServo_MaxPosition = 0.73;
     //private double RPABaseServo_MaxPosition_Delta = 0.60;
     private double l_rpa_base_position = 0.163D;  //init RPA Base Position and to control RPA Base position as servo.getPosition seems to be flaky
@@ -710,6 +711,23 @@ public class CFPushBotHardware extends OpMode {
         if (v_debug) {
             DbgLog.msg(debugMessage);
         }
+    }
+
+    private ElapsedTime v_wait_elapsedtime;
+    private boolean v_is_waiting;
+    private int v_wait_milliseconds;
+    public boolean wait(int milliseconds){
+        v_wait_elapsedtime = new ElapsedTime();
+        v_wait_milliseconds = milliseconds;
+        v_is_waiting = true;
+        return true;
+    }
+
+    public boolean waitComplete(){
+        if (v_wait_elapsedtime.startTime() + v_wait_milliseconds < v_wait_elapsedtime.time() ){
+            v_is_waiting = false;
+        }
+        return v_is_waiting;
     }
 
     //--------------------------------------------------------------------------

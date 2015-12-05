@@ -83,7 +83,7 @@ public class CFPushBotAuto_Blue4_LightBar_Long extends CFPushBotTelemetry {
             //
             case 0:
                 //
-                // drive Forward 24 inches
+                // drive Forward 12 inches
                 //
                 led7seg_timer_start(30);
                 //this is offset for articulating arm which we removed drive_inches(.7f,74.5f, true);
@@ -127,7 +127,7 @@ public class CFPushBotAuto_Blue4_LightBar_Long extends CFPushBotTelemetry {
                 break;
             case 4:
 
-                drive_inches(.7f,70, true);
+                drive_inches(.7f,74, true);
 
                 //set_drive_power(1.0d, 1.0d);
                 v_state++;
@@ -161,7 +161,7 @@ public class CFPushBotAuto_Blue4_LightBar_Long extends CFPushBotTelemetry {
                 break;
             case 8:
                 m_rpabase_position(RPABaseServo_DumpPosition - .1);
-                drive_inches(.7f,12, true);
+                drive_inches(.7f,13, true);
 
                 //set_drive_power(1.0d, 1.0d);
                 v_state++;
