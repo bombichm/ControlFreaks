@@ -117,8 +117,8 @@ public class CFPushBotAuto_Red3_ClimbHome_Short extends CFPushBotTelemetry {
             case 4:
                 //
                 // drive Forward 12 inches
-                //
-                drive_inches(.7f,50, true);
+                // was 50
+                drive_inches(.7f,53, true);
 
                 //set_drive_power(1.0d, 1.0d);
                 v_state++;

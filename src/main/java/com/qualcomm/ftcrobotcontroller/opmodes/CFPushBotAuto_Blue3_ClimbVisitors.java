@@ -87,7 +87,7 @@ public class CFPushBotAuto_Blue3_ClimbVisitors extends CFPushBotTelemetry {
                 //
 
                 led7seg_timer_start(30);
-                timewait(4);
+                timewait(9);
                 v_state++;
                 break;
 
@@ -159,7 +159,7 @@ public class CFPushBotAuto_Blue3_ClimbVisitors extends CFPushBotTelemetry {
                 //
                 rpabase_moveToClimb();
                 //this drives to high spot 110 inches drive_inches(.7f,110, true);
-                drive_inches(.7f,79, true);
+                drive_inches(.7f,111, true);
                 //set_drive_power(1.0d, 1.0d);
                 v_state++;
                 break;

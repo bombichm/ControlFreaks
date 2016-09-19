@@ -110,7 +110,7 @@ public class CFPushBotAuto_Blue2_ClimbVisitors extends CFPushBotTelemetry {
                 //
 
 
-                // 28 inches
+                // 28 inches  was 85
                 drive_inches(.7f,85, true);
                 v_state++;
                 break;
@@ -168,7 +168,8 @@ public class CFPushBotAuto_Blue2_ClimbVisitors extends CFPushBotTelemetry {
                 //
 
                 //this drives to high spot 105 inches drive_inches(.7f,105, true);
-                drive_inches(.7f,70, true);
+                //70 midle
+                drive_inches(.7f,106, true);
                 //set_drive_power(1.0d, 1.0d);
                 v_state++;
                 break;

@@ -80,6 +80,9 @@ public class CFPushBotTelemetry extends CFPushBotHardware {
                         ("06"
                                 , "RPA Arm Position: " + a_rpa_arm_power() + ":" + rpa_arm_extended() + ":" + rpa_arm_retracted()
                         );
+                telemetry.addData(
+                        "07", "Flip: Right:" + a_flip_right_position()
+                );
                 /*telemetry.addData
                         ("05"
                                 , "Arm Shoulder: " + a_arm_shoulder_position()

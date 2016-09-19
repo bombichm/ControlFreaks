@@ -122,6 +122,17 @@ public class CFPushBotManual extends CFPushBotTelemetry{
             arm_elbow_moveDown(!gamepad2.left_bumper);
         }*/
 
+        if (gamepad2.dpad_up )
+        {
+            set_second_message("dpad up");
+            m_servo_dump_climber_position(v_servo_dump_climbers_MinPosition);
+        }
+        else if (gamepad2.dpad_down )
+        {
+            set_second_message("dpad down");
+            m_servo_dump_climber_position(v_servo_dump_climbers_MaxPosition);
+        }
+
         if (gamepad2.b || gamepad2.left_stick_x > stickdeadzone )
         {
             //move RPABase Servo in the up direction in left bumper down move fast
@@ -137,8 +148,7 @@ public class CFPushBotManual extends CFPushBotTelemetry{
             m_rpabase_position(a_rpabase_position_actual());
             isMovingArm = false;
         }
-        if (gamepad1.y )
-        {
+        if (gamepad1.y) {
             m_winch_power(v_motor_winch_Speed);
         }
         else{
@@ -167,14 +177,14 @@ public class CFPushBotManual extends CFPushBotTelemetry{
         }else if(gamepad2.right_trigger > ArmWristTrigger_Threshold ){
             arm_wrist_moveRight(false);
         }
-
+*/
         if(gamepad1.right_trigger > FlipRightServo_MinPosition) {
             m_flip_right_position(FlipRightServo_MaxPosition - gamepad1.right_trigger);
         }else {
             m_flip_right_position(FlipRightServo_MaxPosition);
         }
 
-
+/*
         if (gamepad1.left_trigger > FlipLeftServo_MinPosition){
             m_flip_left_position(gamepad1.left_trigger);
         }else {

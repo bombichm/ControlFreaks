@@ -135,7 +135,7 @@ public class CFPushBotAuto_Blue4_ClimbHome_Short extends CFPushBotTelemetry {
                 break;
             case 6:
                 // positive is right turn
-                turn_degrees(88, true, true);
+                turn_degrees(87, true, true);
                 set_second_message("turn 90 degrees to the right");
                 v_state++;
                 break;

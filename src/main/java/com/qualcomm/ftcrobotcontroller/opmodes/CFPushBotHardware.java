@@ -130,14 +130,14 @@ public class CFPushBotHardware extends OpMode {
     public static final double ArmWristTrigger_Threshold_Fast = 0.9;
 */
 
-  /*  // v_servo_flip_right
+    // v_servo_flip_right
     private Servo v_servo_flip_right;
     //private static final double FlipRightServo_Delta = 0.005;
     //private static final double FlipRightServo_Delta_Fast = 0.05;
     public static final double FlipRightServo_MinPosition = 0.13;
-    public static final double FlipRightServo_MaxPosition = 0.99;
-    private double l_flip_right_position = 0.99D;  //init flip_right Position
-*/
+    public static final double FlipRightServo_MaxPosition = 0.79;
+    private double l_flip_right_position = 0.79D; //init flip_right Position
+
   /*  // v_servo_flip_left
     private Servo v_servo_flip_left;
     // private static final double FlipLeftServo_Delta = 0.005;
@@ -147,6 +147,12 @@ public class CFPushBotHardware extends OpMode {
     private double l_flip_left_position = 0.05D;  //init flip_right Position
 */
 
+
+    // v_servo_dump
+    private Servo v_servo_dump_climbers;
+    public static final double v_servo_dump_climbers_MinPosition = 0.05;
+    public static final double v_servo_dump_climbers_MaxPosition = 0.99;
+    private double v_servo_dump_climbers_position = 0.05D;  //init flip_right Position
 
     //Legecy Color Sensor
   /*  private ColorSensor v_sensor_colorLegecy;
@@ -403,7 +409,7 @@ public class CFPushBotHardware extends OpMode {
         try{
             v_tone_generator = new ToneGenerator(AudioManager.STREAM_RING, ToneGenerator.MAX_VOLUME);
             v_tone_generator.startTone(ToneGenerator.TONE_DTMF_0, 500);
-            sleep(500);
+            /*sleep(500);
             v_tone_generator.startTone(ToneGenerator.TONE_DTMF_9, 500);
             sleep(500);
             v_tone_generator.startTone(ToneGenerator.TONE_DTMF_0, 500);
@@ -414,7 +420,7 @@ public class CFPushBotHardware extends OpMode {
             sleep(200);
             v_tone_generator.startTone(ToneGenerator.TONE_DTMF_7, 500);
             sleep(200);
-            v_tone_generator.startTone(ToneGenerator.TONE_DTMF_9, 500);
+            v_tone_generator.startTone(ToneGenerator.TONE_DTMF_9, 500);*/
         }catch (Exception p_exeception)
         {
             debugLogException("toneGenerator", "missing", p_exeception);
@@ -506,7 +512,7 @@ public class CFPushBotHardware extends OpMode {
             debugLogException("arm_wrist", "missing", p_exeception);
             v_servo_arm_wrist = null;
         }
-
+*/
         //
         // Connect the flip right servo.
         //
@@ -520,7 +526,7 @@ public class CFPushBotHardware extends OpMode {
             debugLogException("flip_right", "missing", p_exeception);
             v_servo_flip_right = null;
         }
-
+/*
         //
         // Connect the flip left servo.
         //
@@ -533,9 +539,25 @@ public class CFPushBotHardware extends OpMode {
         {
             debugLogException("flip_left", "missing", p_exeception);
             v_servo_flip_left = null;
-        }*/
+        }
 
-        /*//
+*/
+        //
+        // Connect the flip left servo.
+        //
+        try
+        {
+            v_servo_dump_climbers = hardwareMap.servo.get("dump");
+            v_servo_dump_climbers.setPosition(v_servo_dump_climbers_position);
+        }
+        catch (Exception p_exeception)
+        {
+            debugLogException("dump", "missing", p_exeception);
+            v_servo_dump_climbers = null;
+        }
+
+/*
+        //
         // Connect the heartbeat led.
         //
         try
@@ -2655,6 +2677,37 @@ public class CFPushBotHardware extends OpMode {
     } // m_rpabase_position
 
 
+    /**
+     * Mutate the flip right position.
+     */
+    double m_servo_dump_climber_position (double p_position)
+    {
+        //
+        // Ensure the specific value is legal.
+        //
+        v_servo_dump_climbers_position = Range.clip
+                ( p_position
+                        , v_servo_dump_climbers_MinPosition
+                        , v_servo_dump_climbers_MaxPosition
+                );
+        try {
+            setSecondMessage("dump before null " + v_servo_dump_climbers_position);
+            if (v_servo_dump_climbers != null) {
+                setSecondMessage("dump after null " + v_servo_dump_climbers_position);
+                v_servo_dump_climbers.setPosition(v_servo_dump_climbers_position);
+                setSecondMessage("dump servo " + v_servo_dump_climbers_position );
+                return v_servo_dump_climbers_position;
+            } else {
+                return ServoErrorResultPosition;
+            }
+        }catch (Exception p_exeception)
+        {
+            debugLogException("flip_left", "m_flip_left_position", p_exeception);
+            return ServoErrorResultPosition;
+        }
+    } // m_flip_left_position
+
+
     //--------------------------------------------------------------------------
     //
     // arm_shoulder_moveUp
@@ -2917,7 +2970,7 @@ public class CFPushBotHardware extends OpMode {
     /**
      * Mutate the flip right position.
      */
-  /*  double m_flip_right_position (double p_position)
+    double m_flip_right_position (double p_position)
     {
         //
         // Ensure the specific value is legal.
@@ -2941,14 +2994,14 @@ public class CFPushBotHardware extends OpMode {
         }
     } // m_flip_right_position
 
-  */  /**
+    /**
      * Access the flip_right position.
      */
-    /*double a_flip_right_position ()
+    double a_flip_right_position ()
     {
         return l_flip_right_position;
     } // a_flip_right_position
-*/
+
     /**
      * Mutate the flip right position.
      */

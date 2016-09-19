@@ -158,7 +158,7 @@ public class CFPushBotAuto_Red2_ClimbVisitors extends CFPushBotTelemetry {
                 //
 
                 //this drives to high spot 105 inches drive_inches(.7f,105, true);
-                drive_inches(.7f,70, true);
+                drive_inches(.7f,106, true);
                 //set_drive_power(1.0d, 1.0d);
                 v_state++;
                 break;
